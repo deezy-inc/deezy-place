@@ -114,7 +114,7 @@ const App = () => {
               <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => setShowReceiveAddressModal(true)}>Show Receive Address</Button>
             </div>
             :
-            <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => connectWallet()}>Connect Nostr</Button>
+            <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => connectWallet()}>Connect Nostr (Alby, etc)</Button>
         }
         <br /><br />
         {nostrPublicKey ?

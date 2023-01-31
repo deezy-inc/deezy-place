@@ -14,6 +14,7 @@ import * as bitcoin from 'bitcoinjs-lib'
 import * as ecc from 'tiny-secp256k1'
 bitcoin.initEccLib(ecc)
 
+const GITHUB_URL = "https://github.com/dannydeezy/nosft"
 const App = () => {
   const [nostrPublicKey, setNostrPublicKey] = useState(null);
   const [showReceiveAddressModal, setShowReceiveAddressModal] = useState(false);
@@ -97,8 +98,8 @@ const App = () => {
             Nosft
           </Navbar.Brand>
           <Nav className="me-auto">
-            <Nav.Link onClick={() => window.open("https://github.com")}>
-              <SocialIcon url={"https://github.com"} />
+            <Nav.Link onClick={() => window.open(GITHUB_URL)}>
+              <SocialIcon url={GITHUB_URL} />
             </Nav.Link>
           </Nav>
           <Navbar.Brand>

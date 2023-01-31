@@ -138,7 +138,7 @@ const App = () => {
               <br /><br />
               It is designed to hold ordinal inscriptions (aka NFTs).
               <br /><br />
-              Sending and directly viewing actual images are not implemented yet, but will be soon!
+              Sending is not implemented yet, but will be soon!
             </div>
           </>
         }

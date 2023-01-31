@@ -21,6 +21,10 @@ body,
 html {
 }
 
+.hover-pointer:hover {
+  cursor: pointer;
+}
+
 #title {
   color: black;
   text-shadow: 0 0 5px var(--orange);

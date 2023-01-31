@@ -42,6 +42,10 @@ const App = () => {
     return `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`
   }
 
+  function ordinalsImageUrl(utxo) {
+    return `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`
+  }
+
   function shortenStr(str) {
     return str.substring(0, 8) + "..." + str.substring(str.length - 8, str.length)
   }
@@ -81,9 +85,15 @@ const App = () => {
   function utxos() {
     return ownedUtxos.map(it => {
       return (
-        <Card className="my-2 mx-2">
-          <Card.Body>
-            <a href={ordinalsUrl(it)} target="_blank">{shortenStr(it.txid)}:{it.vout}</a>
+        <Card className="my-2 mx-2 hover-pointer">
+          <Card.Body className="d-flex flex-column" onClick={() => window.open(ordinalsUrl(it))}>
+            <img
+              alt=""
+              src={ordinalsImageUrl(it)}
+              style={{ width: "200px" }}
+              className="mb-3"
+            />
+            {shortenStr(it.txid)}:{it.vout}
           </Card.Body>
         </Card>
       )

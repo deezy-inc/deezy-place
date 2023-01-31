@@ -1,0 +1,270 @@
+:root {
+  --lightblue: rgb(130, 207, 243);
+  --darkblue: rgb(0, 0, 255);
+  --lightbluegray: rgb(239, 245, 247);
+  --orange: #ff8a00;
+  --blackish: rgb(35, 34, 34);
+}
+
+html,
+body,
+#root,
+.vh100 {
+  overflow-y: scroll;
+}
+
+@font-face {
+  font-family: 'InterBold';
+  src: local('InterBold'), url(./assets/fonts/Inter/static/Inter-Bold.ttf) format('truetype');
+}
+
+html {
+}
+
+#title {
+  color: black;
+  text-shadow: 0 0 5px var(--orange);
+}
+
+.top-panel {
+  max-width: 400px;
+}
+
+.button {
+  width: 130px;
+}
+
+
+.gallery-babe {
+  height: 120px;
+  margin: 20px;
+}
+
+.tile-babe {
+  height: 170px;
+  margin: 20px;
+}
+
+.section {
+  border-top: 1px solid black;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.gold-gradient {
+  background: linear-gradient(to right, red 0%, var(--orange) 50%, var(--darkblue) 100%);
+  /* Mask the color to the text, and remove the rest  */
+  -webkit-background-clip: text;
+  /* Make the text fill color value transparent so the masked background color comes through */
+  -webkit-text-fill-color: transparent;
+}
+
+.black {
+  color: black !important;
+}
+
+.info-text {
+  margin: auto;
+  padding: 20px;
+}
+
+.emoji-group {
+  font-size: 30px;
+}
+
+h1 {
+  font-size: 48pt !important;
+  font-family: "InterBold";
+}
+
+.main-container {
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.info-card {
+  max-width: 500px;
+  min-width: 300px;
+  box-shadow: var(--orange) 0px 0px 10px;
+  color: black;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 80px;
+}
+
+.card-title {
+  font-size: 70px !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 3px darkorange;
+  font-family: 'Menlo';
+}
+
+.card-title-emoji {
+  font-size: 100px !important;
+}
+
+.main-button {
+  width: 150px;
+  margin: 30px;
+}
+
+.small-text {
+  font-size: 10pt;
+  max-width: 90%;
+  margin: auto;
+}
+
+.social-icon {
+  background-color: white !important;
+  border-radius: 50% !important;
+  width: 50px !important;
+  height: 50px !important;
+  margin: 20px;
+}
+
+.shadowed-gold {
+  box-shadow: gold 0px 0px 12px;
+}
+
+.shadowed-orange {
+  box-shadow: var(--orange) 0px 0px 30px;
+}
+
+.shadowed-orange-small {
+    box-shadow: var(--orange) 0px 0px 12px;
+}
+
+.tso {
+  text-shadow: 0 0 1px var(--orange);
+}
+
+.title-color {
+  color: black;
+  font-weight: normal;
+}
+
+.thick-shadow {
+  text-shadow: 1px 1px 4px black;
+}
+
+.swap-option {
+  max-width: 300px;
+  margin-top: 10px;
+  margin: auto;
+}
+
+#node-section,
+#contact-section,
+#swap-section {
+  max-width: 800px;
+  margin: auto;
+  border: 2px solid black;
+  border-radius: 10px;
+  color: black;
+}
+
+#chainval {
+  text-align: left;
+}
+
+#check-image {
+  max-width: 100px;
+}
+
+.node-text {
+  width: 75%;
+  margin: auto;
+}
+
+.centered {
+  margin: auto;
+}
+
+.center-contents {
+  text-align: center;
+}
+
+.hover:hover {
+  cursor: pointer;
+}
+
+.modal-body {
+  overflow-wrap: break-word;
+}
+
+@media screen and (max-width: 768px) {
+  h1 {
+    font-size: 38pt !important;
+  }
+}
+
+@media screen and (max-width: 545px) {
+  h1 {
+    font-size: 38pt !important;
+  }
+
+  .subtitle {
+    font-size: 10pt !important;
+  }
+
+  .in-text {
+    font-size: 10pt !important;
+  }
+
+  .main-container {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .card-title {
+    font-size: 40px !important;
+    font-weight: bold !important;
+    text-shadow: 0 0 3px darkorange;
+    font-family: 'Menlo';
+  }
+
+  .card-title-emoji {
+    font-size: 70px !important;
+  }
+
+  .small-text {
+    max-width: 95%;
+  }
+
+  .info-text {
+    margin: auto;
+    padding: 10px;
+  }
+
+  .social-icon {
+    width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+@media screen and (max-width: 345px) {
+  h1 {
+    font-size: 20pt !important;
+  }
+
+  .subtitle {
+    font-size: 9pt !important;
+  }
+
+  .in-text {
+    max-width: 95%;
+  }
+}
+
+@media screen and (max-width: 315px) {
+  h1 {
+    font-size: 15pt !important;
+  }
+
+  .subtitle {
+    font-size: 9pt !important;
+  }
+
+  .in-text,
+  .small-text {}
+}

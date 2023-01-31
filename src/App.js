@@ -38,8 +38,8 @@ const App = () => {
     }
   }
 
-  function mempoolSpaceUrl(utxo) {
-    return `https://mempool.space/tx/${utxo.txid}`
+  function ordinalsUrl(utxo) {
+    return `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`
   }
 
   function shortenStr(str) {
@@ -83,7 +83,7 @@ const App = () => {
       return (
         <Card className="my-2 mx-2">
           <Card.Body>
-            <a href={mempoolSpaceUrl(it)} target="_blank">{shortenStr(it.txid)}:{it.vout}</a>
+            <a href={ordinalsUrl(it)} target="_blank">{shortenStr(it.txid)}:{it.vout}</a>
           </Card.Body>
         </Card>
       )

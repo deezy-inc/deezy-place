@@ -60,7 +60,7 @@ const App = () => {
             <div>
               This address doesn't own anything yet..
               <br /><br />
-              Consider minting an <a href="https://astralbabes.ai" target="_blank">astral babe</a>.
+              Consider minting an astral babe (launching soon!)
             </div>
           </>
           :

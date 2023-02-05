@@ -32,6 +32,7 @@ const App = () => {
   }, [nostrPublicKey]);
 
   async function connectWallet() {
+    await window.nostr.enable()
     const pubkey = await window.nostr.getPublicKey()
     if (pubkey) {
       setNostrPublicKey(pubkey)
@@ -65,7 +66,7 @@ const App = () => {
             <div>
               This address doesn't own anything yet..
               <br /><br />
-              Consider minting an astral babe (launching soon!)
+              Consider minting an <a href="https://astralbabes.ai" target="_blank">astral babe</a> (launching soon!)
             </div>
           </>
           :

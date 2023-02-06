@@ -33,7 +33,9 @@ const App = () => {
   }, [nostrPublicKey]);
 
   async function connectWallet() {
-    await window.nostr.enable()
+    if (window.nostr && window.nostr.enable) {
+      await window.nostr.enable()
+    }
     const pubkey = await window.nostr.getPublicKey()
     if (pubkey) {
       setNostrPublicKey(pubkey)

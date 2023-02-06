@@ -26,6 +26,7 @@ const App = () => {
       const address = getAddress()
       const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`)
       setOwnedUtxos(response.data)
+      // console.log(response.data)
       setUtxosReady(true)
     }
     fetchUtxosForAddress()
@@ -45,6 +46,10 @@ const App = () => {
 
   function ordinalsImageUrl(utxo) {
     return `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`
+  }
+
+  function cloudfrontUrl(utxo) {
+    return `https://d2v3k2do8kym1f.cloudfront.net/minted-items/${utxo.txid}:${utxo.vout}`
   }
 
   function shortenStr(str) {
@@ -90,7 +95,9 @@ const App = () => {
           <Card.Body className="d-flex flex-column" onClick={() => window.open(ordinalsUrl(it))}>
             <img
               alt=""
-              src={ordinalsImageUrl(it)}
+              src={
+                it.status.confirmed ? ordinalsImageUrl(it) : cloudfrontUrl(it)
+              }
               style={{ width: "200px" }}
               className="mb-3"
             />

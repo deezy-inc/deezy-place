@@ -8,7 +8,6 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Modal from 'react-bootstrap/Modal';
 import { SocialIcon } from 'react-social-icons';
-import Iframe from 'react-iframe'
 
 const axios = require('axios')
 import * as bitcoin from 'bitcoinjs-lib'

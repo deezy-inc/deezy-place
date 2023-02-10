@@ -8,11 +8,14 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Modal from 'react-bootstrap/Modal';
 import { SocialIcon } from 'react-social-icons';
+import Iframe from 'react-iframe'
 
 const axios = require('axios')
 import * as bitcoin from 'bitcoinjs-lib'
 import * as ecc from 'tiny-secp256k1'
 bitcoin.initEccLib(ecc)
+
+const INSCRIPTION_SEARCH_DEPTH = 5
 
 const GITHUB_URL = "https://github.com/dannydeezy/nosft"
 const App = () => {
@@ -20,13 +23,49 @@ const App = () => {
   const [showReceiveAddressModal, setShowReceiveAddressModal] = useState(false);
   const [ownedUtxos, setOwnedUtxos] = useState([]);
   const [utxosReady, setUtxosReady] = useState(false)
+  const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({})
+
   useEffect(() => {
     async function fetchUtxosForAddress() {
       if (!nostrPublicKey) return
       const address = getAddress()
       const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`)
       setOwnedUtxos(response.data)
+      const tempInscriptionsByUtxo = {}
+      for (const utxo of response.data) {
+        tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
+        if (!utxo.status.confirmed) continue
+        let currentUtxo = utxo
+        let currentDepth = 0
+        console.log(utxo)
+        while(true) {
+          if (currentDepth > INSCRIPTION_SEARCH_DEPTH) break
+          console.log(`looping ${currentDepth}`)
+          let inscriptionId = `${currentUtxo.txid}i${currentUtxo.vout}`
+          // If there's no inscription here, go back one vin and check again.
+          console.log(`Checking inscription id ${inscriptionId}`)
+          let res = null
+          try {
+            res = await axios.get(`https://ordinals.com/inscription/${inscriptionId}`)
+          } catch (err) {
+            console.log(`Error from ordinals.com`)
+          }
+          if (!res) {
+            currentDepth++
+            // get previous vin
+            const txResp = await axios.get(`https://mempool.space/api/tx/${utxo.txid}`)
+            const tx = txResp.data
+            console.log(tx)
+            const firstInput = tx.vin[0]
+            currentUtxo = { txid: firstInput.txid, vout: firstInput.vout}
+            continue
+          }
+          tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo
+          break
+        }
+      }
       // console.log(response.data)
+      setInscriptionUtxosByUtxo(tempInscriptionsByUtxo)
       setUtxosReady(true)
     }
     fetchUtxosForAddress()
@@ -98,7 +137,7 @@ const App = () => {
             <img
               alt=""
               src={
-                it.status.confirmed ? ordinalsImageUrl(it) : cloudfrontUrl(it)
+                it.status.confirmed ? ordinalsImageUrl(inscriptionUtxosByUtxo[`${it.txid}:${it.vout}`]) : cloudfrontUrl(it)
               }
               style={{ width: "200px" }}
               className="mb-3"

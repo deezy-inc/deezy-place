@@ -8,6 +8,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Modal from 'react-bootstrap/Modal';
 import { SocialIcon } from 'react-social-icons';
+import { TailSpin } from 'react-loading-icons'
 
 const axios = require('axios')
 import * as bitcoin from 'bitcoinjs-lib'
@@ -29,7 +30,6 @@ const App = () => {
       if (!nostrPublicKey) return
       const address = getAddress()
       const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`)
-      setOwnedUtxos(response.data)
       const tempInscriptionsByUtxo = {}
       for (const utxo of response.data) {
         tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
@@ -63,7 +63,7 @@ const App = () => {
           break
         }
       }
-      // console.log(response.data)
+      setOwnedUtxos(response.data)
       setInscriptionUtxosByUtxo(tempInscriptionsByUtxo)
       setUtxosReady(true)
     }
@@ -103,7 +103,11 @@ const App = () => {
   }
 
   function utxoInfo() {
-    if (!utxosReady) return (<></>)
+    if (!utxosReady) return (<>
+      <br /><br />
+      <TailSpin stroke="#000000" speed={.75} />
+      <br /><br />
+    </>)
     return (<div>
       {
         ownedUtxos.length === 0 ?

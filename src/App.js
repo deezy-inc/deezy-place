@@ -31,6 +31,7 @@ const App = () => {
       const address = getAddress()
       const response = await axios.get(`https://mempool.space/api/address/${address}/utxo`)
       const tempInscriptionsByUtxo = {}
+      setOwnedUtxos(response.data)
       for (const utxo of response.data) {
         tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
         if (!utxo.status.confirmed) continue
@@ -60,10 +61,13 @@ const App = () => {
             continue
           }
           tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo
+          const newInscriptionsByUtxo = {}
+          Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo)
+          setInscriptionUtxosByUtxo(newInscriptionsByUtxo)
+          setUtxosReady(true)
           break
         }
       }
-      setOwnedUtxos(response.data)
       setInscriptionUtxosByUtxo(tempInscriptionsByUtxo)
       setUtxosReady(true)
     }
@@ -125,31 +129,36 @@ const App = () => {
             </div>
             <br />
             <Container className="d-flex flex-wrap">
-              {utxos()}
+              {ownedUtxos.map(it => {
+                return (
+                  <Card className="my-2 mx-2 hover-pointer">
+                    <Card.Body className="d-flex flex-column" onClick={() => window.open(ordinalsUrl(it))}>
+                      {
+                        !inscriptionUtxosByUtxo[`${it.txid}:${it.vout}`] ?
+                          <>
+                            <br /><br />
+                            <TailSpin stroke="#000000" speed={.75} />
+                            <br /><br />
+                          </>
+                          :
+                          <>
+                            <img
+                              alt=""
+                              src={it.status.confirmed ? ordinalsImageUrl(inscriptionUtxosByUtxo[`${it.txid}:${it.vout}`]) : cloudfrontUrl(it)}
+                              style={{ width: "200px" }}
+                              className="mb-3"
+                            />
+                          </>
+                      }
+                      {shortenStr(it.txid)}:{it.vout}
+                    </Card.Body>
+                  </Card>
+                )
+              })}
             </Container>
           </>
       }
     </div>)
-  }
-
-  function utxos() {
-    return ownedUtxos.map(it => {
-      return (
-        <Card className="my-2 mx-2 hover-pointer">
-          <Card.Body className="d-flex flex-column" onClick={() => window.open(ordinalsUrl(it))}>
-            <img
-              alt=""
-              src={
-                it.status.confirmed ? ordinalsImageUrl(inscriptionUtxosByUtxo[`${it.txid}:${it.vout}`]) : cloudfrontUrl(it)
-              }
-              style={{ width: "200px" }}
-              className="mb-3"
-            />
-            {shortenStr(it.txid)}:{it.vout}
-          </Card.Body>
-        </Card>
-      )
-    })
   }
 
   return (

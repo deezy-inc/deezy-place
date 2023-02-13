@@ -181,7 +181,6 @@ const App = () => {
     console.log(nostrPublicKey)
     const pubkeyBuffer = Buffer.from(nostrPublicKey, 'hex')
     const addrInfo = bitcoin.payments.p2tr({ pubkey: pubkeyBuffer, network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin })
-    console.log(bitcoin.payments.p2tr({ address: 'bc1pavw2c2syd82p5nddqgm5cs8czl3rn6ymek0k6x0zujjsuy5m30fqg7w6q4' }))
     return addrInfo
   }
 

@@ -1,6 +1,7 @@
 const env = process.env.NODE_ENV || 'development';
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const autoprefixer = require('autoprefixer');
 const postcssPresets = require('postcss-preset-env');
@@ -79,6 +80,11 @@ module.exports = {
       template: './public/index.html',
       filename: './index.html',
       //favicon: './src/favicon.png',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: './src/assets/images', to: './' },
+      ]
     }),
   ],
 };

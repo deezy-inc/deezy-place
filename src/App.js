@@ -322,7 +322,7 @@ const App = () => {
             <b>Utxo:</b> <a href={currentUtxo && ordinalsUrl(currentUtxo)} target="_blank">{currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}</a>
           </p>
           <p>
-            <b>Value:</b> {currentUtxo && currentUtxo.value} sats
+            <b>Value:</b> {currentUtxo && currentUtxo.value.toLocaleString('en-US')} sats
           </p>
         </Modal.Body>
         <Modal.Footer>

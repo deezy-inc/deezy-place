@@ -38,7 +38,13 @@ html {
   width: 130px;
 }
 
+.gallery-item {
+  border: 2px solid black !important;
+}
 
+.gallery-item:hover {
+  border: 2px solid orange !important;
+}
 .gallery-babe {
   height: 120px;
   margin: 20px;

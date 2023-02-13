@@ -215,7 +215,7 @@ const App = () => {
             <Container className="d-flex flex-wrap">
               {ownedUtxos.map(it => {
                 return (
-                  <Card className="my-2 mx-2 hover-pointer">
+                  <Card className="my-2 mx-2 hover-pointer gallery-item">
                     <Card.Body className="d-flex flex-column" onClick={() => {
                       setCurrentUtxo(it)
                       setShowUtxoModal(true)
@@ -253,7 +253,7 @@ const App = () => {
       <Navbar bg="dark" variant="dark" className="pt-5 pb-5">
         <Container>
           <Navbar.Brand className="flex-row">
-            Nosft
+            Nos-FT
           </Navbar.Brand>
           <Nav className="me-auto">
             <Nav.Link onClick={() => window.open(GITHUB_URL)}>

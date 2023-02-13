@@ -273,7 +273,7 @@ const App = () => {
             :
             <>
               <p>
-                Welcome, degen
+                Welcome, Degen
               </p>
               <br />
               <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => connectWallet()}>Connect Wallet</Button>
@@ -312,7 +312,15 @@ const App = () => {
           <Modal.Title>{shortenStr(currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`)}:{currentUtxo && currentUtxo.vout}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="modal-body p-4">
-          {currentUtxo && utxoImage(currentUtxo, { width: "40%" })}
+          <div>
+            {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
+          </div>
+          <p>
+            <b>Utxo:</b> <a href={`https://mempool.space/tx/${currentUtxo && currentUtxo.txid}`} target="_blank">{currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}</a>
+          </p>
+          <p>
+            <b>Value:</b> {currentUtxo && currentUtxo.value} sats
+          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => { setShowUtxoModal(false) }}>
@@ -331,7 +339,7 @@ const App = () => {
           <Modal.Title>Send {shortenStr(currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`)}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="modal-body p-4">
-          {currentUtxo && utxoImage(currentUtxo, { width: "40%" })}
+          {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
           <p>Where would you like to send this to?</p>
           <InputGroup className="mb-3">
             <Form.Control onChange={(evt) => {
@@ -381,7 +389,7 @@ const App = () => {
           <Modal.Title>Sending {shortenStr(currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`)}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="modal-body p-4">
-          {currentUtxo && utxoImage(currentUtxo, { width: "40%" })}
+          {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
           <p>
             <b>Select a fee rate</b>
           </p>
@@ -418,7 +426,7 @@ const App = () => {
           <Modal.Title>Confirm Send</Modal.Title>
         </Modal.Header>
         <Modal.Body className="modal-body p-4">
-          {currentUtxo && utxoImage(currentUtxo, { width: "40%" })}
+          {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
           <p>
             <b>Sending:</b> {currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}
           </p>
@@ -439,8 +447,8 @@ const App = () => {
             Cancel
           </Button>
           <Button variant="secondary" onClick={() => {
-            setShowSelectFeeRateModal(false)
-            setShowConfirmSendModal(true)
+            setShowConfirmSendModal(false)
+            setShowSelectFeeRateModal(true)
           }}>
             Back
           </Button>

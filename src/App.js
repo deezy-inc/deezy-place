@@ -13,6 +13,7 @@ import { SocialIcon } from 'react-social-icons';
 import { TailSpin } from 'react-loading-icons'
 import { validate, Network } from 'bitcoin-address-validation';
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
+import { BsDownload } from "react-icons/bs"
 
 const buffer_1 = require('buffer');
 
@@ -268,7 +269,9 @@ const App = () => {
         {
           nostrPublicKey ?
             <div>
-              <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => setShowReceiveAddressModal(true)}>Receive Address</Button>
+              <Button variant="primary" className="mx-3 shadowed-orange-small" onClick={() => setShowReceiveAddressModal(true)}>
+                View Deposit Address<br /><BsDownload />
+              </Button>
             </div>
             :
             <>

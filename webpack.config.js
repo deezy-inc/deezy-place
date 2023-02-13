@@ -80,5 +80,10 @@ module.exports = {
       filename: './index.html',
       //favicon: './src/favicon.png',
     }),
+    new CopyWebpackPlugin(
+      [
+        { from: './src/assets/images', to: './' },
+      ]
+    ),
   ],
 };

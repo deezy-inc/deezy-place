@@ -30,7 +30,7 @@ const INSCRIPTION_SEARCH_DEPTH = 5
 const TESTNET = false
 const GITHUB_URL = "https://github.com/dannydeezy/nosft"
 const DEFAULT_FEE_RATE = 7
-const SENDS_ENABLED = false
+const SENDS_ENABLED = true
 
 const App = () => {
   const [nostrPublicKey, setNostrPublicKey] = useState(null);

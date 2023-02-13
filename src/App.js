@@ -238,7 +238,6 @@ const App = () => {
                             />
                           </>
                       }
-                      {shortenStr(it.txid)}:{it.vout}
                     </Card.Body>
                   </Card>
                 )

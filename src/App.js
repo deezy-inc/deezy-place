@@ -30,6 +30,7 @@ const INSCRIPTION_SEARCH_DEPTH = 5
 const TESTNET = false
 const GITHUB_URL = "https://github.com/dannydeezy/nosft"
 const DEFAULT_FEE_RATE = 7
+const SENDS_ENABLED = false
 
 const App = () => {
   const [nostrPublicKey, setNostrPublicKey] = useState(null);
@@ -319,7 +320,7 @@ const App = () => {
             {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
           </div>
           <p>
-            <b>Utxo:</b> <a href={`https://mempool.space/tx/${currentUtxo && currentUtxo.txid}`} target="_blank">{currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}</a>
+            <b>Utxo:</b> <a href={currentUtxo && ordinalsUrl(currentUtxo)} target="_blank">{currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}</a>
           </p>
           <p>
             <b>Value:</b> {currentUtxo && currentUtxo.value} sats
@@ -329,12 +330,18 @@ const App = () => {
           <Button variant="secondary" onClick={() => { setShowUtxoModal(false) }}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={() => {
-            setShowUtxoModal(false)
-            setShowBeginSendModal(true)
-          }}>
-            Send
-          </Button>
+          {
+            SENDS_ENABLED ? 
+              <Button variant="primary" onClick={() => {
+                setShowUtxoModal(false)
+                setShowBeginSendModal(true)
+              }}>
+                Send
+              </Button>
+              :
+              <></>
+          }
+          
         </Modal.Footer>
       </Modal>
       <Modal show={showBeginSendModal} onHide={() => { setShowBeginSendModal(false) }} className="py-5">

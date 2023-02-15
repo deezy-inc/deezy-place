@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 import Container from 'react-bootstrap/Container';
@@ -12,16 +12,13 @@ import Form from 'react-bootstrap/Form';
 import { SocialIcon } from 'react-social-icons';
 import { TailSpin } from 'react-loading-icons'
 import { validate, Network } from 'bitcoin-address-validation';
-import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
 import { BsDownload } from "react-icons/bs"
-
-const buffer_1 = require('buffer');
+import ConfirmationModal from './components/modals/ConfirmationModal';
+import SentModal from './components/modals/SentModal';
 
 const axios = require('axios')
 import * as bitcoin from 'bitcoinjs-lib'
 import * as ecc from 'tiny-secp256k1'
-import ECPairFactory from 'ecpair';
-const ECPair = ECPairFactory(ecc);
 
 bitcoin.initEccLib(ecc)
 const ASSUMED_TX_BYTES = 32 + 10 + 40
@@ -49,52 +46,8 @@ const App = () => {
   const [showSentModal, setShowSentModal] = useState(false)
   const [sentTxid, setSentTxid] = useState(null)
 
-  function toXOnly(key) {
-    return key.length === 33 ? key.slice(1, 33) : key;
-  }
-
   function outputValue() {
     return currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES
-  }
-
-  async function sendUtxo() {
-    const inputAddressInfo = getAddressInfo()
-
-    const psbt = new bitcoin.Psbt({ network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin })
-    const publicKey = Buffer.from(await window.nostr.getPublicKey(), 'hex')
-    const inputParams = {
-      hash: currentUtxo.txid,
-      index: currentUtxo.vout,
-      witnessUtxo: {
-        value: currentUtxo.value,
-        script: inputAddressInfo.output
-      },
-      tapInternalKey: toXOnly(publicKey)
-    };
-    psbt.addInput(inputParams)
-    psbt.addOutput({
-      address: destinationBtcAddress,
-      value: outputValue()
-    })
-    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(0, [inputAddressInfo.output], [currentUtxo.value], bitcoin.Transaction.SIGHASH_DEFAULT)
-    console.log(sigHash)
-    const sig = await window.nostr.signSchnorr(sigHash.toString('hex'))
-    psbt.updateInput(0, {
-      tapKeySig: serializeTaprootSignature(Buffer.from(sig, 'hex'))
-    })
-    psbt.finalizeAllInputs()
-    const tx = psbt.extractTransaction()
-    const hex = tx.toBuffer().toString('hex')
-    const fullTx = bitcoin.Transaction.fromHex(hex)
-    console.log(hex)
-    const res = await axios.post(`https://mempool.space/api/tx`, hex).catch(err => {
-      alert(err)
-      return null
-    })
-    if (!res) return false
-
-    setSentTxid(fullTx.getId())
-    return true
   }
 
   useEffect(() => {
@@ -282,33 +235,14 @@ const App = () => {
             </>
         }
         <br /><br />
-        {nostrPublicKey ?
-          <>
-            {utxoInfo()}
-          </>
-          :
-          <>
-          </>
-        }
+        {nostrPublicKey && utxoInfo()}
       </Container>
-      <Modal show={showReceiveAddressModal} onHide={() => setShowReceiveAddressModal(false)} className="py-5">
-        <Modal.Header closeButton className="p-4">
-          <Modal.Title>Receive Address</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="px-5 py-3 text-center">
-          {nostrPublicKey ?
-            <div>{getAddressInfo().address}</div>
-            :
-            <></>
-          }
-          <br /><br />
-          <Button variant="primary" onClick={() => {
-            navigator.clipboard.writeText(getAddressInfo().address)
-            setShowReceiveAddressModal(false)
-          }}>Copy Address</Button>
-
-        </Modal.Body>
-      </Modal>
+      <ReceiveAddressModal
+        showReceiveAddressModal={showReceiveAddressModal}
+        setShowReceiveAddressModal={setShowReceiveAddressModal}
+        nostrPublicKey={nostrPublicKey}
+        getAddressInfo={getAddressInfo}
+      />
       <Modal show={showUtxoModal} onHide={() => { setShowUtxoModal(false) }} className="py-5">
         <Modal.Header closeButton className="p-4">
           <Modal.Title>{shortenStr(currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`)}:{currentUtxo && currentUtxo.vout}</Modal.Title>
@@ -328,18 +262,10 @@ const App = () => {
           <Button variant="secondary" onClick={() => { setShowUtxoModal(false) }}>
             Cancel
           </Button>
-          {
-            SENDS_ENABLED ? 
-              <Button variant="primary" onClick={() => {
-                setShowUtxoModal(false)
-                setShowBeginSendModal(true)
-              }}>
-                Send
-              </Button>
-              :
-              <></>
-          }
-          
+          {SENDS_ENABLED && <Button variant="primary" onClick={() => {
+            setShowUtxoModal(false)
+            setShowBeginSendModal(true)
+          }}> Send </Button>}
         </Modal.Footer>
       </Modal>
       <Modal show={showBeginSendModal} onHide={() => { setShowBeginSendModal(false) }} className="py-5">
@@ -429,67 +355,20 @@ const App = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={showConfirmSendModal} onHide={() => setShowConfirmSendModal(false)} className="py-5">
-        <Modal.Header closeButton className="p-4">
-          <Modal.Title>Confirm Send</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="modal-body p-4">
-          {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
-          <p>
-            <b>Sending:</b> {currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}
-          </p>
-          <p>
-            <b>Fee Rate:</b> {sendFeeRate} sat/vbyte
-          </p>
-          <p>
-            <b>Destination:</b> {destinationBtcAddress}
-          </p>
-          <p>
-            <b>Output Value:</b> {currentUtxo && outputValue()} sats
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => {
-            setShowConfirmSendModal(false)
-          }}>
-            Cancel
-          </Button>
-          <Button variant="secondary" onClick={() => {
-            setShowConfirmSendModal(false)
-            setShowSelectFeeRateModal(true)
-          }}>
-            Back
-          </Button>
-          <Button variant="primary" onClick={async () => {
-            const success = await sendUtxo().catch(err => {
-              alert(err)
-              return false
-            })
-            setShowConfirmSendModal(false)
-            if (!success) return
-            setShowSentModal(true)
-          }}>
-            Confirm
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={showSentModal} onHide={() => setShowSentModal(false)} className="py-5">
-        <Modal.Header closeButton className="p-4">
-          <Modal.Title>Success</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="modal-body p-4 text-center">
-          <p>
-            Your transaction should appear in a few moments <a href={`https://mempool.space/tx/${sentTxid}`} target="_blank" rel="noreferrer">here</a>
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => {
-            setShowSentModal(false)
-          }}>
-            Nice
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <ConfirmationModal
+        setShowConfirmSendModal={setShowConfirmSendModal}
+        showConfirmSendModal={showConfirmSendModal}
+        currentUtxo={currentUtxo}
+        utxoImage={utxoImage}
+        destinationBtcAddress={destinationBtcAddress}
+        outputValue={outputValue}
+        setSentTxid={setSentTxid}
+      />
+      <SentModal
+        showSentModal={showSentModal}
+        setShowSentModal={setShowSentModal}
+        sentTxid={sentTxid}
+      />
     </>
   )
 }

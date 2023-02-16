@@ -11,7 +11,11 @@ export default function ReceiveAddressModal({ showReceiveAddressModal, setShowRe
       </Modal.Header>
       <Modal.Body className="px-5 py-3 text-center">
         {nostrPublicKey && <div>{getAddressInfo(nostrPublicKey).address}</div>}
-        <br /><br />
+        <br />
+          <p className="very-small-text">
+            (you can safely receive ordinal inscriptions and regular bitcoin to this address)
+          </p>
+        <br />
         <Button variant="primary" onClick={() => {
           navigator.clipboard.writeText(getAddressInfo(nostrPublicKey).address)
           setShowReceiveAddressModal(false)

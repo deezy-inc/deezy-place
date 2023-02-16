@@ -26,10 +26,11 @@
                     ["@ui", "./src/components/ui/"],
                     ["@components", "./src/components/"],
                     // ["@widgets", "./src/components/widgets/"],
-                    // ["@containers", "./src/containers/"],
-                    // ["@layout", "./src/layouts/"],
+                    ["@containers", "./src/containers/"],
+                    ["@layout", "./src/layouts/"],
                     ["@utils", "./src/utils/"],
-                    ["@hooks", "./src/hooks/"]
+                    ["@hooks", "./src/hooks/"],
+                    ["@data", "./src/data/"]
                 ],
                 "extensions": [".js", ".jsx"]
             },
@@ -72,6 +73,7 @@
                 "varsIgnorePattern": "^_"
             }
         ],
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
         "react/jsx-props-no-spreading": "off",
         "react/jsx-uses-react": "off",
         "react/react-in-jsx-scope": "off",

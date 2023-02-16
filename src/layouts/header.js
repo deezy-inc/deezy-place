@@ -20,7 +20,13 @@ const Header = ({ className }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // TODO: Implement connection to wallet
-    const onConnect = async () => {};
+    const onConnect = async () => {
+        console.log("connecting");
+    };
+
+    const onDisconnect = async () => {
+        console.log("onDisconnect");
+    };
 
     return (
         <>
@@ -61,10 +67,7 @@ const Header = ({ className }) => {
                             )}
                             {isAuthenticated && (
                                 <div className="setting-option rn-icon-list user-account">
-                                    <UserDropdown
-                                        onDisconnect={onDisconnect}
-                                        ethBalance={ethBalance}
-                                    />
+                                    <p>Connected</p>
                                 </div>
                             )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">

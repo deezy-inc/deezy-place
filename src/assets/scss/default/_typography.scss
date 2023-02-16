@@ -38,7 +38,7 @@ body {
         position: absolute;
         left: 0;
         top: 0;
-        background-image: url("/images/bg/noise.gif");
+        // background-image: url("/images/bg/noise.gif");
         z-index: -1;
         background-color: rebeccapurple;
         opacity: 0.05;
@@ -351,7 +351,7 @@ var {
 }
 
 /*---------------------------
-	List Style 
+	List Style
 ---------------------------*/
 ul,
 ol {

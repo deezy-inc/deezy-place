@@ -3,7 +3,7 @@
 ----------------------------*/
 .copy-right-one {
     border-top: 1px solid var(--color-border);
-    
+
     .copyright-left {
         display: flex;
 
@@ -71,7 +71,7 @@
                         background: var(--color-primary);
                         width: 0;
                         height: 2px;
-                        transition: .3s;
+                        transition: 0.3s;
                         right: 0;
                     }
                     &:hover {
@@ -89,7 +89,7 @@
 
                     &::before {
                         position: absolute;
-                        content: '';
+                        content: "";
                         height: 3px;
                         width: 3px;
                         background: var(--color-body);
@@ -107,7 +107,7 @@
         margin: 0;
         display: flex;
         justify-content: flex-end;
-        
+
         @media #{$md-layout} {
             margin: 0;
             padding: 0;
@@ -137,12 +137,12 @@
                     line-height: 40px;
                     text-align: center;
                     border-radius: 100%;
-                    
+
                     svg {
                         width: 16px;
                         transition: 0.4s;
                     }
-                    
+
                     &:hover {
                         color: var(--color-white) !important;
                         background: var(--color-primary) !important;

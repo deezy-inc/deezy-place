@@ -305,10 +305,10 @@ html[data-theme="light"] body {
     .banner-xii-wrapper .banner-content-wrapper .wallet-image-wrapper .avatar,
     .banner_xii .place-bet-area.into-banner,
     .banner_xii .left-thumbnail-image,
-    .expo-15-wrapper .thumb-wrapepr div.main, .joined-people-wrapper {
+    .expo-15-wrapper .thumb-wrapepr div.main,
+    .joined-people-wrapper {
         background: var(--color-white);
     }
-
 
     .slick-dots li button,
     .left-header-style,
@@ -387,7 +387,8 @@ html[data-theme="light"] body {
     .footer-top .nu-brand-area li,
     .banner_xii .left-thumbnail-image,
     .banner_xii .place-bet-area.into-banner,
-    .expo-15-wrapper .thumb-wrapepr div.main, .joined-people-wrapper {
+    .expo-15-wrapper .thumb-wrapepr div.main,
+    .joined-people-wrapper {
         border-color: var(--color-border-white);
     }
 
@@ -1961,7 +1962,7 @@ html[data-theme="light"] body {
     .banner-15 h1.title span {
         color: var(--color-white);
     }
-    .product-share-wrapper .profile-share a.more-author-text{
+    .product-share-wrapper .profile-share a.more-author-text {
         color: var(--color-light-body) !important;
     }
 }

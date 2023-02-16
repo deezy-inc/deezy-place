@@ -30,6 +30,7 @@ button {
 
         &.btn-primary {
             background: var(--color-primary);
+            color: var(--color-dark);
 
             &:hover {
                 background: var(--color-primary-alta);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import Head from "next/head";
 import PropTypes from "prop-types";
 
@@ -8,7 +8,10 @@ const SEO = ({ pageTitle }) => {
         <Head>
             <title>{title}</title>
             <meta httpEquiv="x-ua-compatible" content="ie=edge" />
-            <meta name="description" content="Bitcoin web wallet connected to your nostr key, designed to hold ordinal inscription NFTs" />
+            <meta
+                name="description"
+                content="Bitcoin web wallet connected to your nostr key, designed to hold ordinal inscription NFTs"
+            />
             <meta name="robots" content="noindex, follow" />
             <meta
                 name="viewport"

@@ -3,13 +3,13 @@
     0% {
         -webkit-transform: translateY(-50%) scale(0);
         transform: translateY(-50%) scale(0);
-        opacity: 1
+        opacity: 1;
     }
 
     100% {
         -webkit-transform: translateY(-50%) scale(1.3);
         transform: translateY(-50%) scale(1.3);
-        opacity: 0
+        opacity: 0;
     }
 }
 
@@ -22,7 +22,6 @@
         background: var(--color-danger);
     }
 }
-
 
 .cd-intro {
     margin: 4em auto;
@@ -113,7 +112,7 @@ xclip
 }
 
 .cd-headline.clip .cd-words-wrapper::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 50%;
     right: 0;

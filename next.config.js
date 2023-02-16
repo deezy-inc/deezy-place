@@ -2,6 +2,7 @@
 const path = require("path");
 
 module.exports = {
+    distDir: "build",
     reactStrictMode: false,
     sassOptions: {
         includePaths: [path.join(__dirname, "./src/assets/scss")],

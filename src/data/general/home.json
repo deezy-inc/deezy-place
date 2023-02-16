@@ -1,0 +1,38 @@
+{
+    "title": "home-01",
+    "content": [
+        {
+            "section": "hero-section",
+            "headings": [
+                {
+                    "id": 1,
+                    "content": "Keep your NFTs secure and accessible with our Bitcoin web wallet."
+                }
+            ],
+            "texts": [
+                {
+                    "id": 1,
+                    "content": "Our Bitcoin web wallet is the perfect solution for anyone who wants to store and manage their ordinal inscription NFTs in a safe and convenient way."
+                }
+            ],
+            "buttons": [
+                {
+                    "id": 1,
+                    "content": "Get Started",
+                    "path": "/"
+                },
+                {
+                    "id": 2,
+                    "color": "primary-alta",
+                    "content": "Create",
+                    "path": "/create"
+                }
+            ],
+            "images": [
+                {
+                    "src": "/images/slider/babe.png"
+                }
+            ]
+        }
+    ]
+}

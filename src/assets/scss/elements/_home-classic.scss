@@ -12,7 +12,6 @@
     @media #{$sm-layout} {
         margin: 10px;
     }
-    
 }
 .box-wrapper .main-page-wrapper,
 .box-wrapper .rn-footer-area {
@@ -23,7 +22,6 @@
     .rn-header.sticky .header-right a.rn-btn {
         box-shadow: var(--shadow-1);
     }
-    
 }
 
 @media #{$sm-layout} {
@@ -58,5 +56,3 @@
 .box-wrapper .rn-header.header--fixed.sticky {
     box-shadow: 0px 0px 19px 0 #1c1e22;
 }
-
-

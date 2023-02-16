@@ -1,4 +1,5 @@
-import { ordinalsImageUrl } from "../utils"
+import { ordinalsImageUrl, cloudfrontUrl } from "../utils"
+
 export default function UtxoImage({ utxo, style, inscriptionUtxosByUtxo }) {
   return (<img
     alt=""

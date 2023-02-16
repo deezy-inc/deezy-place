@@ -1,3 +1,4 @@
+import React from 'react'
 import { TailSpin } from 'react-loading-icons'
 import Card from 'react-bootstrap/Card';
 import { cloudfrontUrl } from '../utils';

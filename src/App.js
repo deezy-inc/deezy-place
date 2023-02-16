@@ -15,18 +15,9 @@ import BeginSendModal from './components/modals/BeginSendModal';
 import UtxoModal from './components/modals/UtxoModal';
 import UtxoInfo from './components/UtxoInfo';
 import { getAddressInfo, connectWallet } from './utils';
+import { TESTNET, GITHUB_URL, DEFAULT_FEE_RATE, INSCRIPTION_SEARCH_DEPTH, SENDS_ENABLED } from './constance';
 
 const axios = require('axios')
-import * as bitcoin from 'bitcoinjs-lib'
-import * as ecc from 'tiny-secp256k1'
-
-bitcoin.initEccLib(ecc)
-
-const INSCRIPTION_SEARCH_DEPTH = 5
-const TESTNET = false
-const GITHUB_URL = "https://github.com/dannydeezy/nosft"
-const DEFAULT_FEE_RATE = 7
-const SENDS_ENABLED = false
 
 export default function App() {
   const [nostrPublicKey, setNostrPublicKey] = useState(null);

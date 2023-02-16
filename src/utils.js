@@ -1,11 +1,10 @@
 import * as bitcoin from 'bitcoinjs-lib'
 import * as ecc from 'tiny-secp256k1'
-import { TESTNET } from './constance'
+import { TESTNET, ASSUMED_TX_BYTES } from './constance'
 
 bitcoin.initEccLib(ecc)
 
 export const outputValue = (currentUtxo, sendFeeRate) => {
-  const ASSUMED_TX_BYTES = 32 + 10 + 40
   return currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES
 }
 

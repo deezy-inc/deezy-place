@@ -1,0 +1,240 @@
+/*-----------------------------
+ Modal Styles  
+-----------------------------------*/
+body.modal-open {
+    padding: 0 !important;
+}
+
+.share-btn-activation {
+    .share-btn-setting {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: var(--color-primary-alta);
+        padding: 5px 0;
+        border-radius: 5px;
+        z-index: 2;
+        .btn-setting-text {
+            border: 0;
+            color: var(--color-white);
+            font-weight: 400;
+            font-size: 14px;
+            padding: 9px 20px;
+            letter-spacing: 0.5px;
+            text-align: left;
+            transition: 0.3s;
+            &:hover {
+                color: var(--color-primary);
+            }
+            & + .btn-setting-text {
+                border-top: 1px solid var(--color-border);
+            }
+        }
+    }
+}
+
+/*---------------------------------
+    Share Modal Wrapper  
+----------------------------------*/
+.modal-backdrop {
+    background-color: #000;
+}
+
+.modal-backdrop.show {
+    background-color: #000;
+    opacity: 0.75;
+}
+
+.rn-popup-modal {
+    .modal-content {
+        background-color: var(--background-color-2);
+        border: 0 none;
+        padding: 40px 20px;
+        border-radius: 10px;
+        @media #{$sm-layout} {
+            padding: 20px 15px;
+        }
+    }
+    .btn-close {
+        margin: 0;
+        position: fixed;
+        z-index: 99;
+        right: 30px;
+        top: 30px;
+        background: rgba(255, 255, 255, 0.08);
+        opacity: 1;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 100%;
+        opacity: 0;
+        transition: opacity 0.3s;
+        transition-delay: 0.3s;
+        svg,
+        i {
+            color: #fff;
+            width: 18px;
+            font-size: 18px;
+        }
+    }
+    .modal-header {
+        border: 0 none;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 450px;
+        }
+    }
+    &.show {
+        .btn-close {
+            opacity: 1;
+        }
+    }
+}
+
+/* Share Modal Popup  */
+.share-modal-wrapper {
+    .modal-footer {
+        border: 0 none;
+    }
+}
+
+/* Report Modal Popup  */
+.report-modal-wrapper {
+    .modal-header {
+        &.report-modal-header {
+            justify-content: flex-start !important;
+        }
+    }
+}
+
+/*--------------------------------
+    Place Bid Modal Popup  
+---------------------------------*/
+.placebid-modal-wrapper {
+    p {
+        color: #fff;
+        font-size: 16px;
+    }
+    .bid-content-top {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--color-border);
+        padding: 10px 0;
+        span {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: var(--color-body);
+        }
+    }
+    .bid-content-mid {
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        span {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: var(--color-body);
+        }
+        .bid-content-right {
+            span {
+                &:last-child {
+                    color: var(--color-primary);
+                }
+            }
+        }
+    }
+}
+
+// report modal area Start
+.report-content-wrapper {
+    .modal-body {
+        padding: 0;
+        p {
+            margin-bottom: 15px;
+        }
+    }
+}
+.report-modal-header {
+    justify-content: flex-start;
+    padding: 0;
+    margin: 0;
+    h5 {
+        margin-bottom: 10px;
+    }
+}
+.report-form-box {
+    h6 {
+        &.title {
+            margin-bottom: 15px;
+        }
+    }
+    textarea {
+        height: 100px;
+        background: var(--background-color-1);
+        font-size: 16px;
+        border: 2px solid transparent;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        padding: 5px 10px;
+        &:focus {
+            border-radius: 5px;
+            border: 2px solid var(--color-primary) !important;
+        }
+    }
+}
+
+// place bed
+
+.placebid-modal-wrapper {
+    .modal-header {
+        padding: 0;
+        margin-bottom: 15px;
+    }
+    .modal-body {
+        p {
+            margin-bottom: 15px;
+        }
+        .placebid-form-box {
+            h5 {
+                &.title {
+                    margin-bottom: 15px;
+                }
+            }
+            .bid-content {
+                .bid-content-top {
+                    display: block;
+                    border: none;
+                    padding: 0;
+                    .bid-content-left {
+                        display: flex;
+                        position: relative;
+                        align-items: center;
+                        input {
+                            background: var(--background-color-1);
+                            height: 40px;
+                            border-radius: 5px;
+                            border: 2px solid transparent;
+                            &:focus {
+                                border: 2px solid var(--color-primary);
+                            }
+                        }
+                        span {
+                            right: 15px;
+                            position: absolute;
+                            top: 50%;
+                            transform: translateY(-50%);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

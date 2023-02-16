@@ -1,0 +1,91 @@
+//------ Upcoming Projects----->
+
+.table-title-area {
+    margin-bottom: 30px;
+    svg,
+    i {
+        position: relative;
+        top: 5px;
+        width: 35px;
+        font-size: 24px;
+        margin-right: 10px;
+    }
+}
+
+.upcoming-projects {
+    tr {
+        border: none;
+        td {
+            white-space: nowrap;
+            border: none;
+            span {
+                color: var(--color-body);
+            }
+        }
+        th {
+            padding: 25px 23px !important;
+            span {
+                color: var(--color-heading);
+                font-size: 20px;
+                text-transform: none;
+            }
+            @media #{$md-layout} {
+                padding: 25px 15px !important;
+                span{
+                    font-size: 18px;
+                }
+            }
+            @media #{$sm-layout} {
+                padding: 25px 9px !important;
+                span{
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+}
+.color-danger {
+    color: var(--color-danger) !important;
+}
+.color-info {
+    color: var(--color-info) !important;
+}
+
+.upcoming-projects tbody td:first-child {
+    border-radius: 5px 0 0 5px;
+    width: 60px;
+}
+.upcoming-projects tbody td:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+
+thead {
+    border: none;
+    tr {
+        th {
+            border: none;
+        }
+    }
+}
+
+tbody {
+    tr {
+        td {
+            padding: 25px 23px !important;
+            span {
+                font-size: 16px;
+            }
+        }
+    }
+    .color-light {
+        background: var(--background-color-4);
+        border-radius: 5px;
+    }
+}
+
+.box-table {
+    padding: 0 20px 0 20px;
+    background: var(--background-color-1);
+    border-radius: 5px;
+    border: 1px solid var(--color-border);
+}

@@ -1,0 +1,132 @@
+// text blinking start form hear
+@keyframes customOne {
+    0% {
+        -webkit-transform: translateY(-50%) scale(0);
+        transform: translateY(-50%) scale(0);
+        opacity: 1
+    }
+
+    100% {
+        -webkit-transform: translateY(-50%) scale(1.3);
+        transform: translateY(-50%) scale(1.3);
+        opacity: 0
+    }
+}
+
+@keyframes liveAuction {
+    0% {
+        background: var(--color-white);
+    }
+
+    100% {
+        background: var(--color-danger);
+    }
+}
+
+
+.cd-intro {
+    margin: 4em auto;
+}
+
+@media only screen and (min-width: 768px) {
+    .cd-intro {
+        margin: 5em auto;
+    }
+}
+
+@media only screen and (min-width: 1170px) {
+    .cd-intro {
+        margin: 6em auto;
+    }
+}
+
+.cd-headline {
+    font-size: 3rem;
+    line-height: 1.2;
+}
+
+@media only screen and (min-width: 768px) {
+    .cd-headline {
+        font-size: 4.4rem;
+        font-weight: 300;
+    }
+}
+
+@media only screen and (min-width: 1170px) {
+    .cd-headline {
+        font-size: 48px;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .cd-headline {
+        font-size: 40px;
+    }
+}
+
+@media only screen and (max-width: 479px) {
+    .cd-headline {
+        font-size: 26px;
+    }
+}
+
+.cd-words-wrapper {
+    display: inline-block;
+    position: relative;
+    text-align: left;
+}
+
+.cd-words-wrapper b {
+    display: inline-block;
+    position: absolute;
+    white-space: nowrap;
+    left: 0;
+    top: 0;
+}
+
+.cd-words-wrapper b.is-visible {
+    position: relative;
+}
+
+.no-js .cd-words-wrapper b {
+    opacity: 0;
+}
+
+.no-js .cd-words-wrapper b.is-visible {
+    opacity: 1;
+}
+
+/* -------------------------------- 
+
+xclip 
+
+-------------------------------- */
+
+.cd-headline.clip span {
+    display: inline-block;
+    padding: 0;
+}
+
+.cd-headline.clip .cd-words-wrapper {
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.cd-headline.clip .cd-words-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 2px;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%);
+}
+
+.cd-headline.clip b {
+    opacity: 0;
+}
+
+.cd-headline.clip b.is-visible {
+    opacity: 1;
+}

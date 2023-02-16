@@ -1,0 +1,9 @@
+{
+    "id": "header-data-1",
+    "logo": [
+        {
+            "src": "/images/logo/logo-white.svg"
+        }
+    ],
+    "activity_link": "/activity"
+}

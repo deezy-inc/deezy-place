@@ -1,0 +1,42 @@
+/*-------------------------
+    Section Title  
+--------------------------*/
+.live-bidding-title {
+    position: relative;
+    margin-left: 19px;
+    padding-left: 15px;
+    &::before {
+        width: 22px;
+        height: 22px;
+        background: var(--color-primary);
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        content: "";
+        transform: translateY(-50%);
+        border-radius: 100%;
+        opacity: 1;
+        animation: customOne 1s infinite;
+    }
+    &::after {
+        width: 22px;
+        height: 22px;
+        border: 4px solid var(--color-primary);
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        content: "";
+        transform: translateY(-50%);
+        border-radius: 100%;
+        opacity: 1;
+        animation: customOne 1.2s infinite;
+    }
+}
+
+
+
+
+
+
+
+

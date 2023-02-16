@@ -1,0 +1,53 @@
+
+// upload variants
+.upload-variant-title-wrapper{
+    p{
+        font-size: 18px;
+        width: 60%;
+        margin: 0 auto;
+        @media #{$smlg-device} {
+            width: 70%;
+        }
+        @media #{$md-layout} {
+            width: 70%;
+        }
+        @media #{$sm-layout} {
+            width: 80%;
+        }
+        @media #{$large-mobile} {
+            width: 100%;
+        }
+        span{
+            color: var(--color-white);
+        }
+    }
+}
+
+
+.varient{
+    .info{
+        font-size: 14px;
+    }
+}
+.upload-variant-wrapper{
+    padding: 18px 20px;
+    background: var(--background-color-1);
+    border-radius: 5px;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    .variant-preview{
+        overflow: hidden;
+        border-radius: 5px;
+        img{
+            border-radius: 5px;
+            transition: var(--transition);
+            &:hover{
+                transform: scale(1.02);
+            }
+        }
+    }
+    a{
+        border-radius: 5px;
+    }
+}

@@ -15,7 +15,7 @@ import { validate, Network } from 'bitcoin-address-validation';
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
 import { BsDownload } from "react-icons/bs"
 
-const buffer_1 = require('buffer');
+const buffer_1 = requirfe('buffer');
 
 const axios = require('axios')
 import * as bitcoin from 'bitcoinjs-lib'
@@ -329,7 +329,7 @@ const App = () => {
             Cancel
           </Button>
           {
-            SENDS_ENABLED ? 
+            SENDS_ENABLED ?
               <Button variant="primary" onClick={() => {
                 setShowUtxoModal(false)
                 setShowBeginSendModal(true)
@@ -339,7 +339,7 @@ const App = () => {
               :
               <></>
           }
-          
+
         </Modal.Footer>
       </Modal>
       <Modal show={showBeginSendModal} onHide={() => { setShowBeginSendModal(false) }} className="py-5">

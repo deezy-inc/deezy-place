@@ -106,7 +106,7 @@ const App = () => {
       setOwnedUtxos(response.data)
       for (const utxo of response.data) {
         tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
-        if (!utxo.status.confirmed) continue
+        // if (!utxo.status.confirmed) continue
         let currentUtxo = utxo
         let currentDepth = 0
         console.log(utxo)
@@ -123,9 +123,10 @@ const App = () => {
             console.log(`Error from ordinals.com`)
           }
           if (!res) {
+            console.log(`No inscription for ${inscriptionId}`)
             currentDepth++
             // get previous vin
-            const txResp = await axios.get(`https://mempool.space/api/tx/${utxo.txid}`)
+            const txResp = await axios.get(`https://mempool.space/api/tx/${currentUtxo.txid}`)
             const tx = txResp.data
             console.log(tx)
             const firstInput = tx.vin[0]
@@ -178,7 +179,7 @@ const App = () => {
   }
 
   function getAddressInfo() {
-    console.log(nostrPublicKey)
+    console.log(`Nostr pub: ${nostrPublicKey}`)
     const pubkeyBuffer = Buffer.from(nostrPublicKey, 'hex')
     const addrInfo = bitcoin.payments.p2tr({ pubkey: pubkeyBuffer, network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin })
     return addrInfo
@@ -301,7 +302,11 @@ const App = () => {
             :
             <></>
           }
-          <br /><br />
+          <br />
+          <p className="very-small-text">
+            (you can safely receive ordinal inscriptions and regular bitcoin to this address)
+          </p>
+          <br />
           <Button variant="primary" onClick={() => {
             navigator.clipboard.writeText(getAddressInfo().address)
             setShowReceiveAddressModal(false)

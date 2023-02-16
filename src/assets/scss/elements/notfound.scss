@@ -1,0 +1,140 @@
+/*-------------------------
+    404 Page Style Here  
+--------------------------*/
+.rn-not-found-wrapper {
+    text-align: center;
+    .large-title {
+        text-align: center;
+        font-size: 150px;
+        margin-bottom: 0;
+        line-height: 1;
+        color: var(--color-light-body);
+        @media #{$sm-layout} {
+            font-size: 120px;
+        }
+    }
+    .title {
+        font-size: 60px;
+        @media #{$sm-layout} {
+            font-size: 30px;
+        }
+    }
+    p {
+        text-align: center;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+}
+
+/*-------------------------
+    maintanance Page Style Here  
+--------------------------*/
+.maintanence-area {
+    .logo {
+        a {
+            img {
+                margin-bottom: 50px;
+                max-width: 120px;
+            }
+        }
+    }
+    .inner {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 100px 60px;
+        @media #{$large-mobile} {
+            padding-bottom: 70px;
+            padding-left: 35px;
+        }
+        .content {
+            .sub-title {
+                font-size: 19px;
+                letter-spacing: 1px;
+                font-weight: 700;
+                display: inline-block;
+                margin-bottom: 5px;
+                margin-top: 200px;
+                @media #{$laptop-device} {
+                    margin-top: 100px;
+                }
+                @media #{$smlg-device} {
+                    margin-top: 100px;
+                }
+                @media #{$md-layout} {
+                    margin-top: 70px;
+                }
+                @media #{$sm-layout} {
+                    margin-top: 30px;
+                }
+            }
+            .title {
+                font-size: 45px;
+                color: var(--color-primary);
+                margin-bottom: 10px;
+                font-weight: 500;
+                letter-spacing: 1px;
+                margin: 15px 0;
+                @media #{$md-layout} {
+                    font-size: 30px;
+                }
+            }
+            p {
+                font-size: 20px;
+                line-height: 30px;
+                margin-top: 150px;
+                @media #{$laptop-device} {
+                    margin-top: 100px;
+                }
+                @media #{$smlg-device} {
+                    margin-top: 80px;
+                }
+                @media #{$md-layout} {
+                    margin-top: 60px;
+                    font-size: 18px;
+                    line-height: 25px;
+                }
+                @media #{$sm-layout} {
+                    margin-top: 50px;
+                }
+                a {
+                    color: var(--color-lighter);
+                    position: relative;
+                    &::after {
+                        position: absolute;
+                        content: "";
+                        left: auto;
+                        bottom: 0;
+                        background: var(--color-primary);
+                        width: 0;
+                        height: 2px;
+                        transition: 0.3s;
+                        left: 0;
+                        transition: var(--transition);
+                    }
+                    &:hover {
+                        &::after {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.maintanance-heignt {
+    height: 100vh;
+}
+
+.comeing-soon-slick {
+    .single-rn-slider {
+        height: 101vh;
+        @media #{$sm-layout} {
+            height: 50vh;
+        }
+        span {
+            height: 100% !important;
+        }
+    }
+}

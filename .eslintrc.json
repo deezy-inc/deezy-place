@@ -1,0 +1,114 @@
+{
+    "parser": "@babel/eslint-parser",
+    "env": {
+        "browser": true,
+        "es2020": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:import/warnings",
+        "plugin:jsx-a11y/strict",
+        "plugin:prettier/recommended",
+        "plugin:@next/next/recommended",
+        "airbnb"
+    ],
+    "settings": {
+        "react": {
+            "version": "detect"
+        },
+        "import/resolver": {
+            "alias": {
+                "map": [
+                    // ["@assets", "./src/assets/"],
+                    ["@ui", "./src/components/ui/"],
+                    ["@components", "./src/components/"],
+                    // ["@widgets", "./src/components/widgets/"],
+                    ["@containers", "./src/containers/"],
+                    ["@layout", "./src/layouts/"],
+                    ["@utils", "./src/utils/"],
+                    ["@hooks", "./src/hooks/"],
+                    ["@data", "./src/data/"]
+                ],
+                "extensions": [".js", ".jsx"]
+            },
+            "node": {
+                "paths": ["./"]
+            }
+        }
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 11,
+        "sourceType": "module",
+        "requireConfigFile": false,
+        "babelOptions": {
+            "presets": ["@babel/preset-react"]
+        }
+    },
+    "plugins": ["react", "react-hooks", "prettier", "jsx-a11y"],
+    "rules": {
+        "object-curly-newline": "off",
+        "import/prefer-default-export": "off",
+        "prettier/prettier": "error",
+        "indent": ["error", 4, { "SwitchCase": 1 }],
+        "quotes": ["error", "double", { "allowTemplateLiterals": true }],
+        "camelcase": ["off", { "properties": "never" }],
+        "eslint-plugin/fixer-return:": "off",
+        "operator-linebreak": "off",
+        "implicit-arrow-linebreak": "off",
+        "comma-dangle": ["error", "only-multiline"],
+        "function-paren-newline": "off",
+        "react/jsx-indent": [2, 4],
+        "react/jsx-indent-props": "off",
+        "react/jsx-one-expression-per-line": "off",
+        "no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_"
+            }
+        ],
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+        "react/jsx-props-no-spreading": "off",
+        "react/jsx-uses-react": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/require-default-props": 0,
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "react/no-danger": "off",
+        "react/jsx-fragments": "off",
+        "react/jsx-curly-newline": "off",
+        "jsx-a11y/label-has-associated-control": [
+            "error",
+            {
+                "required": {
+                    "some": ["nesting", "id"]
+                }
+            }
+        ],
+        "jsx-a11y/label-has-for": [
+            "error",
+            {
+                "required": {
+                    "some": ["nesting", "id"]
+                }
+            }
+        ],
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "react/function-component-definition": [
+            "error",
+            {
+                "namedComponents": "arrow-function"
+            }
+        ],
+        "no-underscore-dangle": "off",
+        "@next/next/no-html-link-for-pages": "error",
+        "no-multi-assign": "off",
+        "default-param-last": "off"
+    }
+}

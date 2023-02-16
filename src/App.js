@@ -12,6 +12,7 @@ import ConfirmationModal from './components/modals/ConfirmationModal';
 import SelectFeeRateModal from './components/modals/SelectFeeRateModal';
 import SentModal from './components/modals/SentModal';
 import BeginSendModal from './components/modals/BeginSendModal';
+import UtxoModal from './components/modals/UtxoModal';
 import UtxoInfo from './components/UtxoInfo';
 import { getAddressInfo, connectWallet } from './utils';
 

@@ -20,8 +20,8 @@ export default function ConfirmationModal({
 
   async function sendUtxo() {
     const psbt = new bitcoin.Psbt({ network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin })
-    // const publicKey = Buffer.from(await window.nostr.getPublicKey(), 'hex')
-    const publicKey = '3fde182cc7e6efa69a393b16ef41b10c03928df3b96acf4f0eb03f9fca63a09a'
+    const publicKey = Buffer.from(await window.nostr.getPublicKey(), 'hex')
+
     const inputParams = {
       hash: currentUtxo.txid,
       index: currentUtxo.vout,

@@ -1,0 +1,586 @@
+// Edit Profile style Start
+
+.edit-profile-area {
+    .title-left {
+        margin-bottom: 0;
+    }
+}
+
+.left-nav {
+    padding-right: 10px;
+    position: sticky;
+    @media #{$sm-layout} {
+        padding-right: 0;
+    }
+    .nav {
+        &.nav-tabs {
+            border-bottom: none;
+            display: flex;
+            flex-wrap: wrap;
+            transition: var(--transition);
+            background: var(--background-color-1);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            button {
+                height: max-content;
+                border: none;
+                color: var(--color-white);
+                padding: 12px 13px;
+                position: relative;
+                margin: 6px;
+                border-radius: 6px;
+                border: 1px dashed var(--color-border);
+                transition: 0.4s;
+                display: block;
+                text-align: left;
+                transition: var(--transition);
+                line-height: 22px;
+                outline: none;
+
+                i {
+                    margin-right: 7px;
+                    color: var(--color-white);
+                    transition: var(--transition);
+                }
+
+                &.active,
+                &:hover {
+                    background: var(--color-primary-alta);
+                    color: var(--color-white);
+                    border-radius: 5px;
+                    border-color: transparent;
+                }
+
+                &:focus {
+                    border-color: transparent;
+                    outline: none;
+                    box-shadow: none;
+                }
+            }
+        }
+    }
+}
+
+.tab-content-edit-wrapepr {
+    .tab-pane {
+        padding: 30px;
+        background: var(--background-color-1);
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+
+        @media #{$sm-layout} {
+            padding: 10px;
+            padding-top: 15px;
+        }
+    }
+
+    .nuron-information {
+        .profile-change {
+            display: flex;
+            justify-content: flex-start;
+
+            @media #{$sm-layout} {
+                flex-wrap: wrap;
+            }
+
+            .profile-left {
+                border-right: 1px dashed var(--color-border);
+
+                @media #{$sm-layout} {
+                    border: none;
+                }
+
+                &.right {
+                    border: none;
+
+                    @media #{$sm-layout} {
+                        margin-top: 30px;
+                    }
+                }
+
+                .profile-image {
+                    .img-wrap {
+                        position: relative;
+                        height: 260px;
+                        max-height: 260px;
+                        width: 100%;
+                        border-radius: 5px;
+                        border: 5px solid var(--color-border);
+                        overflow: hidden;
+                    }
+                    img {
+                        object-fit: cover;
+                        height: 100%;
+                        width: 100%;
+                    }
+                }
+
+                .button-area {
+                    display: flex;
+
+                    .btn {
+                        &:hover {
+                            background: var(--color-danger);
+                        }
+                    }
+
+                    .brows-file-wrapper {
+                        position: relative;
+                        cursor: pointer;
+
+                        input {
+                            position: absolute;
+                            height: 100%;
+                            width: 100%;
+                            opacity: 0;
+                            cursor: pointer;
+                        }
+
+                        label {
+                            width: max-content;
+                            padding: 0 16px;
+                            height: 45px;
+                            border-radius: 10px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            cursor: pointer;
+                            background: var(--color-primary);
+                            color: var(--color-white);
+                            font-weight: 500;
+                            font-size: 16px;
+                            transition: var(--transition);
+                            position: relative;
+                            z-index: 10;
+
+                            &:hover {
+                                background: var(--color-primary-alta);
+                            }
+                        }
+                    }
+                }
+            }
+
+            .profile-right {
+                .btn {
+                    border-radius: 5px;
+                }
+            }
+        }
+
+        .profile-form-wrapper {
+            label {
+                margin-bottom: 10px;
+            }
+
+            .input-two-wrapper {
+                display: flex;
+                justify-content: space-between;
+
+                input {
+                    min-width: 50%;
+                }
+
+                .half-wid {
+                    width: 50%;
+
+                    @media #{$sm-layout} {
+                        width: 100%;
+                    }
+                }
+            }
+
+            input {
+                background: var(--background-color-4);
+                height: 50px;
+                border-radius: 5px;
+                color: var(--color-white);
+                font-size: 14px;
+                padding: 10px 20px;
+                border: 2px solid var(--color-border);
+                transition: 0.3s;
+
+                &:focus {
+                    border: 2px solid var(--color-primary);
+                }
+            }
+        }
+
+        .profile-picture-change {
+            .thumbnail {
+                img {
+                    border-radius: 5px;
+                    border: 3px solid var(--color-border);
+                    max-width: 100px;
+                    position: relative;
+                    z-index: 2;
+                    bottom: -40px;
+                }
+            }
+
+            .drag-drop-area {
+                position: relative;
+                height: 200px;
+                background: var(--background-color-1);
+                width: 75%;
+                margin: 0 auto;
+                border-radius: 8px;
+                border: 1px dashed rgba(87, 87, 87, 0.452);
+
+                input {
+                    position: absolute;
+                    height: 100%;
+                    width: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                    left: 0;
+                }
+
+                label {
+                    margin-top: 70px;
+
+                    p {
+                        font-size: 15px;
+                    }
+                }
+            }
+        }
+
+        .edit-bio-area {
+            textarea {
+                background: var(--background-color-4);
+                height: 150px;
+                border-radius: 5px;
+                color: var(--color-white);
+                font-size: 14px;
+                padding: 10px 20px;
+                border: 2px solid var(--color-border);
+                transition: var(--transition);
+            }
+        }
+    }
+}
+
+.role-area {
+    input {
+        background: var(--background-color-4);
+        height: 50px;
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 14px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-border);
+        transition: 0.3s;
+
+        &:focus {
+            border: 2px solid var(--color-primary);
+        }
+    }
+}
+
+.input-two-wrapepr-prifile {
+    display: flex;
+    align-items: center;
+    @media #{$sm-layout} {
+        flex-wrap: wrap;
+    }
+    .role-area,
+    .profile-edit-select {
+        width: 50%;
+        @media #{$sm-layout} {
+            width: 100%;
+        }
+    }
+
+    .role-area {
+        margin-right: 15px;
+        @media #{$sm-layout} {
+            margin-right: 0;
+        }
+    }
+
+    .profile-edit-select {
+        margin-top: 45px;
+        margin-left: 15px;
+        background: var(--background-color-4);
+        height: 50px;
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 14px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-border);
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+
+        @media #{$sm-layout} {
+            margin-top: 25px;
+            margin-left: 0;
+        }
+    }
+}
+
+.input-two-wrapper {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+
+    @media #{$sm-layout} {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .profile-edit-select {
+        margin-top: 25px;
+        background: var(--background-color-4);
+        height: 50px;
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 14px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-border);
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        float: none;
+
+        @media #{$sm-layout} {
+            margin-top: 10px;
+        }
+    }
+
+    .phone-number {
+        input {
+            background: var(--background-color-4);
+            height: 50px;
+            border-radius: 5px;
+            color: var(--color-white);
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 2px solid var(--color-border);
+            transition: 0.3s;
+        }
+    }
+
+    .half-wid {
+        width: 50%;
+
+        @media #{$sm-layout} {
+            width: 100%;
+        }
+    }
+
+    .new-password {
+        @media #{$sm-layout} {
+            margin-top: 15px;
+        }
+    }
+}
+
+.nuron-information {
+    .save-btn-edit {
+        border-radius: 5px;
+        display: flex;
+        max-width: max-content;
+        justify-content: flex-end;
+        margin: 20px 0 0 auto;
+    }
+}
+
+// change pass
+
+.nuron-information {
+    .condition {
+        p {
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+    }
+
+    input {
+        background: var(--background-color-4);
+        height: 50px;
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 14px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-border);
+        transition: 0.3s;
+    }
+
+    .save-btn-edit {
+        border-radius: 5px;
+        display: flex;
+        max-width: max-content;
+        justify-content: flex-end;
+        margin: 20px 0 0 auto;
+    }
+}
+
+// notice wrapper
+.nuron-information {
+    p {
+        font-size: 14px;
+    }
+}
+
+.save-btn-edit {
+    border-radius: 5px !important;
+    display: flex !important;
+    max-width: max-content;
+    justify-content: flex-end;
+    margin: 20px 0 0 auto;
+
+    .btn {
+        border-radius: 5px;
+    }
+}
+
+.nuron-information {
+    .title {
+        margin-bottom: 15px;
+    }
+    label {
+        margin: 0;
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            display: none;
+        }
+    }
+
+    .single-notice-setting {
+        display: flex;
+        align-content: center;
+
+        .input {
+            margin-right: 10px;
+
+            input {
+                max-width: max-content;
+            }
+        }
+
+        .content-text {
+            p {
+                font-size: 18px;
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+// theme switcher
+
+.theme-switch__input:checked ~ main,
+.theme-switch__input:checked ~ label {
+    --text: white;
+}
+
+.theme-switch__input:checked ~ main {
+    --gradDark: hsl(198, 44%, 11%);
+    --gradLight: hsl(198, 39%, 29%);
+}
+
+// Toggle switch
+.theme-switch__input,
+.theme-switch__label {
+    position: absolute;
+    z-index: 1;
+}
+
+.theme-switch__input {
+    opacity: 0;
+
+    // &:hover {
+    //     +.theme-switch__label {
+    //         background-color: #e4e4e4;
+    //     }
+
+    //     +.theme-switch__label span::after {
+    //         background-color: #e4e4e4;
+    //     }
+    // }
+}
+
+.theme-switch__label {
+    padding: 13px;
+    margin: 60px;
+    transition: background-color 200ms ease-in-out;
+    width: 60px;
+    height: 20px;
+    border-radius: 50px;
+    text-align: center;
+    background-color: slateGray;
+    // box-shadow: -4px 4px 15px inset #00000066;
+
+    &::before,
+    &::after {
+        font-size: 2rem;
+        position: absolute;
+        transform: translate3d(0, -50%, 0);
+        top: 50%;
+    }
+
+    &::before {
+        content: "\263C";
+        right: 100%;
+        margin-right: 10px;
+        color: orange;
+    }
+
+    &::after {
+        content: "\263E";
+        left: 100%;
+        margin-left: 10px;
+        color: lightSlateGray;
+    }
+
+    span {
+        position: absolute;
+        bottom: calc(100% + 10px);
+        left: 0;
+        width: 100%;
+    }
+
+    span::after {
+        position: absolute;
+        top: calc(100% + 13px);
+        left: 4px;
+        width: 20px;
+        height: 20px;
+        content: "";
+        border-radius: 50%;
+        background-color: lightBlue;
+        transition: transform 200ms, background-color 200ms;
+        box-shadow: -3px 3px 8px #00000066;
+    }
+}
+
+// Checked label styles
+.theme-switch__input:checked ~ .theme-switch__label {
+    background-color: var(--color-primary);
+
+    &::before {
+        color: lightSlateGray;
+    }
+
+    &::after {
+        color: turquoise;
+    }
+
+    span::after {
+        transform: translate3d(32px, 0, 0);
+    }
+}
+
+.padding-control-edit-wrapper {
+    @media #{$smlg-device} {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}

@@ -1,0 +1,217 @@
+.home-sticky-pin {
+    background: #141415;
+}
+.rn-about-title-wrapper {
+    h3 {
+        line-height: 45px;
+        margin-bottom: 0;
+    }
+}
+.rn-about-wrapper {
+    padding: 25px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+}
+
+.single-counter-up {
+    padding: 50px 40px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: var(--background-color-1);
+    .number {
+        font-size: 65px;
+        color: var(--color-primary);
+    }
+    .botton-title {
+        font-size: 18px;
+        color: var(--color-light);
+        @media #{$small-mobile} {
+            font-size: 14px;
+        }
+    }
+}
+
+.wETH {
+    position: relative;
+    display: inline-block;
+    &::after {
+        position: absolute;
+        content: "wETH";
+        right: -48%;
+        bottom: 3px;
+        color: #b7111175;
+        font-size: 18px;
+    }
+}
+
+.about-fluidimg-cta {
+    height: 100%;
+    .about-image {
+        isolation: isolate;
+        inset: 0;
+        position: absolute;
+        & > span {
+            z-index: -1;
+        }
+        img {
+            border-radius: 5px;
+        }
+        &:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+            background-color: #000000;
+            opacity: 0.7;
+            border-radius: 5px;
+        }
+    }
+}
+
+.call-to-action-wrapper {
+    padding: 80px 50px;
+    text-align: center;
+    z-index: 2;
+    position: relative;
+    h3 {
+        margin-bottom: 15px;
+        font-size: 45px;
+        line-height: 60px;
+        font-weight: 400;
+        @media #{$md-layout} {
+            font-size: 26px;
+            line-height: 35px;
+        }
+        @media #{$sm-layout} {
+            font-size: 26px;
+            line-height: 35px;
+        }
+    }
+    p {
+        margin-top: 0;
+        padding: 0 319px 0;
+        margin-bottom: 30px;
+        font-size: 20px;
+        @media #{$laptop-device} {
+            padding: 0 10% 0;
+        }
+        @media #{$lg-layout} {
+            padding: 0 10% 0;
+        }
+        @media #{$md-layout} {
+            padding: 0 20px;
+        }
+        @media #{$sm-layout} {
+            padding: 0 0;
+        }
+    }
+    .callto-action-btn-wrapper {
+        display: flex;
+        justify-content: center;
+        .btn-primary {
+            margin-right: 15px;
+        }
+    }
+}
+
+.bg-image-border {
+    border-radius: 5px;
+}
+
+.about-title-m {
+    font-size: 45px;
+    font-weight: 400;
+    @media #{$md-layout} {
+        font-size: 26px;
+    }
+    @media #{$sm-layout} {
+        font-size: 26px;
+    }
+}
+.about-fluidimg {
+    padding: 0 140px;
+    @media #{$laptop-device} {
+        padding: 0;
+    }
+    @media #{$smlg-device} {
+        padding: 0;
+    }
+    .img-wrapper {
+        position: relative;
+        height: 560px;
+        img {
+            border-radius: 5px;
+        }
+    }
+}
+.about-fluidimg-cta {
+    padding: 0 140px;
+    @media #{$laptop-device} {
+        padding: 0 0;
+    }
+    @media #{$smlg-device} {
+        padding: 0 0;
+    }
+    @media #{$md-layout} {
+        padding: 0 0;
+    }
+    @media #{$sm-layout} {
+        padding: 0 0;
+    }
+}
+.mt_dec--50 {
+    margin-top: -125px;
+}
+
+.h--100 {
+    height: 130%;
+}
+.rn-about-card {
+    border: 1px solid var(--color-border);
+    background: #191925;
+    padding: 50px 40px;
+    border-radius: 5px;
+    &.transparent-bg {
+        background: transparent;
+        border: 1px solid var(--color-border);
+        margin-top: 140px;
+        @media #{$smlg-device} {
+            margin-top: 0px;
+        }
+    }
+    &.widge-wrapper {
+        .inner {
+            margin-bottom: 0;
+        }
+    }
+    .inner {
+        margin-bottom: 0;
+        h3 {
+            font-weight: 400;
+            margin-bottom: 15px;
+            line-height: var(--h1);
+        }
+        p {
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+    }
+}
+
+.about-wrapper {
+    p {
+        &.discription {
+            max-width: 70%;
+            margin: auto;
+            @media #{$sm-layout} {
+                max-width: 90%;
+            }
+            @media #{$small-mobile} {
+                max-width: 100%;
+            }
+        }
+    }
+}

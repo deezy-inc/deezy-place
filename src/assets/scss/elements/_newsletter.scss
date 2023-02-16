@@ -1,0 +1,39 @@
+/*--------------------------
+    55. Newsletter
+----------------------------*/
+.newsletter-wrapper {
+    padding: 25px;
+    background: var(--background-color-1);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    height: 100%;
+    input {
+        background: var(--background-color-4);
+        height: 50px;
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 14px;
+        padding: 10px 20px;
+        border: 2px solid var(--color-border);
+        transition: 0.3s;
+    }
+}
+
+.newsletter-right {
+    padding: 25px;
+    background: var(--background-color-1);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    height: 100%;
+    img {
+        height: 100%;
+        width: auto;
+        object-fit: cover;
+    }
+    @media #{$md-layout} {
+        margin-top: 30px;
+    }
+    @media #{$sm-layout} {
+        margin-top: 30px;
+    }
+}

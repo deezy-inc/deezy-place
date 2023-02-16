@@ -1,0 +1,57 @@
+/*--------------------------
+    Social Share  
+----------------------------*/
+
+.social-share-default {
+    display: flex;
+    padding: 0;
+    margin: -5px;
+    list-style: none;
+    justify-content: center;
+    flex-wrap: wrap;
+    li {
+        margin: 5px;
+        a {
+            display: inline-block;
+            text-align: center;
+            .icon {
+                width: 50px;
+                height: 50px;
+                border: 2px solid var(--color-body);
+                display: flex;
+                border-radius: 100%;
+                align-items: center;
+                justify-content: center;
+                transition: 0.3s;
+                margin: 0 auto;
+                svg,
+                i {
+                    color: var(--color-body);
+                    width: 18px;
+                    transition: 0.3s;
+                    font-size: 18px;
+                }
+            }
+            .text {
+                display: block;
+                color: var(--color-body);
+                margin-top: 8px;
+                text-transform: capitalize;
+                transition: 0.3s;
+            }
+            &:hover {
+                .icon {
+                    background-color: var(--color-primary) !important;
+                    border-color: var(--color-primary) !important;
+                    svg,
+                    i {
+                        color: var(--color-white);
+                    }
+                }
+                .text {
+                    color: var(--color-primary) !important;
+                }
+            }
+        }
+    }
+}

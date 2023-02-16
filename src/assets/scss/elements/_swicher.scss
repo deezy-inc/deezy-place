@@ -1,0 +1,93 @@
+/*--------------------------
+    Swicher Styles  
+----------------------------*/
+
+html[data-theme="dark"] .my_switcher .dark {
+    display: none;
+    filter: brightness(100);
+}
+
+html[data-theme="light"] .my_switcher .light {
+    display: none;
+}
+
+// html[data-theme="light"] .my_switcher .dark img {
+//     filter: brightness(0);
+// }
+
+.my_switcher {
+    border: 0 none;
+    padding: 0;
+    width: 40px;
+    background: var(--color-secondary);
+    display: flex;
+    justify-content: center;
+    height: 40px;
+    align-items: center;
+    border-radius: 100%;
+    border: 1px solid var(--color-border);
+    transition: 0.4s;
+    .setColor {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        background: var(--color-secondary);
+        width: 40px;
+        height: 40px;
+        border-radius: 100%;
+        padding: 0;
+
+        &::after {
+            position: absolute;
+            content: "";
+            width: 100%;
+            height: 100%;
+            background: var(--background-color-1);
+            top: 0;
+            left: 0;
+            transform: scale(0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transition: 0.3s;
+            z-index: -1;
+        }
+        &:hover {
+            border-color: transparent;
+            &::after {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        img {
+            filter: brightness(0.5);
+            max-height: 16px;
+        }
+        .switch-btn {
+            padding: 0;
+            margin: 0;
+            border: none;
+            &.active {
+                display: none;
+            }
+        }
+        .light,
+        .dark {
+            line-height: 0.5;
+        }
+        .dark img {
+            filter: brightness(0);
+        }
+    }
+    &:hover {
+        border-color: transparent;
+    }
+}
+
+.rn-slick-dot-style {
+    .slick-dots {
+        bottom: -11px;
+    }
+}

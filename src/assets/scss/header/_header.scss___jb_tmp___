@@ -1,0 +1,250 @@
+/*---------------------------
+    Header Area Styles 
+-----------------------------*/
+
+body.template-color-1 {
+    background-color: #212428;
+}
+.header-wrapper{
+    height: 122px;
+    padding: 0 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    @media #{$small-mobile} {
+        padding: 30px 15px 0 15px; 
+    }
+    @media #{$laptop-device} {
+        padding: 0 30px; 
+    }
+    .header-left{
+        flex-basis: 20%;
+        justify-content: flex-start;
+        display: flex;
+    }
+    .header-center{
+        flex-basis: 100%;
+        justify-content: flex-end;
+        display: flex;
+        align-items: center;
+        .primary-menu{
+            display: flex;
+            list-style: none;
+            flex-wrap: wrap;
+            margin: -10px;
+            padding: 0;
+            &:hover{
+                li{
+                    opacity: 0.5;
+                }
+            }
+            @media #{$lg-layout} {
+                display: block;
+                margin-top: 95px;
+                margin-left: 30px;
+                }
+            @media #{$md-layout} {
+                display: block;
+                margin-top: 95px;
+                margin-left: 30px;
+                }
+            @media #{$sm-layout} {
+                display: block;
+                margin-top: 95px;
+                margin-left: 30px;
+                }
+            @media #{$large-mobile} {
+                display: block;
+                margin-top: 95px;
+                margin-left: 30px;
+                }
+            @media #{$small-mobile} {
+                display: block;
+                margin-top: 95px;
+                margin-left: 30px;
+                }
+            li{
+                margin: 10px 15px;
+                transition: 0.3s;
+                &:hover{
+                    opacity: 1;
+                    a{
+                        color: var(--color-white);
+                    }
+                    
+                }
+                @media #{$laptop-device} {
+                        margin: 10px 15px;
+                    }
+                a{
+                    color: var(--color-lightn);
+                    position: relative;
+                    transition: var(--transition);
+                    font-size: 13px;
+                    font-weight: var(--s-regular);
+                    text-transform: uppercase;
+                    font-family: var(--font-secondary);
+                    letter-spacing: 1px;
+                    @media #{$laptop-device} {
+                        font-size: 13px;
+                    }
+                }
+            }
+        }
+    }
+    .header-right{
+        margin-left: 30px;
+        justify-content: flex-end;
+        display: flex;
+        a{
+            &.rn-btn{
+                @media #{$large-mobile} {
+                    font-size: 14px;
+                    padding: 17px 19px;
+                    line-height: 21px;
+                }
+                @media #{$laptop-device} {
+                    font-size: 13px;
+                    padding: 17px 19px;
+                    line-height: 21px;
+                }
+                @media #{$lg-layout} {
+                    display: none;
+                }
+                @media #{$md-layout} {
+                    display: none;
+                }
+                @media #{$sm-layout} {
+                    display: none;
+                }
+                @media #{$large-mobile} {
+                    display: none;
+                }
+                @media #{$small-mobile} {
+                    display: none;
+                }
+            }
+        }
+        i{
+            &.featehr-menu{
+                z-index: 800;
+            }
+            &.feather-menu{
+                color: var(--color-primary);
+                font-size: 36px;
+                margin-bottom: 10px;
+                display: none;
+                position: fixed;
+                transition: .7s;
+                @media #{$lg-layout} {
+                    display: block;
+                    margin-top: -10px;
+                }
+                @media #{$md-layout} {
+                    display: block;
+                    margin-top: -10px;
+                }
+                @media #{$sm-layout} {
+                    display: block;
+                    margin-top: -10px;
+                }
+                @media #{$large-mobile} {
+                    display: block;
+                    margin-top: -10px;
+                }
+                @media #{$small-mobile} {
+                    display: block;
+                    margin-top: -17px;
+                }
+            }
+        }
+    }
+}
+
+// Mobile Menu
+
+@media #{$smlg-device}{
+    #sideNav{
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        background: #191b1e;
+        box-shadow: var(--shadow-1);
+        right: -250px;
+        top: 0;
+        z-index: 999;
+        transition: .7s;
+        display: flex;
+        opacity: 1;
+        @media #{$lg-layout} {
+                display: inline-block;
+            }
+        @media #{$md-layout} {
+                display: inline-block;
+            }
+        @media #{$sm-layout} {
+                display: inline-block;
+            }
+        @media #{$large-mobile} {
+                display: inline-block;
+            }
+        @media #{$small-mobile} {
+                display: inline-block;
+            }
+        ul{
+            li{
+                list-style: none;
+                margin: 50px 20px;
+                display: block;
+                a{
+                    text-decoration: none;
+                    color: var(--color-white);
+                    display: inline-block;
+                    font-size: 16px;
+                    font-weight: 400;
+                }
+            }
+        }
+    }
+}
+
+.rn-header.header--sticky {
+    position: fixed;
+    top: 0;
+    z-index: 999;
+    width: 100%;
+}
+
+.rn-header.header--fixed {
+    position: absolute;
+    top: 0;
+    z-index: 999;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.rn-header.header--fixed.sticky{
+    background-color: #212428de;
+    box-shadow: var(--shadow-1);
+    position: fixed;
+    backdrop-filter: blur(15px);
+}
+
+.sticky {
+    .header-wrapper{
+        height: 90px;
+        .logo{
+            img{
+                max-width: calc(100% - 10%);
+            }
+        }
+    }
+}
+
+
+.logo a {
+    display: inline-block;
+    img{
+        transition: 0.3s;
+    }
+}

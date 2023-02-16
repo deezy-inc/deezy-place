@@ -124,6 +124,12 @@ h1 {
   margin: auto;
 }
 
+.very-small-text {
+  font-size: 8pt;
+  max-width: 100%;
+  margin: auto;
+}
+
 .social-icon {
   background-color: white !important;
   border-radius: 50% !important;

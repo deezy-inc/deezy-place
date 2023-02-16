@@ -45,7 +45,7 @@ export default function App() {
       setOwnedUtxos(response.data)
       for (const utxo of response.data) {
         tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
-        if (!utxo.status.confirmed) continue
+        // if (!utxo.status.confirmed) continue
         let currentUtxo = utxo
         let currentDepth = 0
         console.log(utxo)
@@ -62,9 +62,10 @@ export default function App() {
             console.log(`Error from ordinals.com`)
           }
           if (!res) {
+            console.log(`No inscription for ${inscriptionId}`)
             currentDepth++
             // get previous vin
-            const txResp = await axios.get(`https://mempool.space/api/tx/${utxo.txid}`)
+            const txResp = await axios.get(`https://mempool.space/api/tx/${currentUtxo.txid}`)
             const tx = txResp.data
             console.log(tx)
             const firstInput = tx.vin[0]

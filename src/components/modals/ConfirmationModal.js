@@ -2,16 +2,17 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
+import { outputValue } from '../../utils';
 
 export default function ConfirmationModal({
   showConfirmSendModal,
   setShowConfirmSendModal,
   currentUtxo,
-  utxoImage,
   sendFeeRate,
   setSentTxid,
   destinationBtcAddress,
   inputAddressInfo,
+  inscriptionUtxosByUtxo
 }) {
   function toXOnly(key) {
     return key.length === 33 ? key.slice(1, 33) : key;
@@ -33,7 +34,7 @@ export default function ConfirmationModal({
     psbt.addInput(inputParams)
     psbt.addOutput({
       address: destinationBtcAddress,
-      value: outputValue()
+      value: outputValue(currentUtxo, sendFeeRate)
     })
     const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(0, [inputAddressInfo.output], [currentUtxo.value], bitcoin.Transaction.SIGHASH_DEFAULT)
     console.log(sigHash)
@@ -62,7 +63,7 @@ export default function ConfirmationModal({
         <Modal.Title>Confirm Send</Modal.Title>
       </Modal.Header>
       <Modal.Body className="modal-body p-4">
-        {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
+        {currentUtxo && <UtxoImage utxo={currentUtxo} style={{ width: "60%" }} inscriptionUtxosByUtxo={inscriptionUtxosByUtxo} />}
         <p>
           <b>Sending:</b> {currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}
         </p>
@@ -73,7 +74,7 @@ export default function ConfirmationModal({
           <b>Destination:</b> {destinationBtcAddress}
         </p>
         <p>
-          <b>Output Value:</b> {currentUtxo && outputValue()} sats
+          <b>Output Value:</b> {currentUtxo && outputValue(currentUtxo, sendFeeRate)} sats
         </p>
       </Modal.Body>
       <Modal.Footer>

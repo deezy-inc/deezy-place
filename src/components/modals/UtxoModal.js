@@ -1,14 +1,15 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { ordinalsUrl, shortenStr } from '../../utils';
+import UtxoImage from '../UtxoImage';
 
 export default function UtxoModal({
   setShowBeginSendModal,
   showUtxoModal,
   setShowUtxoModal,
   currentUtxo,
-  utxoImage,
-  shortenStr,
+  inscriptionUtxosByUtxo,
   SENDS_ENABLED,
 }) {
   return (
@@ -18,7 +19,7 @@ export default function UtxoModal({
       </Modal.Header>
       <Modal.Body className="modal-body p-4">
         <div>
-          {currentUtxo && utxoImage(currentUtxo, { width: "60%" })}
+          {currentUtxo && <UtxoImage utxo={currentUtxo} style={{ width: "60%" }} inscriptionUtxosByUtxo={inscriptionUtxosByUtxo} />}
         </div>
         <p>
           <b>Utxo:</b> <a href={currentUtxo && ordinalsUrl(currentUtxo)} target="_blank">{currentUtxo && `${currentUtxo.txid}:${currentUtxo.vout}`}</a>

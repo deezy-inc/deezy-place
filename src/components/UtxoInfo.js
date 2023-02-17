@@ -2,7 +2,7 @@ import React from 'react'
 import { TailSpin } from 'react-loading-icons'
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
-import { cloudfrontUrl } from '../utils';
+import { cloudfrontUrl, ordinalsImageUrl } from '../utils';
 
 export default function UtxoInfo({ utxosReady, ownedUtxos, setShowUtxoModal, setCurrentUtxo, inscriptionUtxosByUtxo }) {
   if (!utxosReady) return (<>
@@ -26,7 +26,7 @@ export default function UtxoInfo({ utxosReady, ownedUtxos, setShowUtxoModal, set
           <Container className="d-flex flex-wrap">
             {ownedUtxos.map(it => {
               return (
-                <Card className="my-2 mx-2 hover-pointer gallery-item">
+                <Card className="my-2 mx-2 hover-pointer gallery-item" key={it.txid}>
                   <Card.Body className="d-flex flex-column" onClick={() => {
                     setCurrentUtxo(it)
                     setShowUtxoModal(true)

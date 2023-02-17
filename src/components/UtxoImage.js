@@ -1,3 +1,4 @@
+import React from 'react'
 import { ordinalsImageUrl, cloudfrontUrl } from "../utils"
 
 export default function UtxoImage({ utxo, style, inscriptionUtxosByUtxo }) {

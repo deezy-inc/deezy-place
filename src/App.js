@@ -128,7 +128,7 @@ export default function App() {
           ownedUtxos={ownedUtxos}
           setShowUtxoModal={setShowUtxoModal}
           setCurrentUtxo={setCurrentUtxo}
-          inscriptionUtxosByUtxo={setCurrentUtxo}
+          inscriptionUtxosByUtxo={inscriptionUtxosByUtxo}
         />}
       </Container>
       <ReceiveAddressModal

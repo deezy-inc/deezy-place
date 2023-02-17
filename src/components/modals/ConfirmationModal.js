@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import UtxoImage from '../UtxoImage';
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
 import { outputValue } from '../../utils';
 

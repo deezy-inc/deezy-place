@@ -3,16 +3,24 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import UtxoImage from '../UtxoImage';
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
-import { outputValue } from '../../utils';
+import { outputValue, getAddressInfo } from '../../utils';
+import { TESTNET } from '../../constance';
+const axios = require('axios')
+
+import * as bitcoin from 'bitcoinjs-lib'
+import * as ecc from 'tiny-secp256k1'
+bitcoin.initEccLib(ecc)
 
 export default function ConfirmationModal({
   showConfirmSendModal,
   setShowConfirmSendModal,
+  setShowSelectFeeRateModal,
+  setShowSentModal,
   currentUtxo,
   sendFeeRate,
   setSentTxid,
+  nostrPublicKey,
   destinationBtcAddress,
-  inputAddressInfo,
   inscriptionUtxosByUtxo
 }) {
   function toXOnly(key) {
@@ -20,6 +28,7 @@ export default function ConfirmationModal({
   }
 
   async function sendUtxo() {
+    const inputAddressInfo = getAddressInfo(nostrPublicKey)
     const psbt = new bitcoin.Psbt({ network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin })
     const publicKey = Buffer.from(await window.nostr.getPublicKey(), 'hex')
 
@@ -49,6 +58,7 @@ export default function ConfirmationModal({
     const fullTx = bitcoin.Transaction.fromHex(hex)
     console.log(hex)
     const res = await axios.post(`https://mempool.space/api/tx`, hex).catch(err => {
+      console.error(err)
       alert(err)
       return null
     })
@@ -92,6 +102,7 @@ export default function ConfirmationModal({
         </Button>
         <Button variant="primary" onClick={async () => {
           const success = await sendUtxo().catch(err => {
+            console.error(err)
             alert(err)
             return false
           })

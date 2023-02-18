@@ -5,6 +5,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import Form from 'react-bootstrap/Form'
 import UtxoImage from '../UtxoImage'
 import { shortenStr } from "../../utils"
+import { validate, Network } from 'bitcoin-address-validation'
 
 export default function BeginSendModal({
   showBeginSendModal,

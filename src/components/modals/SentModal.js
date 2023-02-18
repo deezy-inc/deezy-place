@@ -10,7 +10,7 @@ export default function SentModal({ showSentModal, setShowSentModal, sentTxid })
       </Modal.Header>
       <Modal.Body className="modal-body p-4 text-center">
         <p>
-          Your transaction should appear in a few moments
+          Your transaction should appear in a few moments 
           <a href={`https://mempool.space/tx/${sentTxid}`} target="_blank" rel="noreferrer">
             here
           </a>

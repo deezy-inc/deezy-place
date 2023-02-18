@@ -169,7 +169,11 @@ export default function App() {
       <ConfirmationModal
         setShowConfirmSendModal={setShowConfirmSendModal}
         showConfirmSendModal={showConfirmSendModal}
+        setShowSelectFeeRateModal={setShowSelectFeeRateModal}
+        setShowSentModal={setShowSentModal}
+        sendFeeRate={sendFeeRate}
         currentUtxo={currentUtxo}
+        nostrPublicKey={nostrPublicKey}
         destinationBtcAddress={destinationBtcAddress}
         setSentTxid={setSentTxid}
         inscriptionUtxosByUtxo={inscriptionUtxosByUtxo}

@@ -6,6 +6,7 @@ import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
 import { getAddressInfo, connectWallet } from "@utils/crypto";
 import MobileMenu from "@components/menu/mobile-menu";
+import UserDropdown from "@components/user-dropdown";
 
 import { useOffcanvas, useSticky } from "@hooks";
 
@@ -20,6 +21,7 @@ const Header = ({ className }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
     const [nostrPubKey, setNostrPubKey] = useState();
+    const [addressInfo, setAddressInfo] = useState();
 
     useEffect(() => {
         if (nostrPubKey) {
@@ -31,24 +33,33 @@ const Header = ({ className }) => {
     }, [nostrPubKey]);
 
     useEffect(() => {
-        // TODO: We should ask the browser if we are connected to the wallet
-        const nostrPubKey = SessionStorage.get(
-            SessionsStorageKeys.NOSTR_PUBLIC_KEY
-        );
+        async function getAddrInfo() {
+            // TODO: We should ask the browser if we are connected to the wallet
+            const nostrPubKey = SessionStorage.get(
+                SessionsStorageKeys.NOSTR_PUBLIC_KEY
+            );
 
-        if (nostrPubKey) {
-            setNostrPubKey(nostrPubKey);
+            if (nostrPubKey) {
+                setNostrPubKey(nostrPubKey);
+                const addressInfo = await getAddressInfo(nostrPubKey);
+                setAddressInfo(addressInfo);
+            }
         }
+
+        getAddrInfo();
     }, []);
 
     // TODO: Implement connection to wallet
     const onConnect = async () => {
         const pubKey = await connectWallet();
+
+        console.log(addressInfo);
         setNostrPubKey(pubKey);
     };
 
     const onDisconnect = async () => {
-        console.log("onDisconnect");
+        setNostrPubKey(undefined);
+        SessionStorage.remove(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
     };
 
     return (
@@ -90,7 +101,11 @@ const Header = ({ className }) => {
                             )}
                             {Boolean(nostrPubKey) && (
                                 <div className="setting-option rn-icon-list user-account">
-                                    <p>Connected</p>
+                                    <UserDropdown
+                                        onDisconnect={onDisconnect}
+                                        pubKey={nostrPubKey}
+                                        receiveAddress={addressInfo.address}
+                                    />
                                 </div>
                             )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">

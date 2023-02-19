@@ -24,13 +24,15 @@
                 "map": [
                     // ["@assets", "./src/assets/"],
                     ["@ui", "./src/components/ui/"],
+                    ["@lib", "./src/lib/"],
                     ["@components", "./src/components/"],
                     ["@widgets", "./src/components/widgets/"],
                     ["@containers", "./src/containers/"],
                     ["@layout", "./src/layouts/"],
                     ["@utils", "./src/utils/"],
                     ["@hooks", "./src/hooks/"],
-                    ["@data", "./src/data/"]
+                    ["@data", "./src/data/"],
+                    ["@services", "./src/services/"]
                 ],
                 "extensions": [".js", ".jsx"]
             },

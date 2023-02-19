@@ -6,11 +6,13 @@
             "@ui/*": ["src/components/ui/*"],
             "@components/*": ["src/components/*"],
             "@widgets/*": ["src/components/widgets/*"],
+            "@lib/*": ["src/lib/*"],
             "@containers/*": ["src/containers/*"],
             "@layout/*": ["src/layouts/*"],
             "@utils/*": ["src/utils/*"],
             "@hooks": ["src/hooks"],
-            "@data/*": ["src/data/*"]
+            "@data/*": ["src/data/*"],
+            "@services/*": ["src/services/*"]
         }
     }
 }

@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 
 import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
+import { getAddressInfo, connectWallet } from "@utils/crypto";
 import MobileMenu from "@components/menu/mobile-menu";
 
 import { useOffcanvas, useSticky } from "@hooks";
 
 import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
@@ -17,11 +19,32 @@ import menuData from "../data/general/menu.json";
 const Header = ({ className }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [nostrPubKey, setNostrPubKey] = useState();
+
+    useEffect(() => {
+        if (nostrPubKey) {
+            SessionStorage.set(
+                SessionsStorageKeys.NOSTR_PUBLIC_KEY,
+                nostrPubKey
+            );
+        }
+    }, [nostrPubKey]);
+
+    useEffect(() => {
+        // TODO: We should ask the browser if we are connected to the wallet
+        const nostrPubKey = SessionStorage.get(
+            SessionsStorageKeys.NOSTR_PUBLIC_KEY
+        );
+
+        if (nostrPubKey) {
+            setNostrPubKey(nostrPubKey);
+        }
+    }, []);
 
     // TODO: Implement connection to wallet
     const onConnect = async () => {
-        console.log("connecting");
+        const pubKey = await connectWallet();
+        setNostrPubKey(pubKey);
     };
 
     const onDisconnect = async () => {
@@ -51,7 +74,7 @@ const Header = ({ className }) => {
                             </div>
                         </div>
                         <div className="header-right">
-                            {!isAuthenticated && (
+                            {!Boolean(nostrPubKey) && (
                                 <div className="setting-option header-btn">
                                     <div className="icon-box">
                                         <Button
@@ -65,7 +88,7 @@ const Header = ({ className }) => {
                                     </div>
                                 </div>
                             )}
-                            {isAuthenticated && (
+                            {Boolean(nostrPubKey) && (
                                 <div className="setting-option rn-icon-list user-account">
                                     <p>Connected</p>
                                 </div>

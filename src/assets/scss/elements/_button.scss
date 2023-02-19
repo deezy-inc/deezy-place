@@ -26,11 +26,16 @@ button {
         border: 0 none;
         box-shadow: none;
         outline: none;
-        box-shadow: 0 0 12px var(--color-primary);
+        //
+
+        &:hover {
+            color: var(--color-primary);
+        }
 
         &.btn-primary {
             background: var(--color-primary);
             color: var(--color-dark);
+            box-shadow: 0 0 12px var(--color-primary);
 
             &:hover {
                 background: var(--color-primary-alta);
@@ -48,6 +53,7 @@ button {
         &.btn-primary-alta {
             background: var(--color-dark);
             color: var(--color-primary);
+            box-shadow: 0 0 12px var(--color-primary);
 
             &:hover {
                 background: var(--color-primary);

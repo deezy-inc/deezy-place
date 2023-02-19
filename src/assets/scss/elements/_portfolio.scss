@@ -1,5 +1,30 @@
 // portdfolio
 
+// crate a pulse animation
+@keyframes pulsate {
+    0% {
+        box-shadow: 0 0 5px var(--color-primary);
+    }
+    50% {
+        box-shadow: 0 0 17px var(--color-primary);
+    }
+    100% {
+        box-shadow: 0 0 5px var(--color-primary);
+    }
+}
+
+@-webkit-keyframes pulsate {
+    0% {
+        box-shadow: 0 0 5px var(--color-primary);
+    }
+    50% {
+        box-shadow: 0 0 17px var(--color-primary);
+    }
+    100% {
+        box-shadow: 0 0 5px var(--color-primary);
+    }
+}
+
 .product-style-one {
     padding: 20px;
     border-radius: 10px;
@@ -8,21 +33,25 @@
     position: relative;
     z-index: 5;
 
-    &::before {
-        content: "";
-        position: absolute;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        border-radius: 15px;
-        background-image: linear-gradient(100deg, #13131d, #0398ed);
-        background-repeat: repeat-x;
-        -webkit-transition: all 0.5s;
-        transition: all 0.5s;
-        width: 100%;
-        height: 100%;
-        z-index: -2;
-    }
+    // &::before {
+    //     content: "";
+    //     position: absolute;
+    //     top: auto;
+    //     bottom: 0;
+    //     left: 0;
+    //     border-radius: 15px;
+    //     background-image: linear-gradient(
+    //         100deg,
+    //         #13131d,
+    //         var(--color-primary)
+    //     );
+    //     background-repeat: repeat-x;
+    //     -webkit-transition: all 0.5s;
+    //     transition: all 0.5s;
+    //     width: 100%;
+    //     height: 100%;
+    //     z-index: -2;
+    // }
 
     &::after {
         content: "";
@@ -37,9 +66,11 @@
     }
 
     &:hover {
-        &::before {
-            transform: rotate(2deg) translateX(-7px) translateY(11px);
-        }
+        box-shadow: 0 0 12px var(--color-primary);
+        animation: pulsate 1.4s ease-out infinite;
+        // &::before {
+        //     transform: rotate(2deg) translateX(-7px) translateY(11px);
+        // }
     }
 
     &.with-placeBid {
@@ -385,7 +416,7 @@
 }
 
 /*---------------------------
-    Filter Exanded  
+    Filter Exanded
 -----------------------------*/
 .default-exp-wrapper {
     border-top: 1px solid var(--color-border);

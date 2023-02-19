@@ -33,6 +33,12 @@
                     "src": "/images/slider/babe.png"
                 }
             ]
+        },
+        {
+            "section": "your-collection-section",
+            "section_title": {
+                "title": "Your collection"
+            }
         }
     ]
 }

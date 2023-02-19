@@ -1,0 +1,27 @@
+{
+    "id": "footer-data",
+    "logo-widget": {
+        "logo": [
+            {
+                "src": "/images/logo/logo-white.svg",
+                "alt": "logo"
+            }
+        ],
+        "text": "Launch your own collection in collaboration with Deezy."
+    },
+    "quicklink-widget": {
+        "title": "Nosft",
+        "menu": [
+            {
+                "id": 1,
+                "text": "Astral Babes",
+                "path": "https://astralbabes.ai/"
+            },
+            {
+                "id": 2,
+                "text": "About",
+                "path": "https://github.com/dannydeezy/nosft"
+            }
+        ]
+    }
+}

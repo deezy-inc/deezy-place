@@ -56,18 +56,17 @@ export const ItemType = PropTypes.shape({
     image: ImageType,
 });
 
-export const ProductType = PropTypes.shape({
+export const OrdinalType = PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     title: PropTypes.string.isRequired,
     slug: PropTypes.string.isRequired,
-    latestBid: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
     price: PropTypes.shape({
         amount: PropTypes.number.isRequired,
         currency: PropTypes.string.isRequired,
     }).isRequired,
     likeCount: PropTypes.number,
     image: ImageType,
-    auction_date: PropTypes.string,
     authors: PropTypes.arrayOf(
         PropTypes.shape({
             name: PropTypes.string.isRequired,
@@ -75,7 +74,7 @@ export const ProductType = PropTypes.shape({
             image: ImageType,
         })
     ),
-    bitCount: PropTypes.number,
+    utxo: PropTypes.number,
 });
 
 export const SellerType = PropTypes.shape({

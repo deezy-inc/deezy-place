@@ -1,11 +1,12 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import ShareModal from "@components/modals/share-modal";
+import SendModal from "@components/modals/send-modal";
 
-const ShareDropdown = () => {
-    const [showShareModal, setShowShareModal] = useState(false);
-    const handleShareModal = () => {
-        setShowShareModal((prev) => !prev);
+const CardOptions = ({ utxo }) => {
+    const [showSendModal, setShowSendModal] = useState(false);
+    const handleSendModal = () => {
+        setShowSendModal((prev) => !prev);
     };
 
     return (
@@ -32,15 +33,23 @@ const ShareDropdown = () => {
                     <button
                         type="button"
                         className="btn-setting-text share-text"
-                        onClick={handleShareModal}
+                        onClick={handleSendModal}
                     >
-                        Share
+                        Send
                     </button>
                 </Dropdown.Menu>
             </Dropdown>
-            <ShareModal show={showShareModal} handleModal={handleShareModal} />
+            <SendModal
+                show={showSendModal}
+                handleModal={handleSendModal}
+                utxo={utxo}
+            />
         </>
     );
 };
 
-export default ShareDropdown;
+CardOptions.propTypes = {
+    data: PropTypes.object,
+};
+
+export default CardOptions;

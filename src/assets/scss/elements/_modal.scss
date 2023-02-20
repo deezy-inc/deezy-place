@@ -1,5 +1,5 @@
 /*-----------------------------
- Modal Styles  
+ Modal Styles
 -----------------------------------*/
 body.modal-open {
     padding: 0 !important;
@@ -34,7 +34,7 @@ body.modal-open {
 }
 
 /*---------------------------------
-    Share Modal Wrapper  
+    Share Modal Wrapper
 ----------------------------------*/
 .modal-backdrop {
     background-color: #000;
@@ -114,7 +114,7 @@ body.modal-open {
 }
 
 /*--------------------------------
-    Place Bid Modal Popup  
+    Place Bid Modal Popup
 ---------------------------------*/
 .placebid-modal-wrapper {
     p {
@@ -214,17 +214,19 @@ body.modal-open {
                     border: none;
                     padding: 0;
                     .bid-content-left {
-                        display: flex;
-                        position: relative;
-                        align-items: center;
-                        input {
+                        .form-control {
                             background: var(--background-color-1);
                             height: 40px;
                             border-radius: 5px;
                             border: 2px solid transparent;
+                            font-size: 1.5rem;
+                            color: var(--color-white);
                             &:focus {
                                 border: 2px solid var(--color-primary);
                             }
+                        }
+                        .form-range {
+                            border: 0px;
                         }
                         span {
                             right: 15px;

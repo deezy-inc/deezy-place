@@ -2,37 +2,36 @@ const SessionsStorageKeys = {
     NOSTR_PUBLIC_KEY: "NOSTR_PUBLIC_KEY",
 };
 
-class SessionStorage {
-    set(id, data) {
+const SessionStorage = {
+    set: (id, data) => {
         if (typeof window === "undefined") {
-            return;
+            return undefined;
         }
 
         window.sessionStorage.setItem(id, JSON.stringify(data));
-    }
-
-    get(id) {
+        return undefined;
+    },
+    get: (id) => {
         if (typeof window === "undefined") {
-            return;
+            return undefined;
         }
 
         const value = window.sessionStorage.getItem(id);
 
         if (!value || value === "undefined") {
-            return;
+            return undefined;
         }
 
         return JSON.parse(value);
-    }
-
-    remove(id) {
+    },
+    remove: (id) => {
         if (typeof window === "undefined") {
-            return;
+            return undefined;
         }
 
         return window.sessionStorage.removeItem(id);
-    }
-}
+    },
+};
 
-export default new SessionStorage();
+export default SessionStorage;
 export { SessionsStorageKeys };

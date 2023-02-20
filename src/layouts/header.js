@@ -1,3 +1,5 @@
+/* eslint no-extra-boolean-cast: "off" */
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
@@ -17,48 +19,40 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = ({ className }) => {
+const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-    const [nostrPubKey, setNostrPubKey] = useState();
-    const [addressInfo, setAddressInfo] = useState();
-
-    useEffect(() => {
-        if (nostrPubKey) {
-            SessionStorage.set(
-                SessionsStorageKeys.NOSTR_PUBLIC_KEY,
-                nostrPubKey
-            );
-        }
-    }, [nostrPubKey]);
 
     useEffect(() => {
         async function getAddrInfo() {
-            // TODO: We should ask the browser if we are connected to the wallet
-            const nostrPubKey = SessionStorage.get(
-                SessionsStorageKeys.NOSTR_PUBLIC_KEY
-            );
-
-            if (nostrPubKey) {
-                setNostrPubKey(nostrPubKey);
-                const addressInfo = await getAddressInfo(nostrPubKey);
-                setAddressInfo(addressInfo);
+            if (nostrPublicKey) {
+                SessionStorage.set(
+                    SessionsStorageKeys.NOSTR_PUBLIC_KEY,
+                    nostrPublicKey
+                );
             }
         }
 
         getAddrInfo();
+    }, [nostrPublicKey]);
+
+    // TODO: Use @state instead of @sessionStorage
+    useEffect(() => {
+        // TODO: We should ask the browser if we are connected to the wallet
+        const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+
+        if (pubKey) {
+            setNostrPublicKey(pubKey);
+        }
     }, []);
 
-    // TODO: Implement connection to wallet
     const onConnect = async () => {
         const pubKey = await connectWallet();
-
-        console.log(addressInfo);
-        setNostrPubKey(pubKey);
+        setNostrPublicKey(pubKey);
     };
 
     const onDisconnect = async () => {
-        setNostrPubKey(undefined);
+        setNostrPublicKey(undefined);
         SessionStorage.remove(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
     };
 
@@ -85,7 +79,7 @@ const Header = ({ className }) => {
                             </div>
                         </div>
                         <div className="header-right">
-                            {!Boolean(nostrPubKey) && (
+                            {!Boolean(nostrPublicKey) && (
                                 <div className="setting-option header-btn">
                                     <div className="icon-box">
                                         <Button
@@ -99,12 +93,12 @@ const Header = ({ className }) => {
                                     </div>
                                 </div>
                             )}
-                            {Boolean(nostrPubKey) && (
+                            {Boolean(nostrPublicKey) && Boolean(address) && (
                                 <div className="setting-option rn-icon-list user-account">
                                     <UserDropdown
                                         onDisconnect={onDisconnect}
-                                        pubKey={nostrPubKey}
-                                        receiveAddress={addressInfo.address}
+                                        pubKey={nostrPublicKey}
+                                        receiveAddress={address}
                                     />
                                 </div>
                             )}

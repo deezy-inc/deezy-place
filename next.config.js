@@ -1,11 +1,18 @@
 /* eslint-disable no-unused-vars */
 const path = require("path");
 
-module.exports = {
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: process.env.ANALYZE === "true",
+});
+
+module.exports = withBundleAnalyzer({
     distDir: "out",
     reactStrictMode: false,
     sassOptions: {
         includePaths: [path.join(__dirname, "./src/assets/scss")],
+    },
+    images: {
+        domains: ["ordinals.com", "d2v3k2do8kym1f.cloudfront.net"],
     },
 
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
@@ -19,4 +26,4 @@ module.exports = {
             ]);
         return config;
     },
-};
+});

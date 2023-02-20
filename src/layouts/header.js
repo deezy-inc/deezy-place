@@ -1,31 +1,59 @@
-import React, { useState } from "react";
+/* eslint no-extra-boolean-cast: "off" */
+
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 
 import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
+import { getAddressInfo, connectWallet } from "@utils/crypto";
 import MobileMenu from "@components/menu/mobile-menu";
+import UserDropdown from "@components/user-dropdown";
 
 import { useOffcanvas, useSticky } from "@hooks";
 
 import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = ({ className }) => {
+const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // TODO: Implement connection to wallet
+    useEffect(() => {
+        async function getAddrInfo() {
+            if (nostrPublicKey) {
+                SessionStorage.set(
+                    SessionsStorageKeys.NOSTR_PUBLIC_KEY,
+                    nostrPublicKey
+                );
+            }
+        }
+
+        getAddrInfo();
+    }, [nostrPublicKey]);
+
+    // TODO: Use @state instead of @sessionStorage
+    useEffect(() => {
+        // TODO: We should ask the browser if we are connected to the wallet
+        const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+
+        if (pubKey) {
+            setNostrPublicKey(pubKey);
+        }
+    }, []);
+
     const onConnect = async () => {
-        console.log("connecting");
+        const pubKey = await connectWallet();
+        setNostrPublicKey(pubKey);
     };
 
     const onDisconnect = async () => {
-        console.log("onDisconnect");
+        setNostrPublicKey(undefined);
+        SessionStorage.remove(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
     };
 
     return (
@@ -51,7 +79,7 @@ const Header = ({ className }) => {
                             </div>
                         </div>
                         <div className="header-right">
-                            {!isAuthenticated && (
+                            {!Boolean(nostrPublicKey) && (
                                 <div className="setting-option header-btn">
                                     <div className="icon-box">
                                         <Button
@@ -65,9 +93,13 @@ const Header = ({ className }) => {
                                     </div>
                                 </div>
                             )}
-                            {isAuthenticated && (
+                            {Boolean(nostrPublicKey) && Boolean(address) && (
                                 <div className="setting-option rn-icon-list user-account">
-                                    <p>Connected</p>
+                                    <UserDropdown
+                                        onDisconnect={onDisconnect}
+                                        pubKey={nostrPublicKey}
+                                        receiveAddress={address}
+                                    />
                                 </div>
                             )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">

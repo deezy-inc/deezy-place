@@ -8,9 +8,9 @@ import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
 
 import { ImageType } from "@utils/types";
-import PlaceBidModal from "@components/modals/placebid-modal";
+import { shortenStr } from "@utils/crypto";
 
-const ShareDropdown = dynamic(() => import("@components/share-dropdown"), {
+const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
 });
 
@@ -24,12 +24,7 @@ const OrdinalCard = ({
     image,
     utxo,
     authors,
-    disableShareDropdown,
 }) => {
-    const [showBidModal, setShowBidModal] = useState(false);
-    const handleBidModal = () => {
-        setShowBidModal((prev) => !prev);
-    };
     return (
         <>
             <div
@@ -37,7 +32,8 @@ const OrdinalCard = ({
             >
                 <div className="card-thumbnail">
                     {image?.src && (
-                        <Anchor path={`/product/${slug}`}>
+                        <Anchor path="#">
+                            {/* <Anchor path={`/product/${slug}`}> */}
                             <Image
                                 src={image.src}
                                 alt={image?.alt || "Ordinal"}
@@ -59,20 +55,21 @@ const OrdinalCard = ({
                         ))}
                         <Anchor
                             className="more-author-text"
-                            path={`/product/${slug}`}
+                            path="#"
+                            // path={`/product/${slug}`}
                         >
-                            {utxo}
+                            {shortenStr(utxo.txid)}
                         </Anchor>
                     </div>
-                    {!disableShareDropdown && <ShareDropdown />}
+                    <CardOptions utxo={utxo} />
                 </div>
-                <Anchor path={`/product/${slug}`}>
+                {/* <Anchor path={`/product/${slug}`}> */}
+                <Anchor path="#">
                     <span className="product-name">{title}</span>
                 </Anchor>
                 <span className="latest-bid">{description}</span>
                 <ProductBid price={price} likeCount={likeCount} />
             </div>
-            <PlaceBidModal show={showBidModal} handleModal={handleBidModal} />
         </>
     );
 };
@@ -83,11 +80,10 @@ OrdinalCard.propTypes = {
     slug: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
     price: PropTypes.shape({
-        amount: PropTypes.number.isRequired,
+        amount: PropTypes.string.isRequired,
         currency: PropTypes.string.isRequired,
     }).isRequired,
     likeCount: PropTypes.number.isRequired,
-    auction_date: PropTypes.string,
     image: ImageType.isRequired,
     authors: PropTypes.arrayOf(
         PropTypes.shape({
@@ -96,8 +92,7 @@ OrdinalCard.propTypes = {
             image: ImageType.isRequired,
         })
     ),
-    utxo: PropTypes.number,
-    disableShareDropdown: PropTypes.bool,
+    utxo: PropTypes.object,
 };
 
 OrdinalCard.defaultProps = {

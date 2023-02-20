@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@next/bundle-analyzer": "^13.1.6",
         "@react-icons/all-files": "^4.1.0",
         "axios": "^1.2.6",
         "bip32": "^3.1.0",

@@ -1,32 +1,50 @@
-import { useReducer, useRef, useEffect, useCallback } from "react";
+/* eslint-disable react/forbid-prop-types */
+
 import PropTypes from "prop-types";
 import clsx from "clsx";
+import { TailSpin } from "react-loading-icons";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 
-import { SectionTitleType, OrdinalType } from "@utils/types";
+import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
+import { useEffect } from "react";
 
-function reducer(state, action) {
-    switch (action.type) {
-        case "FILTER_TOGGLE":
-            return { ...state, filterToggle: !state.filterToggle };
-        case "SET_INPUTS":
-            return { ...state, inputs: { ...state.inputs, ...action.payload } };
-        case "SET_PRODUCTS":
-            return { ...state, products: action.payload };
-        default:
-            return state;
-    }
-}
+const collectionAuthor = [
+    {
+        name: "Danny Deezy",
+        slug: "/deezy",
+        image: {
+            src: "/images/logo/nos-ft-logo.png",
+        },
+    },
+];
 
-const OrdinalsArea = ({ className, space, data }) => {
-    const [state, dispatch] = useReducer(reducer, {
-        products: data.products || [],
-        inputs: { price: [0, 100] },
-    });
+const OrdinalsArea = ({
+    className,
+    space,
+
+    utxosReady,
+    ownedUtxos,
+    inscriptionUtxosByUtxo,
+}) => {
+    const getSrc = (utxo) => {
+        if (utxo.status.confirmed) {
+            return ordinalsImageUrl(
+                inscriptionUtxosByUtxo[`${utxo.txid}:${utxo.vout}`]
+            );
+        }
+        return cloudfrontUrl(utxo);
+    };
+
+    useEffect(() => {
+        document
+            .getElementById("your-collection")
+            .scrollIntoView({ behavior: "smooth" });
+    }, []);
 
     return (
         <div
+            id="your-collection"
             className={clsx(
                 "rn-product-area",
                 space === 1 && "rn-section-gapTop",
@@ -36,41 +54,80 @@ const OrdinalsArea = ({ className, space, data }) => {
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        {data?.section_title && (
-                            <SectionTitle
-                                className="mb--0"
-                                {...data.section_title}
-                            />
-                        )}
+                        <SectionTitle
+                            className="mb--0"
+                            {...{ title: "Your collection" }}
+                        />
                     </div>
                 </div>
 
-                <div className="row g-5">
-                    {state.products.length > 0 ? (
-                        <>
-                            {state.products.slice(0, 10).map((prod) => (
-                                <div
-                                    key={prod.id}
-                                    className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                >
-                                    <OrdinalCard
-                                        overlay
-                                        title={prod.title}
-                                        slug={prod.slug}
-                                        description={prod.description}
-                                        price={prod.price}
-                                        likeCount={prod.likeCount}
-                                        image={prod.images?.[0]}
-                                        authors={prod.authors}
-                                        utxo={prod.utxo}
-                                    />
+                {!utxosReady && <TailSpin stroke="#fec823" speed={0.75} />}
+
+                <>
+                    {utxosReady && (
+                        <div className="row g-5">
+                            {ownedUtxos.length > 0 ? (
+                                <>
+                                    {ownedUtxos
+                                        .filter((utxo) =>
+                                            Boolean(
+                                                inscriptionUtxosByUtxo[
+                                                    `${utxo.txid}:${utxo.vout}`
+                                                ]
+                                            )
+                                        )
+                                        .map((utxo) => (
+                                            <div
+                                                key={utxo.txid}
+                                                className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
+                                            >
+                                                <OrdinalCard
+                                                    overlay
+                                                    title={
+                                                        utxo.title ||
+                                                        "Raptor Degen"
+                                                    }
+                                                    slug={utxo.txid}
+                                                    description={
+                                                        utxo.description ||
+                                                        "A force to be reckoned with."
+                                                    }
+                                                    price={{
+                                                        amount: utxo.value.toLocaleString(
+                                                            "en-US"
+                                                        ),
+                                                        currency: "Sats",
+                                                    }}
+                                                    likeCount={
+                                                        utxo.likeCount || 0
+                                                    }
+                                                    image={{
+                                                        src: getSrc(utxo),
+                                                    }}
+                                                    authors={collectionAuthor}
+                                                    utxo={utxo}
+                                                />
+                                            </div>
+                                        ))}
+                                </>
+                            ) : (
+                                <div>
+                                    This address does not own anything yet..
+                                    <br />
+                                    <br />
+                                    Consider minting an{" "}
+                                    <a
+                                        href="https://astralbabes.ai"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        astral babe
+                                    </a>
                                 </div>
-                            ))}
-                        </>
-                    ) : (
-                        <p>No item to show</p>
+                            )}
+                        </div>
                     )}
-                </div>
+                </>
             </div>
         </div>
     );
@@ -79,10 +136,9 @@ const OrdinalsArea = ({ className, space, data }) => {
 OrdinalsArea.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
-    data: PropTypes.shape({
-        section_title: SectionTitleType,
-        products: PropTypes.arrayOf(OrdinalType),
-    }),
+    utxosReady: PropTypes.bool,
+    ownedUtxos: PropTypes.arrayOf(PropTypes.object),
+    inscriptionUtxosByUtxo: PropTypes.object,
 };
 
 OrdinalsArea.defaultProps = {

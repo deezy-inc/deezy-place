@@ -156,8 +156,14 @@
                             }
 
                             .title {
-                                font-size: 14px;
+                                font-size: 22px;
                                 margin-bottom: 4px;
+                                display: inline-flex;
+
+                                span {
+                                    cursor: pointer;
+                                    margin-left: 4px;
+                                }
                             }
 
                             span {

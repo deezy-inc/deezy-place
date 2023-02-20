@@ -24,8 +24,8 @@
                 {
                     "id": 2,
                     "color": "primary-alta",
-                    "content": "Create",
-                    "path": "/create"
+                    "content": "Mint",
+                    "path": "/astral-babe"
                 }
             ],
             "images": [

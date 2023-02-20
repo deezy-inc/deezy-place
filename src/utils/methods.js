@@ -163,6 +163,21 @@ const isEmpty = (obj) => {
     return true;
 };
 
+const deepClone = (obj) => {
+    if (obj === null || typeof obj !== "object") {
+        return obj;
+    }
+
+    const copy = obj.constructor();
+
+    for (const attr in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, attr)) {
+            copy[attr] = deepClone(obj[attr]);
+        }
+    }
+    return copy;
+};
+
 module.exports = {
     slideUp,
     slideDown,
@@ -175,4 +190,5 @@ module.exports = {
     shuffleArray,
     hasKey,
     isEmpty,
+    deepClone,
 };

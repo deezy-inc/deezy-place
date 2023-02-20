@@ -28,7 +28,7 @@ const App = () => {
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
     const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
-    const [address, setAddress] = useState();
+    const [nostrAddress, setNostrAddress] = useState();
 
     useEffect(() => {
         // TODO: Move this to a service and encapulate the logic correctly
@@ -37,7 +37,7 @@ const App = () => {
 
             // TODO: USE PUB KEY NOT HARDCODED DANNY
             const { address } = getAddressInfo(nostrPublicKey);
-            setAddress(address);
+            setNostrAddress(address);
 
             const response = await axios.get(
                 `https://mempool.space/api/address/${address}/utxo`
@@ -108,10 +108,8 @@ const App = () => {
             <SEO pageTitle="Deezy" />
             <Header
                 nostrPublicKey={nostrPublicKey}
-                address={address}
-                setNostrPublicKey={function (pubKey) {
-                    setNostrPublicKey(pubKey);
-                }}
+                address={nostrAddress}
+                setNostrPublicKey={setNostrPublicKey}
             />
 
             <main id="main-content">

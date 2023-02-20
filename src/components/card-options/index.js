@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-prop-types */
 import PropTypes from "prop-types";
 import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -49,7 +50,7 @@ const CardOptions = ({ utxo }) => {
 };
 
 CardOptions.propTypes = {
-    data: PropTypes.object,
+    utxo: PropTypes.object, // TODO: DEFINE UXTO TYPE in @utils/types.js
 };
 
 export default CardOptions;

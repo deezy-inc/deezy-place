@@ -63,71 +63,66 @@ const OrdinalsArea = ({
 
                 {!utxosReady && <TailSpin stroke="#fec823" speed={0.75} />}
 
-                <>
-                    {utxosReady && (
-                        <div className="row g-5">
-                            {ownedUtxos.length > 0 ? (
-                                <>
-                                    {ownedUtxos
-                                        .filter((utxo) =>
-                                            Boolean(
-                                                inscriptionUtxosByUtxo[
-                                                    `${utxo.txid}:${utxo.vout}`
-                                                ]
-                                            )
+                {utxosReady && (
+                    <div className="row g-5">
+                        {ownedUtxos.length > 0 ? (
+                            <>
+                                {ownedUtxos
+                                    .filter((utxo) =>
+                                        Boolean(
+                                            inscriptionUtxosByUtxo[
+                                                `${utxo.txid}:${utxo.vout}`
+                                            ]
                                         )
-                                        .map((utxo) => (
-                                            <div
-                                                key={utxo.txid}
-                                                className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                            >
-                                                <OrdinalCard
-                                                    overlay
-                                                    title={
-                                                        utxo.title ||
-                                                        "Raptor Degen"
-                                                    }
-                                                    slug={utxo.txid}
-                                                    description={
-                                                        utxo.description ||
-                                                        "A force to be reckoned with."
-                                                    }
-                                                    price={{
-                                                        amount: utxo.value.toLocaleString(
-                                                            "en-US"
-                                                        ),
-                                                        currency: "Sats",
-                                                    }}
-                                                    likeCount={
-                                                        utxo.likeCount || 0
-                                                    }
-                                                    image={{
-                                                        src: getSrc(utxo),
-                                                    }}
-                                                    authors={collectionAuthor}
-                                                    utxo={utxo}
-                                                />
-                                            </div>
-                                        ))}
-                                </>
-                            ) : (
-                                <div>
-                                    This address does not own anything yet..
-                                    <br />
-                                    <br />
-                                    Consider minting an{" "}
-                                    <a
-                                        href="https://astralbabes.ai"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        astral babe
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </>
+                                    )
+                                    .map((utxo) => (
+                                        <div
+                                            key={utxo.txid}
+                                            className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
+                                        >
+                                            <OrdinalCard
+                                                overlay
+                                                title={
+                                                    utxo.title || "Raptor Degen"
+                                                }
+                                                slug={utxo.txid}
+                                                description={
+                                                    utxo.description ||
+                                                    "A force to be reckoned with."
+                                                }
+                                                price={{
+                                                    amount: utxo.value.toLocaleString(
+                                                        "en-US"
+                                                    ),
+                                                    currency: "Sats",
+                                                }}
+                                                likeCount={utxo.likeCount || 0}
+                                                image={{
+                                                    src: getSrc(utxo),
+                                                }}
+                                                authors={collectionAuthor}
+                                                utxo={utxo}
+                                            />
+                                        </div>
+                                    ))}
+                            </>
+                        ) : (
+                            <div>
+                                This address does not own anything yet..
+                                <br />
+                                <br />
+                                Consider minting an{" "}
+                                <a
+                                    href="https://astralbabes.ai"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    astral babe
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -123,6 +123,9 @@ const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
 
 Header.propTypes = {
     className: PropTypes.string,
+    setNostrPublicKey: PropTypes.func,
+    nostrPublicKey: PropTypes.string,
+    address: PropTypes.string,
 };
 
 export default Header;

@@ -2,6 +2,7 @@
 /* eslint-disable no-confusing-arrow */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-restricted-syntax */
 function slideUp(element, duration = 500) {
     return new Promise((resolve, _reject) => {
         element.style.height = `${element.offsetHeight}px`;

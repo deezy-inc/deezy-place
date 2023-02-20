@@ -1,18 +1,20 @@
+/* eslint-disable react/forbid-prop-types */
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
-import { shortenStr } from "@utils/crypto";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants";
-import { outputValue, getAddressInfo } from "@utils/crypto";
-const axios = require("axios");
+import { shortenStr, outputValue, getAddressInfo } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371.js";
+import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+
+const axios = require("axios");
+
 bitcoin.initEccLib(ecc);
 
 const SendModal = ({ show, handleModal, utxo }) => {

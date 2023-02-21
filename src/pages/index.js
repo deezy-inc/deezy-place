@@ -10,11 +10,9 @@ import HeroArea from "@containers/HeroArea";
 import OrdinalsArea from "@containers/OrdinalsArea";
 import { normalizedData, deepClone } from "@utils/methods";
 import { getAddressInfo } from "@utils/crypto";
-import { DEFAULT_FEE_RATE, INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-
-import ordinalsData from "@data/ordinals.json"; // TODO: Replace with FETCH of pub key
+import { INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
 import homepageData from "@data/general/home.json";
+import { useConnectWallet } from "../hooks";
 
 // Use this to fetch data from an API service
 const axios = require("axios");
@@ -24,13 +22,15 @@ export async function getStaticProps() {
 }
 
 const App = () => {
-    const [nostrPublicKey, setNostrPublicKey] = useState();
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
     const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
     const [nostrAddress, setNostrAddress] = useState();
+    const { nostrPublicKey, onConnectHandler, onDisconnectHandler } =
+        useConnectWallet();
 
     useEffect(() => {
+        console.log("cha ged", nostrPublicKey);
         // TODO: Move this to a service and encapulate the logic correctly
         async function fetchUtxosForAddress() {
             if (!nostrPublicKey) return;
@@ -108,18 +108,25 @@ const App = () => {
             <SEO pageTitle="Deezy" />
             <Header
                 nostrPublicKey={nostrPublicKey}
+                onConnectHandler={onConnectHandler}
+                onDisconnectHandler={onDisconnectHandler}
                 address={nostrAddress}
-                setNostrPublicKey={setNostrPublicKey}
             />
 
             <main id="main-content">
-                <HeroArea data={content["hero-section"]} />
+                {!Boolean(nostrPublicKey) && (
+                    <HeroArea
+                        data={content["hero-section"]}
+                        onConnectHandler={onConnectHandler}
+                    />
+                )}
 
                 {nostrPublicKey && (
                     <OrdinalsArea
                         utxosReady={utxosReady}
                         ownedUtxos={ownedUtxos}
                         inscriptionUtxosByUtxo={inscriptionUtxosByUtxo}
+                        address={nostrAddress}
                     />
                 )}
             </main>

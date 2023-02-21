@@ -3,7 +3,7 @@ import Image from "next/image";
 import Button from "@ui/button";
 import { HeadingType, TextType, ButtonType, ImageType } from "@utils/types";
 
-const HeroArea = ({ data }) => (
+const HeroArea = ({ data, onConnectHandler }) => (
     <div className="slider-one rn-section-gapTop">
         <div className="container">
             <div className="row row-reverce-sm align-items-center">
@@ -11,9 +11,9 @@ const HeroArea = ({ data }) => (
                     {data?.headings[0]?.content && (
                         <h2
                             className="title"
-                            data-sal-delay="200"
-                            data-sal="slide-up"
-                            data-sal-duration="800"
+                            // data-sal-delay="200"
+                            // data-sal="slide-up"
+                            // data-sal-duration="800"
                         >
                             {data.headings[0].content}
                         </h2>
@@ -21,29 +21,25 @@ const HeroArea = ({ data }) => (
                     {data?.texts?.map((text) => (
                         <p
                             className="slide-disc"
-                            data-sal-delay="300"
-                            data-sal="slide-up"
-                            data-sal-duration="800"
+                            // data-sal-delay="300"
+                            // data-sal="slide-up"
+                            // data-sal-duration="800"
                             key={text.id}
                         >
                             {text.content}
                         </p>
                     ))}
-                    {data?.buttons && (
-                        <div className="button-group">
-                            {data.buttons.map(({ content, id, ...btn }, i) => (
-                                <Button
-                                    {...btn}
-                                    data-sal-delay={400 + i * 100}
-                                    data-sal="slide-up"
-                                    data-sal-duration="400"
-                                    key={id}
-                                >
-                                    {content}
-                                </Button>
-                            ))}
-                        </div>
-                    )}
+
+                    <div className="button-group">
+                        <Button
+                            // data-sal-delay={400 + 1 * 100}
+                            // data-sal="slide-up"
+                            // data-sal-duration="400"
+                            onClick={onConnectHandler}
+                        >
+                            Connect Wallet
+                        </Button>
+                    </div>
                 </div>
                 <div className="col-lg-5 col-md-6 col-sm-12 offset-lg-1">
                     {data?.images?.[0]?.src && (

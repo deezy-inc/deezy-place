@@ -5,20 +5,22 @@ import Anchor from "@ui/anchor";
 import { ImageType } from "@utils/types";
 
 const ClientAvatar = ({ slug, name, image, className }) => (
-    <Anchor
-        path={slug}
-        className={clsx("avatar", className)}
-        data-tooltip={name}
-    >
-        {image?.src && (
-            <Image
-                src={image.src}
-                alt={image?.alt || name}
-                width={image?.width || 30}
-                height={image?.height || 30}
-            />
-        )}
-    </Anchor>
+    // <Anchor
+    //     path={slug}
+    //     className={clsx("avatar", className)}
+    //     data-tooltip={name}
+    // >
+
+    <div className={clsx("avatar", className)} data-tooltip={name}>
+        <Image
+            src={image.src}
+            alt={image?.alt || name}
+            width={image?.width || 30}
+            height={image?.height || 30}
+        />
+    </div>
+
+    // </Anchor>
 );
 
 ClientAvatar.propTypes = {

@@ -1,5 +1,5 @@
 /*----------------------------------
-    White Version Demo  
+    White Version Demo
 -----------------------------------*/
 // body {
 //     &html[data-theme="light"] body {
@@ -142,7 +142,7 @@ html[data-theme="light"] body {
     .rn-service-one .inner .content .title,
     .nice-select .current,
     .share-btn-activation .share-btn-setting .btn-setting-text,
-    .product-style-one a .product-name,
+    .ordinal-card-style a .product-name,
     ul li a,
     .left-header-style .authore-profile .au-content p.name,
     .page-title-area h3,
@@ -674,7 +674,7 @@ html[data-theme="light"] body .rn-header.sticky {
     background-color: #f5f8fa;
 }
 
-html[data-theme="light"] body .product-style-one,
+html[data-theme="light"] body .ordinal-card-style,
 html[data-theme="light"] body .rn-service-one,
 html[data-theme="light"] body .rn-collection-inner-one .collection-wrapper,
 html[data-theme="light"] body .slider-style-2 .single-slide .inner,
@@ -706,7 +706,7 @@ html[data-theme="light"] body {
         }
     }
 
-    .product-style-one {
+    .ordinal-card-style {
         .bid-react-area {
             .react-area {
                 &::after {
@@ -1804,11 +1804,11 @@ html[data-theme="light"] body {
     }
 
     // New Code
-    .product-style-one::after {
+    .ordinal-card-style::after {
         background: #ffffff;
     }
 
-    .product-style-one::before {
+    .ordinal-card-style::before {
         background-image: linear-gradient(100deg, #fff, #0398ed);
     }
 

@@ -5,9 +5,8 @@ import clsx from "clsx";
 import { TailSpin } from "react-loading-icons";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
-
+import { toast } from "react-toastify";
 import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
-import { useEffect } from "react";
 
 const collectionAuthor = [
     {
@@ -22,12 +21,13 @@ const collectionAuthor = [
 const OrdinalsArea = ({
     className,
     space,
-
     utxosReady,
     ownedUtxos,
     inscriptionUtxosByUtxo,
+    address,
 }) => {
     const getSrc = (utxo) => {
+        console.log(utxo);
         if (utxo.status.confirmed) {
             return ordinalsImageUrl(
                 inscriptionUtxosByUtxo[`${utxo.txid}:${utxo.vout}`]
@@ -35,12 +35,6 @@ const OrdinalsArea = ({
         }
         return cloudfrontUrl(utxo);
     };
-
-    useEffect(() => {
-        document
-            .getElementById("your-collection")
-            .scrollIntoView({ behavior: "smooth" });
-    }, []);
 
     return (
         <div
@@ -58,6 +52,21 @@ const OrdinalsArea = ({
                             className="mb--0"
                             {...{ title: "Your collection" }}
                         />
+                        <span>
+                            You can safely receive ordinal inscriptions and
+                            regular bitcoin to this{" "}
+                            <a
+                                className="copy-address"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(address);
+                                    toast(
+                                        "Receive Address copied to clipboard!"
+                                    );
+                                }}
+                            >
+                                address
+                            </a>
+                        </span>
                     </div>
                 </div>
 
@@ -82,21 +91,14 @@ const OrdinalsArea = ({
                                         >
                                             <OrdinalCard
                                                 overlay
-                                                title={
-                                                    utxo.title || "Raptor Degen"
-                                                }
                                                 slug={utxo.txid}
-                                                description={
-                                                    utxo.description ||
-                                                    "A force to be reckoned with."
-                                                }
+                                                minted={utxo.status.confirmed}
                                                 price={{
                                                     amount: utxo.value.toLocaleString(
                                                         "en-US"
                                                     ),
                                                     currency: "Sats",
                                                 }}
-                                                likeCount={utxo.likeCount || 0}
                                                 image={{
                                                     src: getSrc(utxo),
                                                 }}
@@ -130,6 +132,7 @@ const OrdinalsArea = ({
 
 OrdinalsArea.propTypes = {
     className: PropTypes.string,
+    address: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
     utxosReady: PropTypes.bool,
     ownedUtxos: PropTypes.arrayOf(PropTypes.object),

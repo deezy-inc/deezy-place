@@ -16,27 +16,24 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 
 const OrdinalCard = ({
     overlay,
-    title,
-    slug,
-    description,
+    // title,
+    // slug,
+    // description,
     price,
-    likeCount,
     image,
     utxo,
     authors,
+    minted,
 }) => (
     <div className={clsx("product-style-one", !overlay && "no-overlay")}>
         <div className="card-thumbnail">
             {image?.src && (
-                <Anchor path="#">
-                    {/* <Anchor path={`/product/${slug}`}> */}
-                    <Image
-                        src={image.src}
-                        alt={image?.alt || "Ordinal"}
-                        width={533}
-                        height={533}
-                    />
-                </Anchor>
+                <Image
+                    src={image.src}
+                    alt={image?.alt || "Ordinal"}
+                    width={533}
+                    height={533}
+                />
             )}
         </div>
         <div className="product-share-wrapper">
@@ -49,34 +46,30 @@ const OrdinalCard = ({
                         image={client.image}
                     />
                 ))}
-                <Anchor
-                    className="more-author-text"
-                    path="#"
-                    // path={`/product/${slug}`}
-                >
-                    {shortenStr(utxo.txid)}
-                </Anchor>
+                <div className="more-author-text">
+                    <span>{shortenStr(utxo.txid)}</span>
+                </div>
             </div>
-            <CardOptions utxo={utxo} />
+            {/* <CardOptions utxo={utxo} /> */}
         </div>
-        <Anchor path={`#${slug}`}>
+        {/* <Anchor path={`#${slug}`}>
             <span className="product-name">{title}</span>
         </Anchor>
-        <span className="latest-bid">{description}</span>
-        <ProductBid price={price} likeCount={likeCount} />
+        <span className="latest-bid">{description}</span> */}
+        <ProductBid price={price} utxo={utxo} />
     </div>
 );
 
 OrdinalCard.propTypes = {
     overlay: PropTypes.bool,
-    title: PropTypes.string.isRequired,
+    // title: PropTypes.string.isRequired,
     slug: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    minted: PropTypes.string.isRequired,
+    // description: PropTypes.string.isRequired,
     price: PropTypes.shape({
         amount: PropTypes.string.isRequired,
         currency: PropTypes.string.isRequired,
     }).isRequired,
-    likeCount: PropTypes.number.isRequired,
     image: ImageType.isRequired,
     authors: PropTypes.arrayOf(
         PropTypes.shape({

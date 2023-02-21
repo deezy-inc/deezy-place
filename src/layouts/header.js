@@ -6,55 +6,24 @@ import clsx from "clsx";
 
 import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
-import { getAddressInfo, connectWallet } from "@utils/crypto";
 import MobileMenu from "@components/menu/mobile-menu";
 import UserDropdown from "@components/user-dropdown";
-
 import { useOffcanvas, useSticky } from "@hooks";
-
 import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
+const Header = ({
+    className,
+    address,
+    nostrPublicKey,
+    onConnectHandler,
+    onDisconnectHandler,
+}) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-
-    useEffect(() => {
-        async function getAddrInfo() {
-            if (nostrPublicKey) {
-                SessionStorage.set(
-                    SessionsStorageKeys.NOSTR_PUBLIC_KEY,
-                    nostrPublicKey
-                );
-            }
-        }
-
-        getAddrInfo();
-    }, [nostrPublicKey]);
-
-    // TODO: Use @state instead of @sessionStorage
-    useEffect(() => {
-        // TODO: We should ask the browser if we are connected to the wallet
-        const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
-
-        if (pubKey) {
-            setNostrPublicKey(pubKey);
-        }
-    }, []);
-
-    const onConnect = async () => {
-        const pubKey = await connectWallet();
-        setNostrPublicKey(pubKey);
-    };
-
-    const onDisconnect = async () => {
-        setNostrPublicKey(undefined);
-        SessionStorage.remove(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
-    };
 
     return (
         <>
@@ -74,7 +43,7 @@ const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
                                     id="sideNav"
                                     className="mainmenu-nav d-none d-xl-block"
                                 >
-                                    <MainMenu menu={menuData} />
+                                    <MainMenu menu={[]} />
                                 </nav>
                             </div>
                         </div>
@@ -86,7 +55,7 @@ const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
                                             color="primary-alta"
                                             className="connectBtn"
                                             size="small"
-                                            onClick={onConnect}
+                                            onClick={onConnectHandler}
                                         >
                                             Connect Wallet
                                         </Button>
@@ -96,7 +65,7 @@ const Header = ({ className, setNostrPublicKey, nostrPublicKey, address }) => {
                             {Boolean(nostrPublicKey) && Boolean(address) && (
                                 <div className="setting-option rn-icon-list user-account">
                                     <UserDropdown
-                                        onDisconnect={onDisconnect}
+                                        onDisconnect={onDisconnectHandler}
                                         pubKey={nostrPublicKey}
                                         receiveAddress={address}
                                     />

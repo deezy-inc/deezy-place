@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import Image from "next/image";
 import Anchor from "@ui/anchor";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
@@ -50,7 +50,7 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
                         </div>
                         <div className="button" />
                     </li>
-                    <li className="single-product-list">
+                    {/* <li className="single-product-list">
                         <div className="content">
                             <h6 className="title">
                                 Public Key
@@ -75,7 +75,7 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
                             <span className="text">{pubKey}</span>
                         </div>
                         <div className="button" />
-                    </li>
+                    </li> */}
                 </ul>
             </div>
 
@@ -87,12 +87,6 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
                 </li>
             </ul>
         </div>
-        <ToastContainer
-            theme="dark"
-            autoClose={1500}
-            pauseOnHover={false}
-            pauseOnFocusLoss={false}
-        />
     </div>
 );
 

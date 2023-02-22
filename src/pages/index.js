@@ -30,7 +30,6 @@ const App = () => {
         useConnectWallet();
 
     useEffect(() => {
-        console.log("cha ged", nostrPublicKey);
         // TODO: Move this to a service and encapulate the logic correctly
         async function fetchUtxosForAddress() {
             if (!nostrPublicKey) return;
@@ -49,6 +48,7 @@ const App = () => {
             // TODO: Order if possible, so that we can get the most recent inscriptions first
             // TODO: Can we remove inscriptions without images?
             for (const utxo of response.data) {
+                console.log(utxo);
                 tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo;
                 // if (!utxo.status.confirmed) continue
                 let currentUtxo = utxo;

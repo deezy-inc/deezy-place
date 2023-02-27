@@ -14,11 +14,14 @@ import InscriptionList from "~/components/InscriptionList";
 export async function loader({ request }: LoaderArgs) {
   const nostrPublicKey = await getNostrPublicKey(request)
   if (typeof nostrPublicKey !== 'string') {
-    return null
+    return {
+      address: null,
+      inscriptions: []
+    }
   }
 
   const { address } = getAddressInfo(nostrPublicKey)
-  if (!address) return
+  if (!address) return { address: null, inscriptions: [] }
 
   const utxos: Utxo[] = await getUtxos(address);
   let inscriptionedUtxos = await Promise.all(utxos.map(async (utxo) => {

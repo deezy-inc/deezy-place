@@ -1,11 +1,11 @@
-import { TESTNET, ASSUMED_TX_BYTES } from "./constants";
+import { ASSUMED_TX_BYTES } from "./constants";
 import { Utxo } from "./types";
 
 export const classNames = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
 };
 
-export const outputValue = (currentUtxo, sendFeeRate) => {
+export const outputValue = (currentUtxo: Utxo, sendFeeRate) => {
   return currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 };
 

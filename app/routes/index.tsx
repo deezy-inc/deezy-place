@@ -1,14 +1,15 @@
-import { ActionArgs, LoaderArgs, json } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useSubmit } from "@remix-run/react";
 import { useState } from "react";
 import { useLoaderData } from "react-router";
 import HeroSection from "~/components/HeroSection";
 import NavBar from "~/components/NavBar";
 import SendInscriptionModal from "~/components/modals/SendInscriptionModal";
-import { getAddressInfo, getUtxos, checkIfInscriptionExists, getPreviousTxOfUtxo, checkContentType, getPreviousTrasactions } from "~/services.server";
+import { getAddressInfo, getUtxos, checkIfInscriptionExists, checkContentType, getPreviousTrasactions } from "~/services.server";
 import { createUserSession, getNostrPublicKey, logout } from "~/session.server";
-import { connectWallet, copy } from "~/utils";
-import { Utxo } from "~/types";
+import { connectWallet } from "~/utils";
+import type { Utxo } from "~/types";
 import InscriptionList from "~/components/InscriptionList";
 import NoInscriptions from "~/components/NoInscriptions";
 
@@ -34,9 +35,9 @@ export async function loader({ request }: LoaderArgs) {
 
   let formatInscriptionedUtxos = inscriptionedUtxos.filter(({ status }) => status === 200).map(x => x.utxo)
   let restOfTheFirstInscriptions = inscriptionedUtxos.filter(({ status }) => status !== 200).map(x => x.utxo)
-  // let utxosWithRightTransactions = await getPreviousTrasactions(restOfTheFirstInscriptions)
-  // ...utxosWithRightTransactions
-  return json({ address, inscriptions: [...formatInscriptionedUtxos] })
+  let utxosWithRightTransactions = await getPreviousTrasactions(restOfTheFirstInscriptions)
+  
+  return json({ address, inscriptions: [...formatInscriptionedUtxos, ...utxosWithRightTransactions] })
 }
 
 export async function action({ request }: ActionArgs) {
@@ -73,7 +74,6 @@ export default function Index() {
     formData.set("action", 'logout')
     submit(formData, { method: "post" })
   }
-
 
   const handleSendInscription = () => {
 

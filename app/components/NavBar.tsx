@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { classNames, connectWallet } from '~/utils'
+import { classNames, connectWallet, copy } from '~/utils'
 import { Button } from './elements/Button'
 
 interface NavBarProps {
@@ -77,7 +77,8 @@ export default function Navbar({ handleConnectWallet, handleDisconnectFromWallet
                           <Menu.Item key="address">
                             {({ active }) => (
                               <button
-                                onClick={() => { }}
+                                title="Click to copy"
+                                onClick={() => { copy(address) }}
                                 className={classNames(
                                   active ? 'bg-gray-100' : '',
                                   'block px-4 py-2 text-sm text-gray-700 w-full text-left'
@@ -122,7 +123,8 @@ export default function Navbar({ handleConnectWallet, handleDisconnectFromWallet
                   <Disclosure.Button
                     key="address"
                     as="button"
-                    onClick={() => { }}
+                    title="Click to copy"
+                    onClick={() => { copy(address) }}
                     className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                   >
                     {address}

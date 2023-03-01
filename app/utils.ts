@@ -28,6 +28,11 @@ export const shortenStr = (str: string) => {
   );
 };
 
+export const copy = (text: string) => {
+  navigator.clipboard.writeText(
+    text
+  );
+}
 
 
 export const connectWallet = async () => {

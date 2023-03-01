@@ -1,15 +1,16 @@
 import { ActionArgs, LoaderArgs, json } from "@remix-run/node";
 import { useSubmit } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLoaderData } from "react-router";
 import HeroSection from "~/components/HeroSection";
 import NavBar from "~/components/NavBar";
 import SendInscriptionModal from "~/components/modals/SendInscriptionModal";
 import { getAddressInfo, getUtxos, checkIfInscriptionExists, getPreviousTxOfUtxo, checkContentType, getPreviousTrasactions } from "~/services.server";
 import { createUserSession, getNostrPublicKey, logout } from "~/session.server";
-import { connectWallet } from "~/utils";
+import { connectWallet, copy } from "~/utils";
 import { Utxo } from "~/types";
 import InscriptionList from "~/components/InscriptionList";
+import NoInscriptions from "~/components/NoInscriptions";
 
 export async function loader({ request }: LoaderArgs) {
   const nostrPublicKey = await getNostrPublicKey(request)
@@ -56,7 +57,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const [inscription, setInscription] = useState(null);
+  const [inscription, setInscription] = useState<null | Utxo>(null);
   const { address, inscriptions } = useLoaderData() as { address: string, inscriptions: Utxo[] };
   const submit = useSubmit()
 
@@ -79,11 +80,12 @@ export default function Index() {
   }
 
   return (
-    <div className="bg-gray-800">
+    <div className="bg-gray-800 min-h-screen">
       <NavBar address={address} handleConnectWallet={handleConnectWallet} handleDisconnectFromWallet={handleDisconnectFromWallet} />
-      {!address && <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <HeroSection handleConnectWallet={handleConnectWallet} />
-      </div>}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <HeroSection handleConnectWallet={handleConnectWallet} address={address} />
+      </div>
+      {!inscriptions.length && address && <NoInscriptions address={address} />}
       <InscriptionList inscriptions={inscriptions} setInscription={setInscription} />
       <SendInscriptionModal handleSendInscription={handleSendInscription} inscription={inscription} onClose={() => setInscription(null)} />
     </div>

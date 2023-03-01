@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, no-extra-boolean-cast */
 
 import React, { useState, useEffect } from "react";
 
@@ -34,7 +34,6 @@ const App = () => {
         async function fetchUtxosForAddress() {
             if (!nostrPublicKey) return;
 
-            // TODO: USE PUB KEY NOT HARDCODED DANNY
             const { address } = getAddressInfo(nostrPublicKey);
             setNostrAddress(address);
 

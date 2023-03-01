@@ -1,4 +1,5 @@
 /* eslint no-extra-boolean-cast: "off" */
+/* eslint-disable react/forbid-prop-types */
 
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
@@ -92,9 +93,10 @@ const Header = ({
 
 Header.propTypes = {
     className: PropTypes.string,
-    setNostrPublicKey: PropTypes.func,
     nostrPublicKey: PropTypes.string,
     address: PropTypes.string,
+    onConnectHandler: PropTypes.func,
+    onDisconnectHandler: PropTypes.func,
 };
 
 export default Header;

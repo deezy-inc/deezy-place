@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 import Image from "next/image";
 import clsx from "clsx";
-import Anchor from "@ui/anchor";
+
 import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
 
@@ -23,7 +23,7 @@ const OrdinalCard = ({
     image,
     utxo,
     authors,
-    minted,
+    // minted,
 }) => (
     <div className={clsx("product-style-one", !overlay && "no-overlay")}>
         <div className="card-thumbnail">
@@ -63,8 +63,8 @@ const OrdinalCard = ({
 OrdinalCard.propTypes = {
     overlay: PropTypes.bool,
     // title: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    minted: PropTypes.string.isRequired,
+    // slug: PropTypes.string.isRequired,
+    // minted: PropTypes.string.isRequired,
     // description: PropTypes.string.isRequired,
     price: PropTypes.shape({
         amount: PropTypes.string.isRequired,

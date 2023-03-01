@@ -55,17 +55,18 @@ const OrdinalsArea = ({
                         <span>
                             You can safely receive ordinal inscriptions and
                             regular bitcoin to this{" "}
-                            <a
-                                className="copy-address"
+                            <button
+                                className="btn-transparent"
                                 onClick={() => {
                                     navigator.clipboard.writeText(address);
                                     toast(
                                         "Receive Address copied to clipboard!"
                                     );
                                 }}
+                                type="button"
                             >
                                 address
-                            </a>
+                            </button>
                         </span>
                     </div>
                 </div>

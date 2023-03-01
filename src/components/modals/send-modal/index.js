@@ -12,6 +12,7 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+import { TailSpin } from "react-loading-icons";
 
 const axios = require("axios");
 
@@ -23,6 +24,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
     const [sentTxid, setSentTxid] = useState(null);
     const [nostrPublicKey, setNostrPublicKey] = useState();
+    const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
         const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
@@ -196,15 +198,23 @@ const SendModal = ({ show, handleModal, utxo }) => {
                             size="medium"
                             fullwidth
                             disabled={!destinationBtcAddress}
+                            className={isSending ? "btn-loading" : ""}
                             onClick={async () => {
+                                setIsSending(true);
                                 await sendUtxo().catch((err) => {
                                     console.error(err);
                                     alert(err);
                                     return false;
                                 });
+                                handleModal();
+                                setIsSending(false);
                             }}
                         >
-                            Send
+                            {isSending ? (
+                                <TailSpin stroke="#fec823" speed={0.75} />
+                            ) : (
+                                "Send"
+                            )}
                         </Button>
                     </div>
                 </div>

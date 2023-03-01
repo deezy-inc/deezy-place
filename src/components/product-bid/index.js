@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-prop-types */
 import PropTypes from "prop-types";
 import { useState } from "react";
 import SendModal from "@components/modals/send-modal";
@@ -8,23 +9,22 @@ const ProductBid = ({ price, utxo }) => {
         setShowSendModal((prev) => !prev);
     };
 
+    const minted = !utxo.status.confirmed
+        ? "Unconfirmed"
+        : new Date(utxo.status.block_time * 1000).toLocaleString();
+
     return (
         <div className="bid-react-area">
             <div className="last-bid">
                 {`${price.amount} ${price.currency}`}
-                <span className="minted">{` ${
-                    !utxo.status.confirmed
-                        ? "Unconfirmed"
-                        : new Date(
-                              utxo.status.block_time * 1000
-                          ).toLocaleString()
-                }`}</span>
+                <span className="minted">{` ${minted}`}</span>
             </div>
 
             <button
                 className="btn btn-small"
                 onClick={handleSendModal}
                 disabled={!utxo.status.confirmed}
+                type="button"
             >
                 Send
             </button>

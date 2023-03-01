@@ -7,7 +7,7 @@ import InscriptionCard from '../InscriptionCard'
 import { Input } from '../elements/Input'
 import { DEFAULT_FEE_RATE, TESTNET } from '~/constants'
 
-export default function SendInscriptionModal({ inscription, onClose }: { inscription: Utxo | null, onClose: (value: boolean) => void }) {
+export default function SendInscriptionModal({ handleSendInscription, inscription, onClose }: { handleSendInscription: (value: boolean) => void, inscription: Utxo | null, onClose: (value: boolean) => void }) {
   const [open, setOpen] = useState(true)
   const [bitcoinAddress, setBitcoinAddress] = useState("")
   const [error, setError] = useState({ bitcoinAddress: "" })

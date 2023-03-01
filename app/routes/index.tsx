@@ -6,7 +6,7 @@ import HeroSection from "~/components/HeroSection";
 import NavBar from "~/components/NavBar";
 import SendInscriptionModal from "~/components/modals/SendInscriptionModal";
 import { getAddressInfo, getUtxos, checkIfInscriptionExists, getPreviousTxOfUtxo, checkContentType, getPreviousTrasactions } from "~/services.server";
-import { createUserSession, getNostrPublicKey } from "~/session.server";
+import { createUserSession, getNostrPublicKey, logout } from "~/session.server";
 import { connectWallet } from "~/utils";
 import { Utxo } from "~/types";
 import InscriptionList from "~/components/InscriptionList";
@@ -33,13 +33,18 @@ export async function loader({ request }: LoaderArgs) {
 
   let formatInscriptionedUtxos = inscriptionedUtxos.filter(({ status }) => status === 200).map(x => x.utxo)
   let restOfTheFirstInscriptions = inscriptionedUtxos.filter(({ status }) => status !== 200).map(x => x.utxo)
-  let utxosWithRightTransactions = await getPreviousTrasactions(restOfTheFirstInscriptions)
-
-  return json({ address, inscriptions: [...formatInscriptionedUtxos, ...utxosWithRightTransactions] })
+  // let utxosWithRightTransactions = await getPreviousTrasactions(restOfTheFirstInscriptions)
+  // ...utxosWithRightTransactions
+  return json({ address, inscriptions: [...formatInscriptionedUtxos] })
 }
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const action = formData.get('action');
+  if (action === 'logout') {
+    return await logout(request)
+  }
+
   const nostrPublicKey = formData.get('nostrPublicKey');
   if (typeof nostrPublicKey != 'string') return
 
@@ -54,6 +59,7 @@ export default function Index() {
   const [inscription, setInscription] = useState(null);
   const { address, inscriptions } = useLoaderData() as { address: string, inscriptions: Utxo[] };
   const submit = useSubmit()
+
   const handleConnectWallet = async () => {
     const nostrPublicKey = await connectWallet()
     let formData = new FormData()
@@ -61,9 +67,12 @@ export default function Index() {
     submit(formData, { method: "post" })
   }
 
-  useEffect(() => {
-    console.log(inscription)
-  }, [inscription])
+  const handleDisconnectFromWallet = async () => {
+    let formData = new FormData()
+    formData.set("action", 'logout')
+    submit(formData, { method: "post" })
+  }
+
 
   const handleSendInscription = () => {
 
@@ -71,7 +80,7 @@ export default function Index() {
 
   return (
     <div className="bg-gray-800">
-      <NavBar address={address} handleConnectWallet={handleConnectWallet} />
+      <NavBar address={address} handleConnectWallet={handleConnectWallet} handleDisconnectFromWallet={handleDisconnectFromWallet} />
       {!address && <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <HeroSection handleConnectWallet={handleConnectWallet} />
       </div>}

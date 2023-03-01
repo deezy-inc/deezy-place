@@ -41,8 +41,8 @@
     },
     "scripts": {
         "dev": "next dev",
-        "start": "NODE_ENV=development webpack serve",
-        "build": "next build",
+        "build": "next build && next export",
+        "start": "next start",
         "format": "prettier --ignore-path .prettierignore --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint": "eslint --ignore-path .eslintignore . --ext ts --ext tsx --ext js --ext jsx",
         "lint:fix": "yarn format & next lint --dir src",

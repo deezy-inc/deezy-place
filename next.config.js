@@ -12,6 +12,7 @@ module.exports = withBundleAnalyzer({
     },
     images: {
         domains: ["ordinals.com", "d2v3k2do8kym1f.cloudfront.net"],
+        unoptimized: true,
     },
 
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {

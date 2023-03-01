@@ -47,38 +47,22 @@ export default function App() {
         tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo
         // if (!utxo.status.confirmed) continue
         let currentUtxo = utxo
-        let currentDepth = 0
-        console.log(utxo)
-        while (true) {
-          if (currentDepth > INSCRIPTION_SEARCH_DEPTH) break
-          console.log(`looping ${currentDepth}`)
-          let inscriptionId = `${currentUtxo.txid}i${currentUtxo.vout}`
-          // If there's no inscription here, go back one vin and check again.
-          console.log(`Checking inscription id ${inscriptionId}`)
-          let res = null
-          try {
-            res = await axios.get(`https://ordinals.com/inscription/${inscriptionId}`)
-          } catch (err) {
-            console.log(`Error from ordinals.com`)
-          }
-          if (!res) {
-            console.log(`No inscription for ${inscriptionId}`)
-            currentDepth++
-            // get previous vin
-            const txResp = await axios.get(`https://mempool.space/api/tx/${currentUtxo.txid}`)
-            const tx = txResp.data
-            console.log(tx)
-            const firstInput = tx.vin[0]
-            currentUtxo = { txid: firstInput.txid, vout: firstInput.vout }
-            continue
-          }
-          tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo
-          const newInscriptionsByUtxo = {}
-          Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo)
-          setInscriptionUtxosByUtxo(newInscriptionsByUtxo)
-          setUtxosReady(true)
-          break
+        console.log('utxo', utxo)
+
+        console.log(`Checking utxo ${currentUtxo.txid}:${currentUtxo.vout}`)
+        try {
+          const res = await axios.get(`https://ordinals.com/output/${currentUtxo.txid}:${currentUtxo.vout}`)
+          const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1]
+          const [txid, vout] = inscriptionId.split('i')
+          currentUtxo = { txid, vout }
+        } catch (err) {
+          console.log(`Error from ordinals.com`)
         }
+        tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo
+        const newInscriptionsByUtxo = {}
+        Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo)
+        setInscriptionUtxosByUtxo(newInscriptionsByUtxo)
+        setUtxosReady(true)
       }
       setInscriptionUtxosByUtxo(tempInscriptionsByUtxo)
       setUtxosReady(true)

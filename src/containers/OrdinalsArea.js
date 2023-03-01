@@ -1,5 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-
+import { useContext } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { TailSpin } from "react-loading-icons";
@@ -7,6 +7,7 @@ import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
+import WalletContext from "@context/wallet-context";
 
 const collectionAuthor = [
     {
@@ -24,10 +25,8 @@ const OrdinalsArea = ({
     utxosReady,
     ownedUtxos,
     inscriptionUtxosByUtxo,
-    address,
 }) => {
     const getSrc = (utxo) => {
-        console.log(utxo);
         if (utxo.status.confirmed) {
             return ordinalsImageUrl(
                 inscriptionUtxosByUtxo[`${utxo.txid}:${utxo.vout}`]
@@ -35,6 +34,8 @@ const OrdinalsArea = ({
         }
         return cloudfrontUrl(utxo);
     };
+
+    const { nostrAddress } = useContext(WalletContext);
 
     return (
         <div
@@ -58,7 +59,7 @@ const OrdinalsArea = ({
                             <a
                                 className="copy-address"
                                 onClick={() => {
-                                    navigator.clipboard.writeText(address);
+                                    navigator.clipboard.writeText(nostrAddress);
                                     toast(
                                         "Receive Address copied to clipboard!"
                                     );
@@ -132,7 +133,6 @@ const OrdinalsArea = ({
 
 OrdinalsArea.propTypes = {
     className: PropTypes.string,
-    address: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
     utxosReady: PropTypes.bool,
     ownedUtxos: PropTypes.arrayOf(PropTypes.object),

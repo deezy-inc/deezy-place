@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
-import SendModal from "@components/modals/send-modal";
+import SendModal from "@components/modals/sell-modal";
 
 const ProductBid = ({ price, utxo }) => {
     const [showSendModal, setShowSendModal] = useState(false);
@@ -39,7 +39,7 @@ const ProductBid = ({ price, utxo }) => {
 
 ProductBid.propTypes = {
     price: PropTypes.shape({
-        amount: PropTypes.number.isRequired,
+        amount: PropTypes.string.isRequired,
         currency: PropTypes.string.isRequired,
     }).isRequired,
     utxo: PropTypes.object,

@@ -32,7 +32,8 @@
                     ["@utils", "./src/utils/"],
                     ["@hooks", "./src/hooks/"],
                     ["@data", "./src/data/"],
-                    ["@services", "./src/services/"]
+                    ["@services", "./src/services/"],
+                    ["@context", "./src/context/"]
                 ],
                 "extensions": [".js", ".jsx"]
             },

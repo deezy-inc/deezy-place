@@ -23,7 +23,6 @@ const OrdinalCard = ({
     image,
     utxo,
     authors,
-    minted,
 }) => (
     <div className={clsx("product-style-one", !overlay && "no-overlay")}>
         <div className="card-thumbnail">
@@ -64,7 +63,7 @@ OrdinalCard.propTypes = {
     overlay: PropTypes.bool,
     // title: PropTypes.string.isRequired,
     slug: PropTypes.string.isRequired,
-    minted: PropTypes.string.isRequired,
+
     // description: PropTypes.string.isRequired,
     price: PropTypes.shape({
         amount: PropTypes.string.isRequired,

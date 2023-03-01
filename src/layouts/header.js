@@ -1,6 +1,6 @@
 /* eslint no-extra-boolean-cast: "off" */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 
@@ -11,19 +11,15 @@ import UserDropdown from "@components/user-dropdown";
 import { useOffcanvas, useSticky } from "@hooks";
 import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
-
+import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = ({
-    className,
-    address,
-    nostrPublicKey,
-    onConnectHandler,
-    onDisconnectHandler,
-}) => {
+const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
+
+    const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
     return (
         <>
@@ -62,15 +58,16 @@ const Header = ({
                                     </div>
                                 </div>
                             )}
-                            {Boolean(nostrPublicKey) && Boolean(address) && (
-                                <div className="setting-option rn-icon-list user-account">
-                                    <UserDropdown
-                                        onDisconnect={onDisconnectHandler}
-                                        pubKey={nostrPublicKey}
-                                        receiveAddress={address}
-                                    />
-                                </div>
-                            )}
+                            {Boolean(nostrPublicKey) &&
+                                Boolean(nostrAddress) && (
+                                    <div className="setting-option rn-icon-list user-account">
+                                        <UserDropdown
+                                            onDisconnect={onDisconnectHandler}
+                                            pubKey={nostrPublicKey}
+                                            receiveAddress={nostrAddress}
+                                        />
+                                    </div>
+                                )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">
                                 <div className="hamberger">
                                     <BurgerButton onClick={offcanvasHandler} />
@@ -93,8 +90,6 @@ const Header = ({
 Header.propTypes = {
     className: PropTypes.string,
     setNostrPublicKey: PropTypes.func,
-    nostrPublicKey: PropTypes.string,
-    address: PropTypes.string,
 };
 
 export default Header;

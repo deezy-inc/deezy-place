@@ -12,6 +12,7 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+import { toast } from "react-toastify";
 
 const axios = require("axios");
 
@@ -68,7 +69,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
         psbt.updateInput(0, {
             tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
-        });
+        }); 
         psbt.finalizeAllInputs();
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
@@ -84,6 +85,9 @@ const SendModal = ({ show, handleModal, utxo }) => {
         if (!res) return false;
 
         setSentTxid(fullTx.getId());
+
+        toast.success(`Transaction sent: ${fullTx.getId()}`);
+        handleModal();
         return true;
     }
 

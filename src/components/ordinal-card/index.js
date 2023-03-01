@@ -23,6 +23,7 @@ const OrdinalCard = ({
     image,
     utxo,
     authors,
+    onSale,
     // minted,
 }) => (
     <div className={clsx("product-style-one", !overlay && "no-overlay")}>
@@ -56,7 +57,7 @@ const OrdinalCard = ({
             <span className="product-name">{title}</span>
         </Anchor>
         <span className="latest-bid">{description}</span> */}
-        <ProductBid price={price} utxo={utxo} />
+        <ProductBid price={price} utxo={utxo} onSale={onSale} />
     </div>
 );
 
@@ -79,6 +80,7 @@ OrdinalCard.propTypes = {
         })
     ),
     utxo: PropTypes.object,
+    onSale: PropTypes.func,
 };
 
 OrdinalCard.defaultProps = {

@@ -25,6 +25,7 @@ const OrdinalsArea = ({
     ownedUtxos,
     inscriptionUtxosByUtxo,
     address,
+    onSale,
 }) => {
     const getSrc = (utxo) => {
         console.log(utxo);
@@ -105,6 +106,7 @@ const OrdinalsArea = ({
                                                 }}
                                                 authors={collectionAuthor}
                                                 utxo={utxo}
+                                                onSale={onSale}
                                             />
                                         </div>
                                     ))}
@@ -138,6 +140,7 @@ OrdinalsArea.propTypes = {
     utxosReady: PropTypes.bool,
     ownedUtxos: PropTypes.arrayOf(PropTypes.object),
     inscriptionUtxosByUtxo: PropTypes.object,
+    onSale: PropTypes.func,
 };
 
 OrdinalsArea.defaultProps = {

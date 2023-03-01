@@ -24,6 +24,7 @@ export async function getStaticProps() {
 const App = () => {
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
+    const [refreshHack, setRefreshHack] = useState(false);
     const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
     const [nostrAddress, setNostrAddress] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } =
@@ -33,6 +34,7 @@ const App = () => {
         // TODO: Move this to a service and encapulate the logic correctly
         async function fetchUtxosForAddress() {
             if (!nostrPublicKey) return;
+            setUtxosReady(false);
 
             const { address } = getAddressInfo(nostrPublicKey);
             setNostrAddress(address);
@@ -99,7 +101,7 @@ const App = () => {
             setUtxosReady(true);
         }
         fetchUtxosForAddress();
-    }, [nostrPublicKey]);
+    }, [nostrPublicKey, refreshHack]);
 
     const content = normalizedData(homepageData?.content || []);
     return (
@@ -126,6 +128,7 @@ const App = () => {
                         ownedUtxos={ownedUtxos}
                         inscriptionUtxosByUtxo={inscriptionUtxosByUtxo}
                         address={nostrAddress}
+                        onSale={setRefreshHack}
                     />
                 )}
             </main>

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import SendModal from "@components/modals/send-modal";
 
-const ProductBid = ({ price, utxo }) => {
+const ProductBid = ({ price, utxo, onSale }) => {
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -32,6 +32,7 @@ const ProductBid = ({ price, utxo }) => {
                 show={showSendModal}
                 handleModal={handleSendModal}
                 utxo={utxo}
+                onSale={onSale}
             />
         </div>
     );
@@ -43,6 +44,7 @@ ProductBid.propTypes = {
         currency: PropTypes.string.isRequired,
     }).isRequired,
     utxo: PropTypes.object,
+    onSale: PropTypes.func,
 };
 
 export default ProductBid;

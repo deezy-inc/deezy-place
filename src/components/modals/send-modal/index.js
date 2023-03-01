@@ -18,7 +18,7 @@ const axios = require("axios");
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo }) => {
+const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
@@ -206,6 +206,12 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                     alert(err);
                                     return false;
                                 });
+
+                                // sleep for 1 second to let the tx propagate
+                                await new Promise((r) => {
+                                    setTimeout(r, 1000);
+                                });
+                                onSale();
                                 handleModal();
                                 setIsSending(false);
                             }}
@@ -227,5 +233,6 @@ SendModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
+    onSale: PropTypes.func.isRequired,
 };
 export default SendModal;

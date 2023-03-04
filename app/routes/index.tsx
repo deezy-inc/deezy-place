@@ -1,12 +1,11 @@
 import type { ActionArgs, LoaderArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useSubmit } from "@remix-run/react";
+import { useSubmit, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import { useLoaderData } from "react-router";
 import HeroSection from "~/components/HeroSection";
 import NavBar from "~/components/NavBar";
 import SendInscriptionModal from "~/components/modals/SendInscriptionModal";
-import { getAddressInfo, getUtxos, checkIfInscriptionExists, checkContentType, getPreviousTrasactions } from "~/services.server";
+import { getAddressInfo, getUtxos, getInscriptionUtxo, checkContentType } from "~/services.server";
 import { createUserSession, getNostrPublicKey, logout } from "~/session.server";
 import { connectWallet } from "~/utils";
 import type { Utxo } from "~/types";
@@ -27,17 +26,13 @@ export async function loader({ request }: LoaderArgs) {
 
   const utxos: Utxo[] = await getUtxos(address);
   let inscriptionedUtxos = await Promise.all(utxos.map(async (utxo) => {
+    const inscriptionUtxo = await getInscriptionUtxo(utxo) 
     return {
-      status: await checkIfInscriptionExists(utxo),
-      utxo: { ...utxo, contentType: await checkContentType(utxo) }
+      ...utxo, ...inscriptionUtxo, contentType: await checkContentType(utxo) 
     }
   }))
 
-  let formatInscriptionedUtxos = inscriptionedUtxos.filter(({ status }) => status === 200).map(x => x.utxo)
-  let restOfTheFirstInscriptions = inscriptionedUtxos.filter(({ status }) => status !== 200).map(x => x.utxo)
-  let utxosWithRightTransactions = await getPreviousTrasactions(restOfTheFirstInscriptions)
-  
-  return json({ address, inscriptions: [...formatInscriptionedUtxos, ...utxosWithRightTransactions] })
+  return json({ address, inscriptions: inscriptionedUtxos })
 }
 
 export async function action({ request }: ActionArgs) {

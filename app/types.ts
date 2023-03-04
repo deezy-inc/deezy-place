@@ -1,12 +1,10 @@
 export type Utxo = {
   txid: string;
-  vout: string;
+  vout: number;
   status?: {
     confirmed: boolean;
     block_time: number;
   };
-  value?: string,
-  contentType: string | null
+  value?: number;
+  contentType: string | null;
 };
-
-

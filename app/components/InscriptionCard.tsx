@@ -1,9 +1,10 @@
 import { classNames, cloudfrontUrl, ordinalsImageUrl, shortenStr } from "~/utils";
 import { Button } from "./elements/Button";
-import { Utxo } from "~/types";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import type { Utxo } from "~/types";
+import type { Dispatch, SetStateAction} from "react";
+import { useEffect, useState } from "react";
 
-export default function InscriptionCard({ inscription, setInscription }: { inscription: Utxo, setInscription: Dispatch<SetStateAction<null | Utxo>> }) {
+export default function InscriptionCard({ inscription, setInscription }: { inscription: Utxo, setInscription?: Dispatch<SetStateAction<null | Utxo>> }) {
   const [content, setContent] = useState("")
   const url = inscription?.status?.confirmed ? ordinalsImageUrl(inscription) : cloudfrontUrl(inscription)
   const isImage = inscription?.contentType?.startsWith('image')

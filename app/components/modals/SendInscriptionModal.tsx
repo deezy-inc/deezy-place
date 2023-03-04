@@ -1,7 +1,7 @@
 import { Fragment, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Network, validate } from 'bitcoin-address-validation'
-import { Utxo } from '~/types'
+import type { Utxo } from '~/types'
 import { Button } from '../elements/Button'
 import InscriptionCard from '../InscriptionCard'
 import { Input } from '../elements/Input'
@@ -31,6 +31,10 @@ export default function SendInscriptionModal({ handleSendInscription, inscriptio
     setError({ bitcoinAddress: "" })
     setFeeRate(DEFAULT_FEE_RATE)
     onClose(e)
+  }
+
+  const handleSubmitForm = () => {
+    handleSendInscription({ bitcoinAddress, feeRate}) 
   }
 
   const cancelButtonRef = useRef(null)
@@ -92,7 +96,7 @@ export default function SendInscriptionModal({ handleSendInscription, inscriptio
                       extraClasses="w-full"
                       primary
                       type="button"
-                      onClick={() => setOpen(false)}
+                      onClick={handleSubmitForm}
                       label="Send"
                     />
                   </div>

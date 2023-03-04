@@ -1,5 +1,3 @@
-import { Button } from "./elements/Button";
-
 export default function NoInscriptions({ address }: { address: string }) {
     return (
         <div className="mx-auto max-w-7xl pb-16 sm:px-6 lg:px-8">
@@ -13,9 +11,9 @@ export default function NoInscriptions({ address }: { address: string }) {
                 <div className="mt-10 flex items-center justify-center gap-x-6">
                     <a
                         href="https://astralbabes.ai" target="_blank"
-                        className="bg-yellow-500 text-gray-800 font-semibold rounded-md shadow-lg shadow-yellow-500/50 border border-yellow-500 px-6 py-3 text-lg"
+                        className="bg-yellow-500 text-gray-800 font-semibold rounded-md shadow-lg shadow-yellow-500/50 border border-yellow-500 px-6 py-3 text-lg" rel="noreferrer"
                     >
-                        Get started
+                        Go get a astral babe
                     </a>
                 </div>
             </div>

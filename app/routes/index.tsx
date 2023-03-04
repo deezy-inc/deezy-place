@@ -1,11 +1,11 @@
 import type { ActionArgs, LoaderArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useSubmit, useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useSubmit, useLoaderData, useActionData } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import HeroSection from "~/components/HeroSection";
 import NavBar from "~/components/NavBar";
 import SendInscriptionModal from "~/components/modals/SendInscriptionModal";
-import { getAddressInfo, getUtxos, getInscriptionUtxo, checkContentType } from "~/services.server";
+import { getAddressInfo, getUtxos, getInscriptionUtxo, checkContentType, sendInscription } from "~/services.server";
 import { createUserSession, getNostrPublicKey, logout } from "~/session.server";
 import { connectWallet } from "~/utils";
 import type { Utxo } from "~/types";
@@ -42,6 +42,18 @@ export async function action({ request }: ActionArgs) {
     return await logout(request)
   }
 
+  if (action === 'send-inscription') {
+    const nostrPublicKey = await getNostrPublicKey(request)
+    const bitcoinAddress = formData.get('bitcoinAddress');
+    const feeRate = formData.get('feeRate');
+    const value = formData.get('value');
+    const txid = formData.get('txid');
+    const vout = formData.get('vout');
+    if ( !vout || !value) return false
+    console.log('server', { nostrPublicKey,bitcoinAddress, feeRate, value, txid, vout  })
+    return sendInscription({ nostrPublicKey, bitcoinAddress, feeRate, value: parseInt(value), txid, vout: parseInt(vout) });
+  }
+
   const nostrPublicKey = formData.get('nostrPublicKey');
   if (typeof nostrPublicKey != 'string') return
 
@@ -55,6 +67,7 @@ export async function action({ request }: ActionArgs) {
 export default function Index() {
   const [inscription, setInscription] = useState<null | Utxo>(null);
   const { address, inscriptions } = useLoaderData() as { address: string, inscriptions: Utxo[] };
+  const actionData = useActionData()
   const submit = useSubmit()
 
   const handleConnectWallet = async () => {
@@ -70,9 +83,30 @@ export default function Index() {
     submit(formData, { method: "post" })
   }
 
-  const handleSendInscription = () => {
+  const handleSendInscription = ({ bitcoinAddress, feeRate}: {bitcoinAddress: string, feeRate: number}) => {
+    console.log('okay', feeRate, inscription)
+    if (!feeRate || !inscription?.value) return false
+    let formData = new FormData()
+    formData.set("action", 'send-inscription')
+    formData.set("bitcoinAddress", bitcoinAddress)
+    formData.set("feeRate", feeRate + '')
+    formData.set("value", inscription.value.toString())
+    formData.set("txid", inscription.txid.toString())
+    formData.set("vout", inscription.vout.toString())
 
+    submit(formData, { method: "post" }) 
   }
+
+  useEffect(()=> {
+    const sign = async (sigHash: Buffer) => {
+      console.log('sig hash hex', sigHash.toString('hex'))
+      const sig = await window.nostr.signSchnorr(sigHash.toString('hex'))
+      console.log('sig', sig)
+    }
+    if (actionData?.sigHash) {
+      console.log('signed', sign(actionData.sigHash))
+    }
+  }, [actionData])
 
   return (
     <div className="bg-gray-800 min-h-screen">

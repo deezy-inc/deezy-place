@@ -6,16 +6,17 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET } from "@lib/constants";
+import { TESTNET, ORDINALS_EXPLORER_URL } from "@lib/constants";
 import { shortenStr } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import {
-    getInscriptionDataById,
-    generatePSBTListingInscriptionForSale,
-    submitSignedSalePsbt,
-} from "@utils/openOrdex";
+
+// import {
+//     getInscriptionDataById,
+//     generatePSBTListingInscriptionForSale,
+//     submitSignedSalePsbt,
+// } from "@utils/openOrdex";
 
 import nostrRelay, { RELAY_KINDS } from "@services/nostr-relay";
 
@@ -32,6 +33,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
 
+    console.warn(utxo);
     const sale = async () => {
         console.log(utxo);
         // TODO: This aint working
@@ -96,64 +98,63 @@ const SendModal = ({ show, handleModal, utxo }) => {
             )}
             <Modal.Header>
                 <h3 className="modal-title">
-                    Sell {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
+                    Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}
                 </h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this NFT</p>
+                <iframe
+                    id="preview"
+                    sandbox="allow-scripts allow-same-origin"
+                    scrolling="no"
+                    loading="lazy"
+                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
+                ></iframe>
+
                 <div className="placebid-form-box">
                     <div className="bid-content">
                         <div className="bid-content-top">
                             <div className="bid-content-left">
-                                <InputGroup className="mb-lg-5">
-                                    <div>
-                                        <Form.Label>
-                                            Address to receive payment
-                                        </Form.Label>
-                                        <Form.Control
-                                            defaultValue={nostrAddress}
-                                            onChange={(evt) => {
-                                                const newaddr =
-                                                    evt.target.value;
-                                                if (newaddr === "") {
-                                                    setIsBtcInputAddressValid(
-                                                        true
-                                                    );
-                                                    return;
-                                                }
-                                                if (
-                                                    !validate(
-                                                        newaddr,
-                                                        TESTNET
-                                                            ? Network.testnet
-                                                            : Network.mainnet
-                                                    )
-                                                ) {
-                                                    setIsBtcInputAddressValid(
-                                                        false
-                                                    );
-                                                    return;
-                                                }
-                                                setDestinationBtcAddress(
-                                                    newaddr
+                                <InputGroup className="mb-lg-5 omg">
+                                    <Form.Label>
+                                        Address to receive payment
+                                    </Form.Label>
+                                    <Form.Control
+                                        defaultValue={nostrAddress}
+                                        onChange={(evt) => {
+                                            const newaddr = evt.target.value;
+                                            if (newaddr === "") {
+                                                setIsBtcInputAddressValid(true);
+                                                return;
+                                            }
+                                            if (
+                                                !validate(
+                                                    newaddr,
+                                                    TESTNET
+                                                        ? Network.testnet
+                                                        : Network.mainnet
+                                                )
+                                            ) {
+                                                setIsBtcInputAddressValid(
+                                                    false
                                                 );
-                                            }}
-                                            placeholder="Paste BTC address to receive your payment here"
-                                            aria-label="Paste BTC address to receive your payment here"
-                                            aria-describedby="basic-addon2"
-                                            isInvalid={!isBtcInputAddressValid}
-                                            autoFocus
-                                        />
+                                                return;
+                                            }
+                                            setDestinationBtcAddress(newaddr);
+                                        }}
+                                        placeholder="Paste BTC address to receive your payment here"
+                                        aria-label="Paste BTC address to receive your payment here"
+                                        aria-describedby="basic-addon2"
+                                        isInvalid={!isBtcInputAddressValid}
+                                        autoFocus
+                                    />
 
-                                        <Form.Control.Feedback type="invalid">
-                                            <br />
-                                            That is not a valid{" "}
-                                            {TESTNET
-                                                ? "testnet"
-                                                : "mainnet"}{" "}
-                                            BTC address
-                                        </Form.Control.Feedback>
-                                    </div>
+                                    <Form.Control.Feedback type="invalid">
+                                        <br />
+                                        That is not a valid{" "}
+                                        {TESTNET ? "testnet" : "mainnet"} BTC
+                                        address
+                                    </Form.Control.Feedback>
                                 </InputGroup>
 
                                 <InputGroup className="mb-lg-5">

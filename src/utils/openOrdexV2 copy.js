@@ -1,4 +1,12 @@
-const isProduction = !location.href.includes("signet");
+import { TESTNET } from "@lib/constants";
+
+import * as bitcoin from "bitcoinjs-lib";
+import * as ecc from "tiny-secp256k1";
+bitcoin.initEccLib(ecc);
+
+import { SimplePool, getEventHash, relayInit } from "nostr-tools";
+
+const isProduction = !TESTNET;
 const ordinalsExplorerUrl = isProduction
     ? "https://ordinals.com"
     : "https://explorer-signet.openordex.org";
@@ -15,7 +23,8 @@ const feeLevel = "hourFee"; // "fastestFee" || "halfHourFee" || "hourFee" || "ec
 const dummyUtxoValue = 1_000;
 const nostrOrderEventKind = 802;
 const txHexByIdCache = {};
-const urlParams = new URLSearchParams(window.location.search);
+// const urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams("");
 const numberOfDummyUtxosToCreate = 1;
 
 let inscriptionIdentifier = urlParams.get("number");
@@ -41,6 +50,7 @@ let updatePayerAddress;
 let generateDummyUtxos;
 let generatePSBTGeneratingDummyUtxos;
 let btnBuyInscriptionNow;
+let price;
 
 async function selectUtxos(utxos, amount, vins, vouts, recommendedFeeRate) {
     const selectedUtxos = [];
@@ -117,46 +127,6 @@ async function getLowestPriceSellPSBGForUtxo(utxo) {
     }
 }
 
-function validateSellerPSBTAndExtractPrice(sellerSignedPsbtBase64, utxo) {
-    try {
-        sellerSignedPsbt = bitcoin.Psbt.fromBase64(sellerSignedPsbtBase64, {
-            network,
-        });
-        const sellerInput = sellerSignedPsbt.txInputs[0];
-        const sellerSignedPsbtInput = `${sellerInput.hash
-            .reverse()
-            .toString("hex")}:${sellerInput.index}`;
-
-        if (sellerSignedPsbtInput != utxo) {
-            throw `Seller signed PSBT does not match this inscription\n\n${sellerSignedPsbtInput}\n!=\n${utxo}`;
-        }
-
-        if (
-            sellerSignedPsbt.txInputs.length != 1 ||
-            sellerSignedPsbt.txInputs.length != 1
-        ) {
-            throw `Invalid seller signed PSBT`;
-        }
-
-        try {
-            sellerSignedPsbt.extractTransaction(true);
-        } catch (e) {
-            if (e.message == "Not finalized") {
-                throw "PSBT not signed";
-            } else if (e.message != "Outputs are spending more than Inputs") {
-                throw "Invalid PSBT " + e.message || e;
-            }
-        }
-
-        console.log(sellerSignedPsbt);
-        const sellerOutput = sellerSignedPsbt.txOutputs[0];
-        price = sellerOutput.value;
-
-        return Number(price);
-    } catch (e) {
-        console.error(e);
-    }
-}
 
 function publishSellerPsbt(
     signedSalePsbt,
@@ -181,7 +151,7 @@ function publishSellerPsbt(
                     ["i", inscriptionId], // Inscription ID
                     ["u", inscriptionUtxo], // Inscription UTXO
                     ["s", priceInSats.toString()], // Price in sats
-                    ["x", exchangeName], // Exchange name (e.g. "nosft")
+                    ["x", exchangeName], // Exchange name (e.g. "openordex")
                 ],
                 content: signedSalePsbt,
             };
@@ -312,11 +282,9 @@ async function getLatestOrders(limit) {
     const orders = await nostrRelay.list([
         {
             kinds: [nostrOrderEventKind],
-            limit: 1,
+            limit: 20,
         },
     ]);
-
-    console.log(orders);
 
     for (const order of orders) {
         try {
@@ -329,6 +297,7 @@ async function getLatestOrders(limit) {
             }
 
             const inscriptionData = await getInscriptionDataById(inscriptionId);
+
             const validatedPrice = validateSellerPSBTAndExtractPrice(
                 order.content,
                 inscriptionData.output
@@ -345,6 +314,8 @@ async function getLatestOrders(limit) {
                     await bitcoinPrice
                 )})`,
                 inscriptionId,
+                value: validatedPrice,
+                ...order,
             });
 
             if (latestOrders.length >= limit) {
@@ -356,27 +327,6 @@ async function getLatestOrders(limit) {
     }
 
     return latestOrders;
-}
-
-function copyInput(btn, inputId) {
-    const input = document.getElementById(inputId);
-    input.select();
-    input.setSelectionRange(0, 9999999);
-
-    navigator.clipboard.writeText(input.value);
-
-    const originalBtnTest = btn.textContent;
-    btn.textContent = "Copied!";
-    setTimeout(() => (btn.textContent = originalBtnTest), 200);
-}
-
-function downloadInput(inputId, filename) {
-    const input = document.getElementById(inputId);
-    const hiddenElement = document.createElement("a");
-    hiddenElement.href = "data:attachment/text," + encodeURI(input.value);
-    hiddenElement.target = "_blank";
-    hiddenElement.download = filename;
-    hiddenElement.click();
 }
 
 async function getInscriptionDataById(
@@ -443,17 +393,49 @@ async function generatePSBTListingInscriptionForSale(
     psbt.addInput({
         hash: ordinalUtxoTxId,
         index: parseInt(ordinalUtxoVout),
-        nonWitnessUtxo: tx.toBuffer(),
-        // witnessUtxo: tx.outs[ordinalUtxoVout],
-        sighashType:
-            bitcoin.Transaction.SIGHASH_SINGLE |
-            bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+        witnessUtxo: {
+            value: utxo.value,
+            script: inputAddressInfo.output,
+        },
+        tapInternalKey: toXOnly(publicKey),
+        // sighashType:
+        //     bitcoin.Transaction.SIGHASH_SINGLE |
+        //     bitcoin.Transaction.SIGHASH_ANYONECANPAY,
     });
 
     psbt.addOutput({
         address: paymentAddress,
         value: price,
     });
+
+    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [inputAddressInfo.output],
+        [utxo.value],
+        bitcoin.Transaction.SIGHASH_SINGLE |
+            bitcoin.Transaction.SIGHASH_ANYONECANPAY
+    );
+
+    const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
+    psbt.updateInput(0, {
+        tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+    });
+
+    // psbt.finalizeAllInputs();
+    // const tx = psbt.extractTransaction();
+    // const hex = tx.toBuffer().toString("hex");
+    // const fullTx = bitcoin.Transaction.fromHex(hex);
+    // console.log(fullTx.toBase64());
+    // // const res = await axios
+    // //     .post(`https://mempool.space/api/tx`, hex)
+    // //     .catch((err) => {
+    // //         console.error(err);
+    // //         alert(err);
+    // //         return null;
+    // //     });
+    // // if (!res) return false;
+
+    // setSentTxid(fullTx.getId());
 
     return psbt.toBase64();
 }
@@ -471,35 +453,18 @@ async function main() {
         .then((response) => response.json())
         .then((data) => data.USD.last);
 
-    if (window.NostrTools) {
-        nostrRelay = window.NostrTools.relayInit(nostrRelayUrl);
-        nostrRelayConnectedPromise = nostrRelay.connect();
-    }
+    nostrRelay = relayInit(nostrRelayUrl);
+    nostrRelayConnectedPromise = nostrRelay.connect();
 
-    bitcoinInitializedPromise = new Promise((resolve) => {
-        const interval = setInterval(() => {
-            if (window.bitcoin && window.secp256k1) {
-                bitcoin.initEccLib(secp256k1);
-                clearInterval(interval);
-                resolve();
-            }
-        }, 50);
-    });
+    recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
+        .then((response) => response.json())
+        .then((data) => data[feeLevel]);
 
-    if (window.location.pathname.startsWith("/inscription")) {
-        recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
-            .then((response) => response.json())
-            .then((data) => data[feeLevel]);
-        inscriptionPage();
-    } else if (window.location.pathname.startsWith("/collection")) {
-        collectionPage();
-    } else {
-        homePage();
-    }
+    return homePage();
 }
 
 async function inscriptionPage() {
-    await bitcoinInitializedPromise;
+    // await bitcoinInitializedPromise;
     network = isProduction
         ? bitcoin.networks.bitcoin
         : bitcoin.networks.testnet;
@@ -1141,52 +1106,23 @@ async function loadCollections() {
 
 async function loadLatestOrders() {
     try {
-        const orders = await getLatestOrders(4);
-
-        const ordersContainer = document.getElementById("ordersContainer");
-        ordersContainer.innerHTML = "";
-
-        for (const order of orders) {
-            const orderElement = document.createElement("a");
-            orderElement.href = `/inscription.html?number=${order.inscriptionId}`;
-            orderElement.target = `_blank`;
-            orderElement.innerHTML = `
-                <div class="card card-tertiary w-100 fmxw-300">
-                    <div class="card-header text-center">
-                        <span>${sanitizeHTML(order.title)}</span>
-                    </div>
-                    <div class="card-body" style="padding: 6px 7px 7px 7px">
-                        <iframe style="pointer-events: none" sandbox=allow-scripts
-                            scrolling=no loading=lazy
-                            src="${ordinalsExplorerUrl}/preview/${
-                order.inscriptionId
-            }"></iframe>
-                    </div>
-                </div>`;
-            ordersContainer.appendChild(orderElement);
-        }
+        const orders = await getLatestOrders();
+        return orders;
     } catch (e) {
         console.error(e);
         console.error(`Error fetching orders:\n` + e.message);
     }
+    return [];
 }
 
 async function homePage() {
-    // loadCollections()
+    // loadCollections();
 
-    await bitcoinInitializedPromise;
-    loadLatestOrders();
+    // await bitcoinInitializedPromise;
+    const latestOrders = await loadLatestOrders(4);
+    return {
+        latestOrders,
+    };
 }
 
-main();
-
-const currDate = new Date();
-const hoursMin =
-    currDate.getHours().toString().padStart(2, "0") +
-    ":" +
-    currDate.getMinutes().toString().padStart(2, "0");
-document.getElementById("time").textContent = hoursMin;
-
-if (!isProduction) {
-    document.getElementById("networkName").textContent = "(Signet)";
-}
+export { main };

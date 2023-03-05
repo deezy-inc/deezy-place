@@ -45,3 +45,7 @@ export const connectWallet = async () => {
     }
     return window.nostr.getPublicKey();
 };
+
+export function satToBtc(sat) {
+    return Number(sat) / Math.pow(10, 8);
+}

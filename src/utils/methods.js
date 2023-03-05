@@ -179,6 +179,10 @@ const deepClone = (obj) => {
     return copy;
 };
 
+const getQueryStringParam = function (paramName) {
+    return new URL(window.location).searchParams.get(paramName);
+};
+
 module.exports = {
     slideUp,
     slideDown,
@@ -192,4 +196,5 @@ module.exports = {
     hasKey,
     isEmpty,
     deepClone,
+    getQueryStringParam,
 };

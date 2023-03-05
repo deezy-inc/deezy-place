@@ -10,3 +10,6 @@ export const RELAYS = [
     "ws://localhost:7003/",
 ];
 export const NOSTR_INSCRIPTION_KIND = 1002;
+export const ORDINALS_EXPLORER_URL = !TESTNET
+    ? "https://ordinals.com"
+    : "https://explorer-signet.openordex.org";

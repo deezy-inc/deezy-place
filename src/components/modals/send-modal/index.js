@@ -12,6 +12,7 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 
 const axios = require("axios");
@@ -86,6 +87,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         if (!res) return false;
 
         setSentTxid(fullTx.getId());
+
+        toast.success(`Transaction sent: ${fullTx.getId()}`);
+        handleModal();
         return true;
     }
 

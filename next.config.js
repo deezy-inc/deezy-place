@@ -6,12 +6,18 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 module.exports = withBundleAnalyzer({
+    distDir: "out",
     reactStrictMode: false,
     sassOptions: {
         includePaths: [path.join(__dirname, "./src/assets/scss")],
     },
     images: {
-        domains: ["ordinals.com", "d2v3k2do8kym1f.cloudfront.net"],
+        domains: [
+            "ordinals.com",
+            "d2v3k2do8kym1f.cloudfront.net",
+            "https://ordinals.com",
+            "https://explorer-signet.openordex.org",
+        ],
         unoptimized: true,
     },
 

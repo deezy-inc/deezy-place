@@ -1,12 +1,20 @@
 /* eslint-disable react/forbid-prop-types */
-
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-extra-boolean-cast */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-continue */
+import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { TailSpin } from "react-loading-icons";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
-import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
+import WalletContext from "@context/wallet-context";
+import { INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
+
+// Use this to fetch data from an API service
+const axios = require("axios");
 
 const collectionAuthor = [
     {
@@ -18,24 +26,106 @@ const collectionAuthor = [
     },
 ];
 
-const OrdinalsArea = ({
-    className,
-    space,
-    utxosReady,
-    ownedUtxos,
-    inscriptionUtxosByUtxo,
-    address,
-    onSale,
-}) => {
-    const getSrc = (utxo) => {
-        console.log(utxo);
-        if (utxo.status.confirmed) {
-            return ordinalsImageUrl(
-                inscriptionUtxosByUtxo[`${utxo.txid}:${utxo.vout}`]
+const OrdinalsArea = ({ className, space, onSale }) => {
+    const { nostrAddress } = useContext(WalletContext);
+
+    const [inscriptions, setInscriptions] = useState([]);
+    const [utxosReady, setUtxosReady] = useState(false);
+
+    useEffect(() => {
+        const fetchByUtxos = async () => {
+            setUtxosReady(false);
+
+            const ownedInscriptions = SessionStorage.get(
+                SessionsStorageKeys.INSCRIPTIONS_OWNED
             );
-        }
-        return cloudfrontUrl(utxo);
-    };
+
+            if (ownedInscriptions) {
+                setInscriptions(ownedInscriptions);
+            }
+
+            const response = await axios.get(
+                `https://mempool.space/api/address/${nostrAddress}/utxo`
+            );
+            const tempInscriptionsByUtxo = {};
+
+            // TODO: Move to promise.all
+            // TODO: Order if possible, so that we can get the most recent inscriptions first
+            // TODO: Can we remove inscriptions without images?
+            for (const utxo of response.data) {
+                tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo;
+                // if (!utxo.status.confirmed) continue
+                let currentUtxo = utxo;
+                let currentDepth = 0;
+
+                while (true) {
+                    if (currentDepth > INSCRIPTION_SEARCH_DEPTH) break;
+                    // console.log(`looping ${currentDepth}`);
+                    const inscriptionId = `${currentUtxo.txid}i${currentUtxo.vout}`;
+                    // If there's no inscription here, go back one vin and check again.
+                    // console.log(`Checking inscription id ${inscriptionId}`);
+                    let res = null;
+                    try {
+                        // use getInscriptionDataById
+                        res = await axios.get(
+                            `https://ordinals.com/inscription/${inscriptionId}`
+                        );
+                    } catch (err) {
+                        console.error(`Error from ordinals.com`);
+                    }
+                    if (!res) {
+                        // console.log(`No inscription for ${inscriptionId}`);
+                        currentDepth += 1;
+                        // get previous vin
+                        const txResp = await axios.get(
+                            `https://mempool.space/api/tx/${currentUtxo.txid}`
+                        );
+                        const tx = txResp.data;
+                        // console.log(tx);
+                        const firstInput = tx.vin[0];
+                        currentUtxo = {
+                            txid: firstInput.txid,
+                            vout: firstInput.vout,
+                        };
+
+                        continue;
+                    }
+
+                    utxo.inscriptionId = inscriptionId;
+                    tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] =
+                        currentUtxo;
+                    break;
+                }
+            }
+
+            const ownedUtxos = response.data
+                .filter((utxo) => {
+                    const inscriptionId = `${utxo.txid}:${utxo.vout}`;
+                    return tempInscriptionsByUtxo[inscriptionId];
+                })
+                .map((utxo) => {
+                    const inscriptionId = `${utxo.txid}:${utxo.vout}`;
+                    const inscriptionUtxo =
+                        tempInscriptionsByUtxo[inscriptionId];
+                    return {
+                        ...utxo,
+                        ...inscriptionUtxo,
+                    };
+                })
+                .sort((a, b) => {
+                    return b.status.block_height - a.status.block_height;
+                });
+
+            SessionStorage.set(
+                SessionsStorageKeys.INSCRIPTIONS_OWNED,
+                ownedUtxos
+            );
+
+            setInscriptions(ownedUtxos);
+            setUtxosReady(true);
+        };
+        fetchByUtxos();
+    }, []);
 
     return (
         <div
@@ -52,19 +142,20 @@ const OrdinalsArea = ({
                         <SectionTitle
                             className="mb--0"
                             {...{ title: "Your collection" }}
+                            isLoading={!utxosReady}
                         />
                         <span>
                             You can safely receive ordinal inscriptions and
                             regular bitcoin to this{" "}
                             <button
+                                type="button"
                                 className="btn-transparent"
                                 onClick={() => {
-                                    navigator.clipboard.writeText(address);
+                                    navigator.clipboard.writeText(nostrAddress);
                                     toast(
                                         "Receive Address copied to clipboard!"
                                     );
                                 }}
-                                type="button"
                             >
                                 address
                             </button>
@@ -72,62 +163,48 @@ const OrdinalsArea = ({
                     </div>
                 </div>
 
-                {!utxosReady && <TailSpin stroke="#fec823" speed={0.75} />}
-
-                {utxosReady && (
-                    <div className="row g-5">
-                        {ownedUtxos.length > 0 ? (
-                            <>
-                                {ownedUtxos
-                                    .filter((utxo) =>
-                                        Boolean(
-                                            inscriptionUtxosByUtxo[
-                                                `${utxo.txid}:${utxo.vout}`
-                                            ]
-                                        )
-                                    )
-                                    .map((utxo) => (
-                                        <div
-                                            key={utxo.txid}
-                                            className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                        >
-                                            <OrdinalCard
-                                                overlay
-                                                slug={utxo.txid}
-                                                minted={utxo.status.confirmed}
-                                                price={{
-                                                    amount: utxo.value.toLocaleString(
-                                                        "en-US"
-                                                    ),
-                                                    currency: "Sats",
-                                                }}
-                                                image={{
-                                                    src: getSrc(utxo),
-                                                }}
-                                                authors={collectionAuthor}
-                                                utxo={utxo}
-                                                onSale={onSale}
-                                            />
-                                        </div>
-                                    ))}
-                            </>
-                        ) : (
-                            <div>
-                                This address does not own anything yet..
-                                <br />
-                                <br />
-                                Consider minting an{" "}
-                                <a
-                                    href="https://astralbabes.ai"
-                                    target="_blank"
-                                    rel="noreferrer"
+                <div className="row g-5">
+                    {inscriptions.length > 0 ? (
+                        <>
+                            {inscriptions.map((inscription) => (
+                                <div
+                                    key={inscription.txid}
+                                    className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                                 >
-                                    astral babe
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                )}
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: inscription.value.toLocaleString(
+                                                "en-US"
+                                            ),
+                                            currency: "Sats",
+                                        }}
+                                        type="sell"
+                                        confirmed={inscription.status.confirmed}
+                                        date={inscription.status.block_time}
+                                        authors={collectionAuthor}
+                                        utxo={inscription}
+                                        onSale={onSale}
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div>
+                            This address does not own anything yet..
+                            <br />
+                            <br />
+                            Consider minting an{" "}
+                            <a
+                                href="https://astralbabes.ai"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                astral babe
+                            </a>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -135,11 +212,7 @@ const OrdinalsArea = ({
 
 OrdinalsArea.propTypes = {
     className: PropTypes.string,
-    address: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
-    utxosReady: PropTypes.bool,
-    ownedUtxos: PropTypes.arrayOf(PropTypes.object),
-    inscriptionUtxosByUtxo: PropTypes.object,
     onSale: PropTypes.func,
 };
 

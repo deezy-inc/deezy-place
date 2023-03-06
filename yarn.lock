@@ -4844,8 +4844,6 @@
     "v8-compile-cache" "^2.0.3"
 
 "eslint@>= 6":
-  "integrity" "sha512-1Z8iFsucw+7kSqXNZVslXS8Ioa4u2KM7GPwuKtkTFAqZ/cHMcEaR+1+Br0wLlot49cNxIiZk5wp8EAbPcYZxTg=="
-  "resolved" "https://registry.npmjs.org/eslint/-/eslint-8.34.0.tgz"
   "version" "8.34.0"
   dependencies:
     "@eslint/eslintrc" "^1.4.1"
@@ -7313,10 +7311,8 @@
   "resolved" "https://registry.npmjs.org/normalize-url/-/normalize-url-6.1.0.tgz"
   "version" "6.1.0"
 
-"nostr-tools@^1.2.1":
-  "integrity" "sha512-pFAbVNtRMfW5ducUmk0f20IZv4a6pXYchBQKuA6D3x6sg83KoWipuiAie/gfOgrkoCsBLV14DmpWsVmo3N7WXQ=="
-  "resolved" "https://registry.npmjs.org/nostr-tools/-/nostr-tools-1.4.1.tgz"
-  "version" "1.4.1"
+"nostr-tools@^1.6.0":
+  "version" "1.6.0"
   dependencies:
     "@noble/hashes" "1.0.0"
     "@noble/secp256k1" "^1.7.1"

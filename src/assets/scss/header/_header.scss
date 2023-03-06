@@ -262,11 +262,6 @@
         width: 100%;
     }
 
-    .header-btn {
-        margin-top: 23px !important;
-        margin-bottom: 23px !important;
-    }
-
     &.header--fixed {
         position: relative;
         top: 0;
@@ -400,6 +395,8 @@
         .connectBtn {
             @media #{$laptop-device} {
                 padding: 8px 11px;
+                margin-bottom: 24px;
+                margin-top: 24px;
                 font-size: 14px;
             }
             @media #{$lg-layout} {

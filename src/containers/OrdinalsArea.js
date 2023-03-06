@@ -33,6 +33,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
     const [utxosReady, setUtxosReady] = useState(false);
 
     useEffect(() => {
+        console.log("OrdinalsArea useEffect");
         const fetchByUtxos = async () => {
             setUtxosReady(false);
 
@@ -43,8 +44,6 @@ const OrdinalsArea = ({ className, space, onSale }) => {
             if (ownedInscriptions) {
                 setInscriptions(ownedInscriptions);
             }
-
-            return;
 
             const response = await axios.get(
                 `https://mempool.space/api/address/${nostrAddress}/utxo`

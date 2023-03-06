@@ -178,8 +178,9 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                                 return;
                                             }
 
-                                            setOrdinalValue(newValue);
+                                            setOrdinalValue(Number(newValue));
                                         }}
+                                        type="number"
                                         placeholder="Price (in Sats)"
                                         aria-label="Price (in Sats)"
                                         aria-describedby="basic-addon2"

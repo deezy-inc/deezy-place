@@ -11,6 +11,9 @@ import { shortenStr } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
+import OpenOrdex from "@utils/openOrdexV3";
+import { TailSpin } from "react-loading-icons";
+
 // import {
 //     getInscriptionDataById,
 //     generatePSBTListingInscriptionForSale,
@@ -32,25 +35,57 @@ const BuyModal = ({ show, handleModal, utxo }) => {
     const [destinationBtcAddress, setDestinationBtcAddress] =
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
+    const [isOnBuy, setIsOnBuy] = useState(false);
+
+    let openOrderx;
+
+    const updatePayerAddress = async (address) => {
+        if (!openOrderx) {
+            openOrderx = await OpenOrdex.init();
+        }
+
+        try {
+            await openOrderx.updatePayerAddress(address);
+        } catch (e) {
+            toast.error(e.message);
+            if (window.confirm("Create dummy UTXO?")) {
+                await createDummyUtxo();
+            }
+        }
+    };
 
     useEffect(() => {
         setDestinationBtcAddress(nostrAddress);
+        const updateAddress = async () => {
+            openOrderx = await OpenOrdex.init();
+            // await updatePayerAddress(nostrAddress);
+        };
+
+        updateAddress();
     }, [nostrAddress]);
 
     const buy = async () => {
-        // try {
-        //     const psbt = await generatePSBTBuyingInscription(
-        //         payerAddress,
-        //         receiverAddress,
-        //         price,
-        //         paymentUtxos,
-        //         dummyUtxo
-        //     );
-        //     return psbt;
-        // } catch (e) {
-        //     return alert(e);
-        // }
+        setIsOnBuy(true);
+
+        if (!openOrderx) {
+            openOrderx = await OpenOrdex.init();
+        }
+
+        await onChangeAddress(destinationBtcAddress);
+
+        try {
+            const psbt = await openOrderx.generatePSBTBuyingInscription(
+                destinationBtcAddress,
+                destinationBtcAddress,
+                utxo.value
+            );
+            console.log(psbt);
+            return psbt;
+        } catch (e) {
+            toast.error(e.message);
+        }
         // Sign and send
+        setIsOnBuy(false);
     };
 
     const onChangeAddress = async (newaddr) => {
@@ -60,31 +95,40 @@ const BuyModal = ({ show, handleModal, utxo }) => {
         }
 
         try {
-            // await updatePayerAddress(newaddr);
             setDestinationBtcAddress(newaddr);
         } catch (e) {
             setIsBtcInputAddressValid(false);
             toast.error(e.message);
         }
+
+        try {
+            await updatePayerAddress(newaddr);
+        } catch (e) {
+            if (e.message === "missing dummy utxo") {
+                toast.error(
+                    "This address does not contain any valid UTXOs. Please try create one before continue."
+                );
+
+                if (window.confirm("Create dummy UTXO?")) {
+                    await createDummyUtxo();
+                }
+            }
+        }
     };
 
-    // const createDummyUtxo = async () => {
-    //     const psbt = await generatePSBTGeneratingDummyUtxos(
-    //         destinationBtcAddress,
-    //         numberOfDummyUtxosToCreate,
-    //         paymentUtxos
-    //     );
-    //     // TODO: SIGN PSBT
-    //     const signedContent = psbt;
-    //     try {
-    //         // TODO: sign the psbt with window.nostr
-    //         console.log(signedContent);
-    //         // TODO: broadcast the signed psbt
-    //     } catch (e) {
-    //         toast.error(e.message);
-    //         return;
-    //     }
-    // };
+    const createDummyUtxo = async () => {
+        try {
+            const txId = await openOrderx.generatePSBTGeneratingDummyUtxos(
+                destinationBtcAddress
+            );
+            toast.info(
+                `Transaction created. Please wait for it to be confirmed. TxId: ${txId}`
+            );
+        } catch (e) {
+            toast.error(e.message);
+            return;
+        }
+    };
 
     return (
         <Modal
@@ -177,15 +221,13 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                             fullwidth
                             disabled={!destinationBtcAddress}
                             autoFocus
+                            className={isOnBuy ? "btn-loading" : ""}
                             onClick={async () => {
                                 if (!destinationBtcAddress) return;
                                 if (!isBtcAmountValid) return;
                                 if (!isBtcInputAddressValid) return;
 
                                 try {
-                                    await onChangeAddress(
-                                        destinationBtcAddress
-                                    );
                                     const msg = `Are you sure you want to buy this NFT for ${ordinalValue} sats?`;
                                     if (!window.confirm(msg)) return;
 
@@ -195,7 +237,11 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                                 }
                             }}
                         >
-                            Buy
+                            {isOnBuy ? (
+                                <TailSpin stroke="#fec823" speed={0.75} />
+                            ) : (
+                                "Buy"
+                            )}
                         </Button>
                     </div>
 

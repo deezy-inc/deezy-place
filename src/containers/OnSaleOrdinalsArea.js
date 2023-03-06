@@ -29,6 +29,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
 
     useEffect(() => {
+        console.log("OnSaleOrdinalsArea useEffect");
         // safe on session storage for faster loads
         window.addEventListener("message", (event) => {
             console.debug(event);

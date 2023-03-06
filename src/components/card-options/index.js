@@ -4,7 +4,7 @@ import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import SendModal from "@components/modals/send-modal";
 
-const CardOptions = ({ utxo }) => {
+const CardOptions = ({ utxo, onSale }) => {
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -44,6 +44,7 @@ const CardOptions = ({ utxo }) => {
                 show={showSendModal}
                 handleModal={handleSendModal}
                 utxo={utxo}
+                onSale={onSale}
             />
         </>
     );
@@ -51,6 +52,7 @@ const CardOptions = ({ utxo }) => {
 
 CardOptions.propTypes = {
     utxo: PropTypes.object, // TODO: DEFINE UXTO TYPE in @utils/types.js
+    onSale: PropTypes.func,
 };
 
 export default CardOptions;

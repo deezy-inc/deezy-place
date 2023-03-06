@@ -11,6 +11,11 @@
 }
 a,
 button {
+    .copy-address {
+        border: 0px;
+        display: contents;
+    }
+
     &.btn {
         display: inline-block;
         font-weight: 500;
@@ -48,6 +53,12 @@ button {
                     box-shadow: none;
                 }
             }
+        }
+
+        &.btn-loading {
+            background: var(--color-primary-alta);
+            color: var(--color-white);
+            box-shadow: 0 0 12px var(--color-primary) !important;
         }
 
         &.btn-primary-alta {
@@ -90,7 +101,8 @@ button {
     transition: 0.4s;
     align-items: center;
     font-weight: 500;
-    display: inline-block;
+    display: contents;
+    border: 0px;
     svg,
     i {
         width: 18px;

@@ -18,6 +18,7 @@ module.exports = withBundleAnalyzer({
             "https://ordinals.com",
             "https://explorer-signet.openordex.org",
         ],
+        unoptimized: true,
     },
 
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {

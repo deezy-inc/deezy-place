@@ -1,6 +1,6 @@
 /* eslint no-extra-boolean-cast: "off" */
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 
@@ -18,7 +18,6 @@ import menuData from "../data/general/menu.json";
 const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
     const sticky = useSticky();
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-
     const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
     return (
@@ -90,6 +89,8 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
 Header.propTypes = {
     className: PropTypes.string,
     setNostrPublicKey: PropTypes.func,
+    onConnectHandler: PropTypes.func,
+    onDisconnectHandler: PropTypes.func,
 };
 
 export default Header;

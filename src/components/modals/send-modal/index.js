@@ -13,17 +13,19 @@ import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
+import { TailSpin } from "react-loading-icons";
 
 const axios = require("axios");
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo }) => {
+const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
     const [sentTxid, setSentTxid] = useState(null);
     const [nostrPublicKey, setNostrPublicKey] = useState();
+    const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
         const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
@@ -69,7 +71,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
         psbt.updateInput(0, {
             tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
-        }); 
+        });
         psbt.finalizeAllInputs();
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
@@ -200,15 +202,29 @@ const SendModal = ({ show, handleModal, utxo }) => {
                             size="medium"
                             fullwidth
                             disabled={!destinationBtcAddress}
+                            className={isSending ? "btn-loading" : ""}
                             onClick={async () => {
+                                setIsSending(true);
                                 await sendUtxo().catch((err) => {
                                     console.error(err);
                                     alert(err);
                                     return false;
                                 });
+
+                                // sleep for 1 second to let the tx propagate
+                                await new Promise((r) => {
+                                    setTimeout(r, 1000);
+                                });
+                                onSale();
+                                handleModal();
+                                setIsSending(false);
                             }}
                         >
-                            Send
+                            {isSending ? (
+                                <TailSpin stroke="#fec823" speed={0.75} />
+                            ) : (
+                                "Send"
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -221,5 +237,6 @@ SendModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
+    onSale: PropTypes.func.isRequired,
 };
 export default SendModal;

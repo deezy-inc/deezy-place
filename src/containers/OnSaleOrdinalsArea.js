@@ -25,7 +25,7 @@ const collectionAuthor = [
     },
 ];
 
-const OnSaleOrdinalsArea = ({ className, space, onConnectHandler }) => {
+const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [openOrders, setOpenOrders] = useState([]);
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
@@ -65,6 +65,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler }) => {
                     inscriptionTags: inscriptionData,
                     ...inscription,
                 });
+                // console.log(i);
 
                 forSaleInscriptions.push(i);
             }
@@ -123,7 +124,6 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler }) => {
                                     >
                                         <OrdinalCard
                                             overlay
-                                            slug={utxo.id}
                                             price={{
                                                 amount: utxo.value.toLocaleString(
                                                     "en-US"
@@ -131,11 +131,11 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler }) => {
                                                 currency: "Sats",
                                             }}
                                             type="buy"
-                                            // title={utxo.title}
                                             confirmed={true}
                                             date={utxo.created_at}
                                             authors={collectionAuthor}
                                             utxo={utxo}
+                                            onSale={onSale}
                                         />
                                     </div>
                                 ))}
@@ -154,6 +154,7 @@ OnSaleOrdinalsArea.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
     onClick: PropTypes.func,
+    onSale: PropTypes.func,
 };
 
 OnSaleOrdinalsArea.defaultProps = {

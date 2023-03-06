@@ -33,7 +33,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
 
-    console.warn(utxo);
+    // console.warn(utxo);
     const sale = async () => {
         console.log(utxo);
         // TODO: This aint working

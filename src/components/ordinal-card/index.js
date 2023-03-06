@@ -18,16 +18,16 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 
 const OrdinalCard = ({
     overlay,
-    title,
-    // slug,
-    // description,
     price,
     type,
     utxo,
     authors,
     confirmed,
     date,
+    onSale,
 }) => {
+    console.log(utxo);
+
     const { nostrAddress } = useContext(WalletContext);
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
@@ -68,12 +68,10 @@ const OrdinalCard = ({
                                 {shortenStr(utxo.inscriptionId)}
                             </Anchor>
                         )}
-
-                        {!Boolean(utxo.inscriptionId) && <span>{title}</span>}
                     </div>
                 </div>
                 {nostrAddress && type !== "send" && type !== "buy" && (
-                    <CardOptions utxo={utxo} />
+                    <CardOptions utxo={utxo} onSale={onSale} />
                 )}
             </div>
             {/* <Anchor path={`#${slug}`}>
@@ -86,6 +84,7 @@ const OrdinalCard = ({
                 confirmed={confirmed}
                 date={date}
                 type={type}
+                onSale={onSale}
             />
         </div>
     );
@@ -93,8 +92,6 @@ const OrdinalCard = ({
 
 OrdinalCard.propTypes = {
     overlay: PropTypes.bool,
-    title: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
 
     // description: PropTypes.string.isRequired,
     price: PropTypes.shape({
@@ -112,6 +109,7 @@ OrdinalCard.propTypes = {
     confirmed: PropTypes.bool,
     date: PropTypes.number,
     type: PropTypes.oneOf(["buy", "sell", "send"]).isRequired,
+    onSale: PropTypes.func,
 };
 
 OrdinalCard.defaultProps = {

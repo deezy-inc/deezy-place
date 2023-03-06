@@ -393,10 +393,10 @@
             margin: 0;
         }
         .connectBtn {
+            margin-bottom: 24px;
+            margin-top: 24px;
             @media #{$laptop-device} {
                 padding: 8px 11px;
-                margin-bottom: 24px;
-                margin-top: 24px;
                 font-size: 14px;
             }
             @media #{$lg-layout} {

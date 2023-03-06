@@ -162,7 +162,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 </div>
 
                 <div className="row g-5">
-                    {inscriptions.length > 0 ? (
+                    {inscriptions.length > 0 && (
                         <>
                             {inscriptions.map((inscription) => (
                                 <div
@@ -187,7 +187,9 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 </div>
                             ))}
                         </>
-                    ) : (
+                    )}
+
+                    {utxosReady && inscriptions.length === 0 && (
                         <div>
                             This address does not own anything yet..
                             <br />

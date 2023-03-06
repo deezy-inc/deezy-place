@@ -10,8 +10,9 @@ const NostrRelay = function () {
     this.pool = new SimplePool();
     this.subs = [];
     this.relays = [...RELAYS];
+
     this.subscribe = async (filter, onEvent, onEose) => {
-        let sub = this.pool.sub([...this.relays], filter);
+        const sub = this.pool.sub([...this.relays], filter);
 
         sub.on("event", onEvent);
 
@@ -30,7 +31,7 @@ const NostrRelay = function () {
     this.publish = async (_event, onSuccess, onError) => {
         const event = cleanEvent(_event);
 
-        let pubs = await this.pool.publish(this.relays, event);
+        const pubs = await this.pool.publish(this.relays, event);
         pubs.forEach((pub) => {
             pub.on("ok", () => {
                 console.log(`Accepted our event`);
@@ -43,10 +44,13 @@ const NostrRelay = function () {
         });
     };
     this.sign = async (event) => {
-        event.created_at = Math.floor(Date.now() / 1000);
-        event.id = getEventHash(event);
+        const newEvent = {
+            ...event,
+            created_at: Math.floor(Date.now() / 1000),
+            id: getEventHash(event),
+        };
 
-        return await window.nostr.signEvent(event);
+        return window.nostr.signEvent(newEvent);
     };
 };
 

@@ -38,19 +38,18 @@ const BuyModal = ({ show, handleModal, utxo }) => {
     }, [nostrAddress]);
 
     const buy = async () => {
-        const inscriptionId = `81efb05646d768e681eed69f4ed6df5126a5e57e3051ab9fe06557e37c416980i0`;
-        try {
-            const psbt = await generatePSBTBuyingInscription(
-                payerAddress,
-                receiverAddress,
-                price,
-                paymentUtxos,
-                dummyUtxo
-            );
-        } catch (e) {
-            return alert(e);
-        }
-
+        // try {
+        //     const psbt = await generatePSBTBuyingInscription(
+        //         payerAddress,
+        //         receiverAddress,
+        //         price,
+        //         paymentUtxos,
+        //         dummyUtxo
+        //     );
+        //     return psbt;
+        // } catch (e) {
+        //     return alert(e);
+        // }
         // Sign and send
     };
 
@@ -66,27 +65,26 @@ const BuyModal = ({ show, handleModal, utxo }) => {
         } catch (e) {
             setIsBtcInputAddressValid(false);
             toast.error(e.message);
-            return;
         }
     };
 
-    const createDummyUtxo = async () => {
-        // const psbt = await generatePSBTGeneratingDummyUtxos(
-        //     destinationBtcAddress,
-        //     numberOfDummyUtxosToCreate,
-        //     paymentUtxos
-        // );
-        // // TODO: SIGN PSBT
-        // const signedContent = psbt;
-        // try {
-        //     // TODO: sign the psbt with window.nostr
-        //     console.log(signedContent);
-        //     // TODO: broadcast the signed psbt
-        // } catch (e) {
-        //     toast.error(e.message);
-        //     return;
-        // }
-    };
+    // const createDummyUtxo = async () => {
+    //     const psbt = await generatePSBTGeneratingDummyUtxos(
+    //         destinationBtcAddress,
+    //         numberOfDummyUtxosToCreate,
+    //         paymentUtxos
+    //     );
+    //     // TODO: SIGN PSBT
+    //     const signedContent = psbt;
+    //     try {
+    //         // TODO: sign the psbt with window.nostr
+    //         console.log(signedContent);
+    //         // TODO: broadcast the signed psbt
+    //     } catch (e) {
+    //         toast.error(e.message);
+    //         return;
+    //     }
+    // };
 
     return (
         <Modal
@@ -117,8 +115,9 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"
                     loading="lazy"
+                    title={utxo.inscriptionId}
                     src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                ></iframe>
+                />
 
                 <div className="placebid-form-box">
                     <div className="bid-content">
@@ -189,12 +188,8 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                                     await onChangeAddress(
                                         destinationBtcAddress
                                     );
-                                    if (
-                                        !confirm(
-                                            `Are you sure you want to buy this NFT for ${ordinalValue} sats?`
-                                        )
-                                    )
-                                        return;
+                                    const msg = `Are you sure you want to buy this NFT for ${ordinalValue} sats?`;
+                                    if (!window.confirm(msg)) return;
 
                                     await buy();
                                 } catch (e) {

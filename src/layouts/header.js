@@ -57,16 +57,15 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
                                     </div>
                                 </div>
                             )}
-                            {Boolean(nostrPublicKey) &&
-                                Boolean(nostrAddress) && (
-                                    <div className="setting-option rn-icon-list user-account">
-                                        <UserDropdown
-                                            onDisconnect={onDisconnectHandler}
-                                            pubKey={nostrPublicKey}
-                                            receiveAddress={nostrAddress}
-                                        />
-                                    </div>
-                                )}
+                            {nostrPublicKey && nostrAddress && (
+                                <div className="setting-option rn-icon-list user-account">
+                                    <UserDropdown
+                                        onDisconnect={onDisconnectHandler}
+                                        pubKey={nostrPublicKey}
+                                        receiveAddress={nostrAddress}
+                                    />
+                                </div>
+                            )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">
                                 <div className="hamberger">
                                     <BurgerButton onClick={offcanvasHandler} />
@@ -88,7 +87,6 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
 
 Header.propTypes = {
     className: PropTypes.string,
-    setNostrPublicKey: PropTypes.func,
     onConnectHandler: PropTypes.func,
     onDisconnectHandler: PropTypes.func,
 };

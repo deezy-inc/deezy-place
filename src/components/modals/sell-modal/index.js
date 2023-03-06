@@ -33,50 +33,30 @@ const SendModal = ({ show, handleModal, utxo }) => {
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
 
-    // console.warn(utxo);
     const sale = async () => {
-        console.log(utxo);
-        // TODO: This aint working
-        // const inscriptionId = `${utxo.txid}i${utxo.vout}`; // @danny this is not working.
-
-        const inscriptionId = `81efb05646d768e681eed69f4ed6df5126a5e57e3051ab9fe06557e37c416980i0`;
-        const inscription = await getInscriptionDataById(inscriptionId);
-        const psbt = await generatePSBTListingInscriptionForSale(
-            inscription.output,
-            ordinalValue,
-            destinationBtcAddress
-        );
-
-        // TODO: SIGN PSBT
-        const signedContent = psbt;
-        // try {
-        //     // sign the psbt with window.nostr
-        //     signedContent = await submitSignedSalePsbt(signedContent);
-        // } catch (e) {
-        //     toast.error(e.message);
-        // }
-
-        // TODO: Notify nostr that ordinal is available
-
-        // return {
-        //     id: event.id,
-        //     pubkey: event.pubkey,
-        //     created_at: event.created_at,
-        //     kind: event.kind,
-        //     tags: event.tags,
-        //     content: event.content,
-        //     sig: event.sig
-        //   }
-
-        const event = {
-            pubkey: nostrPublicKey,
-            kind: RELAY_KINDS.INSCRIPTION,
-            tags: [["i", inscriptionId, signedContent]],
-            content: `sell ${inscriptionId}`,
-        };
-
-        const signedEvent = await nostrRelay.sign(event);
-        await nostrRelay.publish(signedEvent, console.info, console.error);
+        // const inscription = await getInscriptionDataById(inscriptionId);
+        // const psbt = await generatePSBTListingInscriptionForSale(
+        //     inscription.output,
+        //     ordinalValue,
+        //     destinationBtcAddress
+        // );
+        // // TODO: SIGN PSBT
+        // const signedContent = psbt;
+        // // try {
+        // //     // sign the psbt with window.nostr
+        // //     signedContent = await submitSignedSalePsbt(signedContent);
+        // // } catch (e) {
+        // //     toast.error(e.message);
+        // // }
+        // // TODO: Notify nostr that ordinal is available
+        // const event = {
+        //     pubkey: nostrPublicKey,
+        //     kind: RELAY_KINDS.INSCRIPTION,
+        //     tags: [["i", inscriptionId, signedContent]],
+        //     content: `sell ${inscriptionId}`,
+        // };
+        // const signedEvent = await nostrRelay.sign(event);
+        // await nostrRelay.publish(signedEvent, console.info, console.error);
     };
 
     return (
@@ -108,8 +88,9 @@ const SendModal = ({ show, handleModal, utxo }) => {
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"
                     loading="lazy"
+                    title={utxo.inscriptionId}
                     src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                ></iframe>
+                />
 
                 <div className="placebid-form-box">
                     <div className="bid-content">
@@ -216,12 +197,8 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                 if (!destinationBtcAddress) return;
                                 if (!isBtcAmountValid) return;
                                 if (!isBtcInputAddressValid) return;
-                                if (
-                                    !confirm(
-                                        `Are you sure you want to sell this NFT for ${ordinalValue} sats?`
-                                    )
-                                )
-                                    return;
+                                const msg = `Are you sure you want to sell this NFT for ${ordinalValue} sats?`;
+                                if (!window.confirm(msg)) return;
 
                                 await sale();
                             }}

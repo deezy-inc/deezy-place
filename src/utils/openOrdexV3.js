@@ -1,8 +1,9 @@
+/* eslint-disable */
 import { TESTNET } from "@lib/constants";
 import { relayInit } from "nostr-tools";
-
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+
 bitcoin.initEccLib(ecc);
 
 // TODO: Move to constants
@@ -27,7 +28,7 @@ async function getInscriptionDataById(
     verifyIsInscriptionNumber
 ) {
     const html = await fetch(
-        ordinalsExplorerUrl + "/inscription/" + inscriptionId
+        `${ordinalsExplorerUrl}/inscription/${inscriptionId}`
     ).then((response) => response.text());
 
     const data = [...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm)]
@@ -35,9 +36,7 @@ async function getInscriptionDataById(
             x[2] = x[2].replace(/<.*?>/gm, "");
             return x;
         })
-        .reduce((a, b) => {
-            return { ...a, [b[1]]: b[2] };
-        }, {});
+        .reduce((a, b) => ({ ...a, [b[1]]: b[2] }), {});
 
     const error = `Inscription ${
         verifyIsInscriptionNumber || inscriptionId

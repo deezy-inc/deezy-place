@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as bitcoin from "bitcoinjs-lib";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
@@ -43,10 +43,17 @@ const App = () => {
 
     const content = normalizedData(homepageData?.content || []);
 
+    const obj = useMemo(
+        () => ({
+            nostrPublicKey,
+            nostrAddress,
+            isExperimental,
+        }),
+        [nostrPublicKey, nostrAddress, isExperimental]
+    );
+
     return (
-        <WalletContext.Provider
-            value={{ nostrPublicKey, nostrAddress, isExperimental }}
-        >
+        <WalletContext.Provider value={obj}>
             <Wrapper>
                 <SEO pageTitle="Deezy" />
                 <Header
@@ -57,19 +64,14 @@ const App = () => {
                 />
 
                 <main id="main-content">
-                    {!Boolean(nostrPublicKey) && (
+                    {!nostrPublicKey && (
                         <HeroArea
                             data={content["hero-section"]}
                             onConnectHandler={onConnectHandler}
                         />
                     )}
 
-                    <div
-                        id="ordersContainer"
-                        className="mt-4 flex-grid col-12 d-flex align-items-center justify-content-center"
-                    ></div>
-
-                    {Boolean(nostrPublicKey) && Boolean(nostrAddress) && (
+                    {nostrPublicKey && nostrAddress && (
                         <OrdinalsArea onSale={setRefreshHack} />
                     )}
 

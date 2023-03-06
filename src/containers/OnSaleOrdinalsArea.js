@@ -1,13 +1,11 @@
 /* eslint-disable react/forbid-prop-types */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-extra-boolean-cast */
 import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { TailSpin } from "react-loading-icons";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
-import { toast } from "react-toastify";
-import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
-import nostrRelay, { RELAY_KINDS } from "@services/nostr-relay";
 import { deepClone } from "@utils/methods";
 import OpenOrdex from "@utils/openOrdexV3";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
@@ -26,7 +24,7 @@ const collectionAuthor = [
 ];
 
 const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
-    const { nostrAddress } = useContext(WalletContext);
+    const { nostrAddress, isExperimental } = useContext(WalletContext);
     const [openOrders, setOpenOrders] = useState([]);
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
 
@@ -49,7 +47,6 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
 
             const forSaleInscriptions = [];
             for (const inscription of orders) {
-                // debugger;
                 let inscriptionData = inscription.tags
                     // .filter(([t, v]) => t === "i" && v)
                     .map(([tagId, value]) => ({
@@ -99,14 +96,15 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                             isLoading={isLoadingOpenOrders}
                             {...{ title: "On sale" }}
                         />
-                        {!Boolean(nostrAddress) && (
+                        {!Boolean(nostrAddress) && isExperimental && (
                             <span>
-                                <a
-                                    className="copy-address"
+                                <button
+                                    type="button"
+                                    className="btn-transparent"
                                     onClick={onConnectHandler}
                                 >
                                     Connect
-                                </a>{" "}
+                                </button>{" "}
                                 your wallet to buy an inscription
                             </span>
                         )}
@@ -131,7 +129,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                                                 currency: "Sats",
                                             }}
                                             type="buy"
-                                            confirmed={true}
+                                            confirmed
                                             date={utxo.created_at}
                                             authors={collectionAuthor}
                                             utxo={utxo}
@@ -155,6 +153,7 @@ OnSaleOrdinalsArea.propTypes = {
     space: PropTypes.oneOf([1, 2]),
     onClick: PropTypes.func,
     onSale: PropTypes.func,
+    onConnectHandler: PropTypes.func,
 };
 
 OnSaleOrdinalsArea.defaultProps = {

@@ -1,15 +1,17 @@
 /* eslint-disable react/forbid-prop-types */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-extra-boolean-cast */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-continue */
 import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { TailSpin } from "react-loading-icons";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
-import { ordinalsImageUrl, cloudfrontUrl } from "@utils/crypto";
 import WalletContext from "@context/wallet-context";
 import { INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
-import { deepClone } from "@utils/methods";
 
 // Use this to fetch data from an API service
 const axios = require("axios");
@@ -34,6 +36,14 @@ const OrdinalsArea = ({ className, space, onSale }) => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
 
+            const ownedInscriptions = SessionStorage.get(
+                SessionsStorageKeys.INSCRIPTIONS_OWNED
+            );
+
+            if (ownedInscriptions) {
+                setInscriptions(ownedInscriptions);
+            }
+
             const response = await axios.get(
                 `https://mempool.space/api/address/${nostrAddress}/utxo`
             );
@@ -43,12 +53,11 @@ const OrdinalsArea = ({ className, space, onSale }) => {
             // TODO: Order if possible, so that we can get the most recent inscriptions first
             // TODO: Can we remove inscriptions without images?
             for (const utxo of response.data) {
-                // console.log(utxo);
                 tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo;
                 // if (!utxo.status.confirmed) continue
                 let currentUtxo = utxo;
                 let currentDepth = 0;
-                // console.log(utxo);
+
                 while (true) {
                     if (currentDepth > INSCRIPTION_SEARCH_DEPTH) break;
                     // console.log(`looping ${currentDepth}`);
@@ -61,8 +70,6 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         res = await axios.get(
                             `https://ordinals.com/inscription/${inscriptionId}`
                         );
-
-                        console.log(inscriptionId);
                     } catch (err) {
                         console.error(`Error from ordinals.com`);
                     }
@@ -104,7 +111,15 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         ...utxo,
                         ...inscriptionUtxo,
                     };
+                })
+                .sort((a, b) => {
+                    return b.status.block_height - a.status.block_height;
                 });
+
+            SessionStorage.set(
+                SessionsStorageKeys.INSCRIPTIONS_OWNED,
+                ownedUtxos
+            );
 
             setInscriptions(ownedUtxos);
             setUtxosReady(true);
@@ -132,8 +147,9 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         <span>
                             You can safely receive ordinal inscriptions and
                             regular bitcoin to this{" "}
-                            <a
-                                className="copy-address"
+                            <button
+                                type="button"
+                                className="btn-transparent"
                                 onClick={() => {
                                     navigator.clipboard.writeText(nostrAddress);
                                     toast(
@@ -142,62 +158,53 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 }}
                             >
                                 address
-                            </a>
+                            </button>
                         </span>
                     </div>
                 </div>
 
-                {utxosReady && (
-                    <div className="row g-5">
-                        {inscriptions.length > 0 ? (
-                            <>
-                                {inscriptions.map((inscription) => {
-                                    return (
-                                        <div
-                                            key={inscription.txid}
-                                            className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                        >
-                                            <OrdinalCard
-                                                overlay
-                                                price={{
-                                                    amount: inscription.value.toLocaleString(
-                                                        "en-US"
-                                                    ),
-                                                    currency: "Sats",
-                                                }}
-                                                type="sell"
-                                                confirmed={
-                                                    inscription.status.confirmed
-                                                }
-                                                date={
-                                                    inscription.status
-                                                        .block_time
-                                                }
-                                                authors={collectionAuthor}
-                                                utxo={inscription}
-                                                onSale={onSale}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                            </>
-                        ) : (
-                            <div>
-                                This address does not own anything yet..
-                                <br />
-                                <br />
-                                Consider minting an{" "}
-                                <a
-                                    href="https://astralbabes.ai"
-                                    target="_blank"
-                                    rel="noreferrer"
+                <div className="row g-5">
+                    {inscriptions.length > 0 ? (
+                        <>
+                            {inscriptions.map((inscription) => (
+                                <div
+                                    key={inscription.txid}
+                                    className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                                 >
-                                    astral babe
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                )}
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: inscription.value.toLocaleString(
+                                                "en-US"
+                                            ),
+                                            currency: "Sats",
+                                        }}
+                                        type="sell"
+                                        confirmed={inscription.status.confirmed}
+                                        date={inscription.status.block_time}
+                                        authors={collectionAuthor}
+                                        utxo={inscription}
+                                        onSale={onSale}
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div>
+                            This address does not own anything yet..
+                            <br />
+                            <br />
+                            Consider minting an{" "}
+                            <a
+                                href="https://astralbabes.ai"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                astral babe
+                            </a>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

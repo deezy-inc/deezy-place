@@ -26,8 +26,6 @@ const OrdinalCard = ({
     date,
     onSale,
 }) => {
-    console.log(utxo);
-
     const { nostrAddress } = useContext(WalletContext);
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
@@ -45,8 +43,9 @@ const OrdinalCard = ({
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"
                     loading="lazy"
+                    title={utxo.inscriptionId}
                     src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                ></iframe>
+                />
             </div>
             <div className="product-share-wrapper">
                 <div className="profile-share">

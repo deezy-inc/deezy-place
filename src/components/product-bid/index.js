@@ -23,16 +23,13 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
         setShowBuyModal((prev) => !prev);
     };
 
-    function renderMainAction(type) {
-        if (!nostrAddress) {
-            return <></>;
-        }
-
-        switch (type) {
+    function renderMainAction(actionType) {
+        switch (actionType) {
             case "buy":
-                if (!isExperimental) return <></>;
+                if (!isExperimental) return <span />;
                 return (
                     <button
+                        type="button"
                         className="btn btn-small"
                         onClick={handleBuyModal}
                         disabled={!confirmed}
@@ -41,9 +38,10 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
                     </button>
                 );
             case "sell":
-                if (!isExperimental) return <></>;
+                if (!isExperimental) return <span />;
                 return (
                     <button
+                        type="button"
                         className="btn btn-small"
                         onClick={handleSellModal}
                         disabled={!confirmed}
@@ -54,6 +52,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
             case "send":
                 return (
                     <button
+                        type="button"
                         className="btn btn-small"
                         onClick={handleSendModal}
                         disabled={!confirmed}
@@ -62,7 +61,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
                     </button>
                 );
             default:
-                return <>{type}</>;
+                return <span />;
         }
     }
     const minted = !confirmed
@@ -76,7 +75,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
                 <span className="minted">{` ${minted}`}</span>
             </div>
 
-            {renderMainAction(type)}
+            {Boolean(nostrAddress) && renderMainAction(type)}
 
             <SendModal
                 show={showSendModal}

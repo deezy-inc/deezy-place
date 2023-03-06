@@ -47,5 +47,5 @@ export const connectWallet = async () => {
 };
 
 export function satToBtc(sat) {
-    return Number(sat) / Math.pow(10, 8);
+    return Number(sat) / 10 ** 8;
 }

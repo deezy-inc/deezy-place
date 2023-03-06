@@ -112,9 +112,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         ...inscriptionUtxo,
                     };
                 })
-                .sort((a, b) => {
-                    return b.status.block_height - a.status.block_height;
-                });
+                .sort((a, b) => b.status.block_height - a.status.block_height);
 
             SessionStorage.set(
                 SessionsStorageKeys.INSCRIPTIONS_OWNED,

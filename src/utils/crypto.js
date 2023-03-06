@@ -65,3 +65,5 @@ export const fetchBitcoinPrice = async () =>
     fetch(BITCOIN_PRICE_API_URL)
         .then((response) => response.json())
         .then((data) => data.USD.last);
+
+export const toXOnly = (key) => (key.length === 33 ? key.slice(1, 33) : key);

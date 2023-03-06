@@ -1,6 +1,8 @@
 /* eslint-disable */
 import { TESTNET } from "@lib/constants";
-import { relayInit } from "nostr-tools";
+import { getAddressInfo, toXOnly } from "@utils/crypto";
+import { relayInit, getEventHash } from "nostr-tools";
+import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 
@@ -8,7 +10,8 @@ bitcoin.initEccLib(ecc);
 
 // TODO: Move to constants
 const isProduction = !TESTNET;
-const nostrRelayUrl = "wss://nostr.openordex.org";
+// const nostrRelayUrl = "wss://nostr.openordex.org"; // Use local relay for testing
+const nostrRelayUrl = "ws://localhost:7001"; // Use local relay for testing
 const baseMempoolUrl = isProduction
     ? "https://mempool.space"
     : "https://mempool.space/signet";
@@ -22,39 +25,8 @@ const nostrOrderEventKind = 802;
 const network = isProduction
     ? bitcoin.networks.bitcoin
     : bitcoin.networks.testnet;
-
-async function getInscriptionDataById(
-    inscriptionId,
-    verifyIsInscriptionNumber
-) {
-    const html = await fetch(
-        `${ordinalsExplorerUrl}/inscription/${inscriptionId}`
-    ).then((response) => response.text());
-
-    const data = [...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm)]
-        .map((x) => {
-            x[2] = x[2].replace(/<.*?>/gm, "");
-            return x;
-        })
-        .reduce((a, b) => ({ ...a, [b[1]]: b[2] }), {});
-
-    const error = `Inscription ${
-        verifyIsInscriptionNumber || inscriptionId
-    } not found (maybe you're on signet and looking for a mainnet inscription or vice versa)`;
-    try {
-        data.number = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
-    } catch {
-        throw new Error(error);
-    }
-    if (
-        verifyIsInscriptionNumber &&
-        String(data.number) != String(verifyIsInscriptionNumber)
-    ) {
-        throw new Error(error);
-    }
-
-    return data;
-}
+const networkName = isProduction ? "mainnet" : "signet";
+const exchangeName = "nosft";
 
 function satsToFormattedDollarString(sats, _bitcoinPrice) {
     return (satToBtc(sats) * _bitcoinPrice).toLocaleString(undefined, {
@@ -77,6 +49,7 @@ const OpenOrdex = function () {
 
     this.nostrRelay = relayInit(nostrRelayUrl);
     this.orders = {};
+    this.txHexByIdCache = {};
 
     // TODO: This shouldnt be happening...
     this.sellerSignedPsbt = undefined;
@@ -170,7 +143,7 @@ const OpenOrdex = function () {
                     continue;
                 }
 
-                const inscriptionData = await getInscriptionDataById(
+                const inscriptionData = await this.getInscriptionDataById(
                     inscriptionId
                 );
 
@@ -239,6 +212,168 @@ const OpenOrdex = function () {
         }
 
         return [];
+    };
+
+    this.getTxHexById = async function (txId) {
+        if (!this.txHexByIdCache[txId]) {
+            this.txHexByIdCache[txId] = await fetch(
+                `${baseMempoolApiUrl}/tx/${txId}/hex`
+            ).then((response) => response.text());
+        }
+
+        return this.txHexByIdCache[txId];
+    };
+
+    this.getInscriptionDataById = async function (
+        inscriptionId,
+        verifyIsInscriptionNumber
+    ) {
+        const html = await fetch(
+            `${ordinalsExplorerUrl}/inscription/${inscriptionId}`
+        ).then((response) => response.text());
+
+        const data = [
+            ...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm),
+        ]
+            .map((x) => {
+                x[2] = x[2].replace(/<.*?>/gm, "");
+                return x;
+            })
+            .reduce((a, b) => ({ ...a, [b[1]]: b[2] }), {});
+
+        const error = `Inscription ${
+            verifyIsInscriptionNumber || inscriptionId
+        } not found (maybe you're on signet and looking for a mainnet inscription or vice versa)`;
+        try {
+            data.number = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
+        } catch {
+            throw new Error(error);
+        }
+        if (
+            verifyIsInscriptionNumber &&
+            String(data.number) != String(verifyIsInscriptionNumber)
+        ) {
+            throw new Error(error);
+        }
+
+        return data;
+    };
+
+    // Sell
+    this.generatePSBTListingInscriptionForSale = async function (
+        ordinalOutput,
+        price,
+        paymentAddress
+    ) {
+        let psbt = new bitcoin.Psbt({ network });
+
+        const pk = await window.nostr.getPublicKey();
+        const publicKey = Buffer.from(pk, "hex");
+        const inputAddressInfo = getAddressInfo(pk);
+
+        const [ordinalUtxoTxId, ordinalUtxoVout] = ordinalOutput.split(":");
+        const tx = bitcoin.Transaction.fromHex(
+            await this.getTxHexById(ordinalUtxoTxId)
+        );
+        for (const output in tx.outs) {
+            try {
+                tx.setWitness(parseInt(output), []);
+            } catch {}
+        }
+
+        psbt.addInput({
+            hash: ordinalUtxoTxId,
+            index: parseInt(ordinalUtxoVout),
+            // nonWitnessUtxo: tx.toBuffer(),
+            // witnessUtxo: tx.outs[ordinalUtxoVout],
+            witnessUtxo: {
+                value: price,
+                script: inputAddressInfo.output,
+            },
+            tapInternalKey: toXOnly(publicKey),
+            // sighashType:
+            //     bitcoin.Transaction.SIGHASH_SINGLE |
+            //     bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+        });
+
+        psbt.addOutput({
+            address: paymentAddress,
+            value: price, // @danny does this needs outputValue(price, feeRate)
+        });
+
+        const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+            0,
+            [inputAddressInfo.output],
+            [price],
+            bitcoin.Transaction.SIGHASH_SINGLE |
+                bitcoin.Transaction.SIGHASH_ANYONECANPAY
+        );
+
+        const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
+        psbt.updateInput(0, {
+            tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+        });
+
+        psbt.finalizeAllInputs();
+        return psbt.toBase64();
+    };
+
+    this.publishSellerPsbt = async function (
+        signedSalePsbt,
+        inscriptionId,
+        inscriptionUtxo,
+        priceInSats
+    ) {
+        await this.nostrRelay.connect();
+        const pk = await window.nostr.getPublicKey();
+
+        let event = {
+            kind: nostrOrderEventKind,
+            pubkey: pk,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [
+                ["n", networkName], // Network name (e.g. "mainnet", "signet")
+                ["t", "sell"], // Type of order (e.g. "sell", "buy")
+                ["i", inscriptionId], // Inscription ID
+                ["u", inscriptionUtxo], // Inscription UTXO
+                ["s", priceInSats.toString()], // Price in sats
+                ["x", exchangeName], // Exchange name (e.g. "openordex")
+            ],
+            content: signedSalePsbt,
+        };
+        event.id = getEventHash(event);
+        const signedEvent = await window.nostr.signEvent(event);
+
+        await this.nostrRelay.publish(signedEvent);
+    };
+
+    this.submitSignedSalePsbt = async (inscription, price, signedSalePsbt) => {
+        try {
+            bitcoin.Psbt.fromBase64(signedSalePsbt, {
+                network,
+            }).extractTransaction(true);
+        } catch (e) {
+            if (e.message == "Not finalized") {
+                return alert(
+                    "Please sign and finalize the PSBT before submitting it"
+                );
+            } else if (e.message != "Outputs are spending more than Inputs") {
+                console.error(e);
+                return alert("Invalid PSBT", e.message || e);
+            }
+        }
+
+        try {
+            await this.publishSellerPsbt(
+                signedSalePsbt,
+                inscription.inscriptionId,
+                inscription.txid, // TODO: Make sure this is the correct UTXO
+                btcToSat(price)
+            );
+        } catch (e) {
+            console.error(e);
+            alert("Error publishing seller PSBT", e.message || e);
+        }
     };
 };
 

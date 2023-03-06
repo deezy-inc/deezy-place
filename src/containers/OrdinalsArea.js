@@ -44,6 +44,8 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 setInscriptions(ownedInscriptions);
             }
 
+            return;
+
             const response = await axios.get(
                 `https://mempool.space/api/address/${nostrAddress}/utxo`
             );

@@ -15,16 +15,9 @@ import {
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-
-// import {
-//     getInscriptionDataById,
-//     generatePSBTListingInscriptionForSale,
-//     submitSignedSalePsbt,
-// } from "@utils/openOrdex";
-
-import nostrRelay, { RELAY_KINDS } from "@services/nostr-relay";
-
+import OpenOrdex from "@utils/openOrdexV3";
 import { toast } from "react-toastify";
+import { TailSpin } from "react-loading-icons";
 
 bitcoin.initEccLib(ecc);
 
@@ -37,6 +30,9 @@ const SendModal = ({ show, handleModal, utxo }) => {
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [bitcoinPrice, setBitcoinPrice] = useState();
+    const [isOnSale, setIsOnSale] = useState(false);
+
+    let openOrderx;
 
     useEffect(() => {
         const getPrice = async () => {
@@ -48,21 +44,33 @@ const SendModal = ({ show, handleModal, utxo }) => {
     }, []);
 
     const sale = async () => {
-        // const inscription = await getInscriptionDataById(inscriptionId);
-        // const psbt = await generatePSBTListingInscriptionForSale(
-        //     inscription.output,
-        //     ordinalValue,
-        //     destinationBtcAddress
-        // );
-        // // TODO: SIGN PSBT
-        // const signedContent = psbt;
-        // // try {
-        // //     // sign the psbt with window.nostr
-        // //     signedContent = await submitSignedSalePsbt(signedContent);
-        // // } catch (e) {
-        // //     toast.error(e.message);
-        // // }
-        // // TODO: Notify nostr that ordinal is available
+        setIsOnSale(true);
+        if (!openOrderx) {
+            console.log("init");
+            openOrderx = await OpenOrdex.init();
+        }
+
+        const inscription = await openOrderx.getInscriptionDataById(
+            utxo.inscriptionId
+        );
+        const signedPsbt =
+            await openOrderx.generatePSBTListingInscriptionForSale(
+                inscription.output,
+                ordinalValue,
+                destinationBtcAddress
+            );
+
+        try {
+            await openOrderx.submitSignedSalePsbt(
+                utxo,
+                ordinalValue,
+                signedPsbt
+            );
+            toast.info("Ordinal is now on sale");
+        } catch (e) {
+            toast.error(e.message);
+        }
+        // TODO: Notify nostr that ordinal is available
         // const event = {
         //     pubkey: nostrPublicKey,
         //     kind: RELAY_KINDS.INSCRIPTION,
@@ -71,6 +79,8 @@ const SendModal = ({ show, handleModal, utxo }) => {
         // };
         // const signedEvent = await nostrRelay.sign(event);
         // await nostrRelay.publish(signedEvent, console.info, console.error);
+        setIsOnSale(false);
+        handleModal();
     };
 
     return (
@@ -217,6 +227,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                             fullwidth
                             disabled={!destinationBtcAddress}
                             autoFocus
+                            className={isOnSale ? "btn-loading" : ""}
                             onClick={async () => {
                                 if (!destinationBtcAddress) return;
                                 if (!isBtcAmountValid) return;
@@ -227,7 +238,11 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                 await sale();
                             }}
                         >
-                            Sell
+                            {isOnSale ? (
+                                <TailSpin stroke="#fec823" speed={0.75} />
+                            ) : (
+                                "Sale"
+                            )}
                         </Button>
                     </div>
                 </div>

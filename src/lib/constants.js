@@ -13,3 +13,5 @@ export const NOSTR_INSCRIPTION_KIND = 1002;
 export const ORDINALS_EXPLORER_URL = !TESTNET
     ? "https://ordinals.com"
     : "https://explorer-signet.openordex.org";
+
+export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";

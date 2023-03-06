@@ -155,9 +155,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                                     <span>Payment Receive Address</span>
                                 )}
 
-                                {Boolean(destinationBtcAddress) && (
-                                    <span>Price</span>
-                                )}
+                                {Boolean(utxo.usdPrice) && <span>Price</span>}
                             </div>
                             <div className="bid-content-right">
                                 {Boolean(destinationBtcAddress) && (

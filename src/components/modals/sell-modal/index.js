@@ -1,5 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
@@ -7,7 +7,11 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET, ORDINALS_EXPLORER_URL } from "@lib/constants";
-import { shortenStr } from "@utils/crypto";
+import {
+    shortenStr,
+    fetchBitcoinPrice,
+    satsToFormattedDollarString,
+} from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
@@ -32,6 +36,16 @@ const SendModal = ({ show, handleModal, utxo }) => {
     const [destinationBtcAddress, setDestinationBtcAddress] =
         useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
+    const [bitcoinPrice, setBitcoinPrice] = useState();
+
+    useEffect(() => {
+        const getPrice = async () => {
+            const btcPrice = await fetchBitcoinPrice();
+            setBitcoinPrice(btcPrice);
+        };
+
+        getPrice();
+    }, []);
 
     const sale = async () => {
         // const inscription = await getInscriptionDataById(inscriptionId);
@@ -176,12 +190,22 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                 {!!destinationBtcAddress && (
                                     <span>Payment Receive Address</span>
                                 )}
+                                {Boolean(ordinalValue) && bitcoinPrice && (
+                                    <span>Price</span>
+                                )}
                             </div>
                             <div className="bid-content-right">
                                 {!!destinationBtcAddress && (
                                     <span>
                                         {shortenStr(destinationBtcAddress)}
                                     </span>
+                                )}
+
+                                {Boolean(ordinalValue) && bitcoinPrice && (
+                                    <span>{`$${satsToFormattedDollarString(
+                                        ordinalValue,
+                                        bitcoinPrice
+                                    )}`}</span>
                                 )}
                             </div>
                         </div>

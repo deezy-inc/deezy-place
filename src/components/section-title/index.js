@@ -2,13 +2,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { TailSpin } from "react-loading-icons";
 
-const SectionTitle = ({
-    title,
-    className,
-    disableAnimation,
-    isLoading,
-    ...restProps
-}) => (
+const SectionTitle = ({ title, className, disableAnimation, isLoading, ...restProps }) => (
     <div className="section-title">
         <h3
             className={clsx(className)}

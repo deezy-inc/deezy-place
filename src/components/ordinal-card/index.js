@@ -16,16 +16,7 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
 });
 
-const OrdinalCard = ({
-    overlay,
-    price,
-    type,
-    utxo,
-    authors,
-    confirmed,
-    date,
-    onSale,
-}) => {
+const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
@@ -50,12 +41,7 @@ const OrdinalCard = ({
             <div className="product-share-wrapper">
                 <div className="profile-share">
                     {authors?.map((client) => (
-                        <ClientAvatar
-                            key={client.name}
-                            slug={client.slug}
-                            name={client.name}
-                            image={client.image}
-                        />
+                        <ClientAvatar key={client.name} slug={client.slug} name={client.name} image={client.image} />
                     ))}
                     <div className="more-author-text">
                         {Boolean(utxo.inscriptionId) && (
@@ -69,22 +55,13 @@ const OrdinalCard = ({
                         )}
                     </div>
                 </div>
-                {nostrAddress && type !== "send" && type !== "buy" && (
-                    <CardOptions utxo={utxo} onSale={onSale} />
-                )}
+                {nostrAddress && type !== "send" && type !== "buy" && <CardOptions utxo={utxo} onSale={onSale} />}
             </div>
             {/* <Anchor path={`#${slug}`}>
             <span className="product-name">{title}</span>
         </Anchor>
         <span className="latest-bid">{description}</span> */}
-            <ProductBid
-                price={price}
-                utxo={utxo}
-                confirmed={confirmed}
-                date={date}
-                type={type}
-                onSale={onSale}
-            />
+            <ProductBid price={price} utxo={utxo} confirmed={confirmed} date={date} type={type} onSale={onSale} />
         </div>
     );
 };

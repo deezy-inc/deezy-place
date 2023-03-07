@@ -37,17 +37,13 @@ const OrdinalsArea = ({ className, space, onSale }) => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
 
-            const ownedInscriptions = SessionStorage.get(
-                SessionsStorageKeys.INSCRIPTIONS_OWNED
-            );
+            const ownedInscriptions = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_OWNED);
 
             if (ownedInscriptions) {
                 setInscriptions(ownedInscriptions);
             }
 
-            const response = await axios.get(
-                `https://mempool.space/api/address/${nostrAddress}/utxo`
-            );
+            const response = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
             const tempInscriptionsByUtxo = {};
 
             // TODO: Move to promise.all
@@ -68,9 +64,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                     let res = null;
                     try {
                         // use getInscriptionDataById
-                        res = await axios.get(
-                            `https://ordinals.com/inscription/${inscriptionId}`
-                        );
+                        res = await axios.get(`https://ordinals.com/inscription/${inscriptionId}`);
                     } catch (err) {
                         console.error(`Error from ordinals.com`);
                     }
@@ -78,9 +72,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         // console.log(`No inscription for ${inscriptionId}`);
                         currentDepth += 1;
                         // get previous vin
-                        const txResp = await axios.get(
-                            `https://mempool.space/api/tx/${currentUtxo.txid}`
-                        );
+                        const txResp = await axios.get(`https://mempool.space/api/tx/${currentUtxo.txid}`);
                         const tx = txResp.data;
                         // console.log(tx);
                         const firstInput = tx.vin[0];
@@ -93,8 +85,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                     }
 
                     utxo.inscriptionId = inscriptionId;
-                    tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] =
-                        currentUtxo;
+                    tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo;
                     break;
                 }
             }
@@ -106,8 +97,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 })
                 .map((utxo) => {
                     const inscriptionId = `${utxo.txid}:${utxo.vout}`;
-                    const inscriptionUtxo =
-                        tempInscriptionsByUtxo[inscriptionId];
+                    const inscriptionUtxo = tempInscriptionsByUtxo[inscriptionId];
                     return {
                         ...utxo,
                         ...inscriptionUtxo,
@@ -115,10 +105,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 })
                 .sort((a, b) => b.status.block_height - a.status.block_height);
 
-            SessionStorage.set(
-                SessionsStorageKeys.INSCRIPTIONS_OWNED,
-                ownedUtxos
-            );
+            SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, ownedUtxos);
 
             setInscriptions(ownedUtxos);
             setUtxosReady(true);
@@ -127,33 +114,19 @@ const OrdinalsArea = ({ className, space, onSale }) => {
     }, []);
 
     return (
-        <div
-            id="your-collection"
-            className={clsx(
-                "rn-product-area",
-                space === 1 && "rn-section-gapTop",
-                className
-            )}
-        >
+        <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <SectionTitle
-                            className="mb--0"
-                            {...{ title: "Your collection" }}
-                            isLoading={!utxosReady}
-                        />
+                        <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
                         <span>
-                            You can safely receive ordinal inscriptions and
-                            regular bitcoin to this{" "}
+                            You can safely receive ordinal inscriptions and regular bitcoin to this{" "}
                             <button
                                 type="button"
                                 className="btn-transparent"
                                 onClick={() => {
                                     navigator.clipboard.writeText(nostrAddress);
-                                    toast(
-                                        "Receive Address copied to clipboard!"
-                                    );
+                                    toast("Receive Address copied to clipboard!");
                                 }}
                             >
                                 address
@@ -166,16 +139,11 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                     {inscriptions.length > 0 && (
                         <>
                             {inscriptions.map((inscription) => (
-                                <div
-                                    key={inscription.txid}
-                                    className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                >
+                                <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
                                     <OrdinalCard
                                         overlay
                                         price={{
-                                            amount: inscription.value.toLocaleString(
-                                                "en-US"
-                                            ),
+                                            amount: inscription.value.toLocaleString("en-US"),
                                             currency: "Sats",
                                         }}
                                         type="sell"
@@ -196,11 +164,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                             <br />
                             <br />
                             Consider minting an{" "}
-                            <a
-                                href="https://astralbabes.ai"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
+                            <a href="https://astralbabes.ai" target="_blank" rel="noreferrer">
                                 astral babe
                             </a>
                         </div>

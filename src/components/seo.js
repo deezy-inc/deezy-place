@@ -13,10 +13,7 @@ const SEO = ({ pageTitle }) => {
                 content="Bitcoin web wallet connected to your nostr key, designed to hold ordinal inscription NFTs"
             />
             <meta name="robots" content="noindex, follow" />
-            <meta
-                name="viewport"
-                content="width=device-width, initial-scale=1, shrink-to-fit=no"
-            />
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
             <link rel="icon" href="/favicon.png" />
         </Head>
     );

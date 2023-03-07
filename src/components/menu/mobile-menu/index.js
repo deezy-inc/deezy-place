@@ -48,20 +48,12 @@ const MobileMenu = ({ isOpen, onClick, menu, logo }) => {
                                     <Anchor
                                         className="nav-link its_new"
                                         path={hasChildren ? "#!" : nav.path}
-                                        onClick={
-                                            hasChildren
-                                                ? onClickHandler
-                                                : (e) => e
-                                        }
+                                        onClick={hasChildren ? onClickHandler : (e) => e}
                                     >
                                         {nav.text}
                                     </Anchor>
-                                    {nav?.submenu && (
-                                        <SubMenu menu={nav.submenu} />
-                                    )}
-                                    {nav?.megamenu && (
-                                        <MegaMenu menu={nav.megamenu} />
-                                    )}
+                                    {nav?.submenu && <SubMenu menu={nav.submenu} />}
+                                    {nav?.megamenu && <MegaMenu menu={nav.megamenu} />}
                                 </li>
                             );
                         })}

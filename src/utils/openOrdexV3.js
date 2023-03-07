@@ -12,19 +12,13 @@ bitcoin.initEccLib(ecc);
 const isProduction = !TESTNET;
 // const nostrRelayUrl = "wss://nostr.openordex.org"; // Use local relay for testing
 const nostrRelayUrl = "ws://localhost:7001"; // Use local relay for testing
-const baseMempoolUrl = isProduction
-    ? "https://mempool.space"
-    : "https://mempool.space/signet";
+const baseMempoolUrl = isProduction ? "https://mempool.space" : "https://mempool.space/signet";
 const baseMempoolApiUrl = `${baseMempoolUrl}/api`;
 const bitcoinPriceApiUrl = "https://blockchain.info/ticker?cors=true";
 const feeLevel = "hourFee"; // "fastestFee" || "halfHourFee" || "hourFee" || "economyFee" || "minimumFee"
-const ordinalsExplorerUrl = isProduction
-    ? "https://ordinals.com"
-    : "https://explorer-signet.openordex.org";
+const ordinalsExplorerUrl = isProduction ? "https://ordinals.com" : "https://explorer-signet.openordex.org";
 const nostrOrderEventKind = 802;
-const network = isProduction
-    ? bitcoin.networks.bitcoin
-    : bitcoin.networks.testnet;
+const network = isProduction ? bitcoin.networks.bitcoin : bitcoin.networks.testnet;
 const networkName = isProduction ? "mainnet" : "signet";
 const exchangeName = "nosft";
 const dummyUtxoValue = 1_000;
@@ -35,9 +29,9 @@ let recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
     .then((data) => data[feeLevel]);
 
 async function doesUtxoContainInscription(utxo) {
-    const html = await fetch(
-        `${ordinalsExplorerUrl}/output/${utxo.txid}:${utxo.vout}`
-    ).then((response) => response.text());
+    const html = await fetch(`${ordinalsExplorerUrl}/output/${utxo.txid}:${utxo.vout}`).then((response) =>
+        response.text()
+    );
 
     return html.match(/class=thumbnails/) !== null;
 }
@@ -58,9 +52,7 @@ function satToBtc(sat) {
 }
 
 async function getAddressUtxos(address) {
-    return await fetch(`${baseMempoolApiUrl}/address/${address}/utxo`).then(
-        (response) => response.json()
-    );
+    return await fetch(`${baseMempoolApiUrl}/address/${address}/utxo`).then((response) => response.json());
 }
 
 async function selectUtxos(utxos, amount, vins, vouts, recommendedFeeRate) {
@@ -68,9 +60,7 @@ async function selectUtxos(utxos, amount, vins, vouts, recommendedFeeRate) {
     let selectedAmount = 0;
 
     // Sort descending by value, and filter out dummy utxos
-    utxos = utxos
-        .filter((x) => x.value > dummyUtxoValue)
-        .sort((a, b) => b.value - a.value);
+    utxos = utxos.filter((x) => x.value > dummyUtxoValue).sort((a, b) => b.value - a.value);
 
     for (const utxo of utxos) {
         // Never spend a utxo that contains an inscription for cardinal purposes
@@ -82,13 +72,7 @@ async function selectUtxos(utxos, amount, vins, vouts, recommendedFeeRate) {
 
         if (
             selectedAmount >=
-            amount +
-                dummyUtxoValue +
-                calculateFee(
-                    vins + selectedUtxos.length,
-                    vouts,
-                    recommendedFeeRate
-                )
+            amount + dummyUtxoValue + calculateFee(vins + selectedUtxos.length, vouts, recommendedFeeRate)
         ) {
             break;
         }
@@ -103,21 +87,12 @@ Needed:          ${satToBtc(amount)} BTC`);
     return selectedUtxos;
 }
 
-function calculateFee(
-    vins,
-    vouts,
-    recommendedFeeRate,
-    includeChangeOutput = true
-) {
+function calculateFee(vins, vouts, recommendedFeeRate, includeChangeOutput = true) {
     const baseTxSize = 10;
     const inSize = 180;
     const outSize = 34;
 
-    const txSize =
-        baseTxSize +
-        vins * inSize +
-        vouts * outSize +
-        includeChangeOutput * outSize;
+    const txSize = baseTxSize + vins * inSize + vouts * outSize + includeChangeOutput * outSize;
     const fee = txSize * recommendedFeeRate;
 
     return fee;
@@ -146,39 +121,26 @@ const OpenOrdex = function () {
 
         this.nostrRelay = relayInit(nostrRelayUrl);
 
-        this.recommendedFeeRate = fetch(
-            `${baseMempoolApiUrl}/v1/fees/recommended`
-        )
+        this.recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
             .then((response) => response.json())
             .then((data) => data[feeLevel]);
 
         return this;
     };
 
-    this.validateSellerPSBTAndExtractPrice = function (
-        sellerSignedPsbtBase64,
-        utxo
-    ) {
+    this.validateSellerPSBTAndExtractPrice = function (sellerSignedPsbtBase64, utxo) {
         try {
-            this.sellerSignedPsbt = bitcoin.Psbt.fromBase64(
-                sellerSignedPsbtBase64,
-                {
-                    network,
-                }
-            );
+            this.sellerSignedPsbt = bitcoin.Psbt.fromBase64(sellerSignedPsbtBase64, {
+                network,
+            });
             const sellerInput = this.sellerSignedPsbt.txInputs[0];
-            const sellerSignedPsbtInput = `${sellerInput.hash
-                .reverse()
-                .toString("hex")}:${sellerInput.index}`;
+            const sellerSignedPsbtInput = `${sellerInput.hash.reverse().toString("hex")}:${sellerInput.index}`;
 
             if (sellerSignedPsbtInput != utxo) {
                 throw `Seller signed PSBT does not match this inscription\n\n${sellerSignedPsbtInput}\n!=\n${utxo}`;
             }
 
-            if (
-                this.sellerSignedPsbt.txInputs.length != 1 ||
-                this.sellerSignedPsbt.txInputs.length != 1
-            ) {
+            if (this.sellerSignedPsbt.txInputs.length != 1 || this.sellerSignedPsbt.txInputs.length != 1) {
                 throw `Invalid seller signed PSBT`;
             }
 
@@ -187,9 +149,7 @@ const OpenOrdex = function () {
             } catch (e) {
                 if (e.message == "Not finalized") {
                     throw "PSBT not signed";
-                } else if (
-                    e.message != "Outputs are spending more than Inputs"
-                ) {
+                } else if (e.message != "Outputs are spending more than Inputs") {
                     throw "Invalid PSBT " + e.message || e;
                 }
             }
@@ -220,20 +180,13 @@ const OpenOrdex = function () {
                     continue;
                 }
                 const inscriptionId = order.tags.find((x) => x?.[0] == "i")[1];
-                if (
-                    latestOrders.find((x) => x.inscriptionId == inscriptionId)
-                ) {
+                if (latestOrders.find((x) => x.inscriptionId == inscriptionId)) {
                     continue;
                 }
 
-                const inscriptionData = await this.getInscriptionDataById(
-                    inscriptionId
-                );
+                const inscriptionData = await this.getInscriptionDataById(inscriptionId);
 
-                const validatedPrice = this.validateSellerPSBTAndExtractPrice(
-                    order.content,
-                    inscriptionData.output
-                );
+                const validatedPrice = this.validateSellerPSBTAndExtractPrice(order.content, inscriptionData.output);
                 if (!validatedPrice) {
                     continue;
                 }
@@ -259,17 +212,11 @@ const OpenOrdex = function () {
                     //     validatedPrice,
                     //     await this.bitcoinPrice
                     // )})`,
-                    title: `$${satsToFormattedDollarString(
-                        validatedPrice,
-                        await this.bitcoinPrice
-                    )}`,
+                    title: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
                     txid: order.id,
                     inscriptionId,
                     value: validatedPrice,
-                    usdPrice: `$${satsToFormattedDollarString(
-                        validatedPrice,
-                        await this.bitcoinPrice
-                    )}`,
+                    usdPrice: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
                     ...order,
                     // tagsData: inscriptionTags,
                 });
@@ -299,25 +246,20 @@ const OpenOrdex = function () {
 
     this.getTxHexById = async function (txId) {
         if (!this.txHexByIdCache[txId]) {
-            this.txHexByIdCache[txId] = await fetch(
-                `${baseMempoolApiUrl}/tx/${txId}/hex`
-            ).then((response) => response.text());
+            this.txHexByIdCache[txId] = await fetch(`${baseMempoolApiUrl}/tx/${txId}/hex`).then((response) =>
+                response.text()
+            );
         }
 
         return this.txHexByIdCache[txId];
     };
 
-    this.getInscriptionDataById = async function (
-        inscriptionId,
-        verifyIsInscriptionNumber
-    ) {
-        const html = await fetch(
-            `${ordinalsExplorerUrl}/inscription/${inscriptionId}`
-        ).then((response) => response.text());
+    this.getInscriptionDataById = async function (inscriptionId, verifyIsInscriptionNumber) {
+        const html = await fetch(`${ordinalsExplorerUrl}/inscription/${inscriptionId}`).then((response) =>
+            response.text()
+        );
 
-        const data = [
-            ...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm),
-        ]
+        const data = [...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm)]
             .map((x) => {
                 x[2] = x[2].replace(/<.*?>/gm, "");
                 return x;
@@ -332,10 +274,7 @@ const OpenOrdex = function () {
         } catch {
             throw new Error(error);
         }
-        if (
-            verifyIsInscriptionNumber &&
-            String(data.number) != String(verifyIsInscriptionNumber)
-        ) {
+        if (verifyIsInscriptionNumber && String(data.number) != String(verifyIsInscriptionNumber)) {
             throw new Error(error);
         }
 
@@ -343,11 +282,7 @@ const OpenOrdex = function () {
     };
 
     // Sell
-    this.generatePSBTListingInscriptionForSale = async function (
-        ordinalOutput,
-        price,
-        paymentAddress
-    ) {
+    this.generatePSBTListingInscriptionForSale = async function (ordinalOutput, price, paymentAddress) {
         let psbt = new bitcoin.Psbt({ network });
 
         const pk = await window.nostr.getPublicKey();
@@ -355,9 +290,7 @@ const OpenOrdex = function () {
         const inputAddressInfo = getAddressInfo(pk);
 
         const [ordinalUtxoTxId, ordinalUtxoVout] = ordinalOutput.split(":");
-        const tx = bitcoin.Transaction.fromHex(
-            await this.getTxHexById(ordinalUtxoTxId)
-        );
+        const tx = bitcoin.Transaction.fromHex(await this.getTxHexById(ordinalUtxoTxId));
         for (const output in tx.outs) {
             try {
                 tx.setWitness(parseInt(output), []);
@@ -389,8 +322,7 @@ const OpenOrdex = function () {
             0,
             [inputAddressInfo.output],
             [price],
-            bitcoin.Transaction.SIGHASH_SINGLE |
-                bitcoin.Transaction.SIGHASH_ANYONECANPAY
+            bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
         );
 
         const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
@@ -402,12 +334,7 @@ const OpenOrdex = function () {
         return psbt.toBase64();
     };
 
-    this.publishSellerPsbt = async function (
-        signedSalePsbt,
-        inscriptionId,
-        inscriptionUtxo,
-        priceInSats
-    ) {
+    this.publishSellerPsbt = async function (signedSalePsbt, inscriptionId, inscriptionUtxo, priceInSats) {
         await this.nostrRelay.connect();
         const pk = await window.nostr.getPublicKey();
 
@@ -438,9 +365,7 @@ const OpenOrdex = function () {
             }).extractTransaction(true);
         } catch (e) {
             if (e.message == "Not finalized") {
-                return alert(
-                    "Please sign and finalize the PSBT before submitting it"
-                );
+                return alert("Please sign and finalize the PSBT before submitting it");
             } else if (e.message != "Outputs are spending more than Inputs") {
                 console.error(e);
                 return alert("Invalid PSBT", e.message || e);
@@ -462,11 +387,7 @@ const OpenOrdex = function () {
 
     // Buy
     this.createDummuyUtxo = async (payerAddress) => {
-        return this.generatePSBTGeneratingDummyUtxos(
-            payerAddress,
-            1,
-            this.paymentUtxos
-        );
+        return this.generatePSBTGeneratingDummyUtxos(payerAddress, 1, this.paymentUtxos);
     };
 
     this.generatePSBTGeneratingDummyUtxos = async (payerAddress) => {
@@ -479,15 +400,11 @@ const OpenOrdex = function () {
         let totalValue = 0;
 
         if (!this.payerUtxos.length) {
-            throw new Error(
-                "Send some BTC to this address to generate the dummy utxo"
-            );
+            throw new Error("Send some BTC to this address to generate the dummy utxo");
         }
 
         for (const utxo of this.payerUtxos) {
-            const tx = bitcoin.Transaction.fromHex(
-                await this.getTxHexById(utxo.txid)
-            );
+            const tx = bitcoin.Transaction.fromHex(await this.getTxHexById(utxo.txid));
             for (const output in tx.outs) {
                 try {
                     tx.setWitness(parseInt(output), []);
@@ -514,17 +431,12 @@ const OpenOrdex = function () {
             });
         }
 
-        const fee = calculateFee(
-            psbt.txInputs.length,
-            psbt.txOutputs.length,
-            await recommendedFeeRate
-        );
+        const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, await recommendedFeeRate);
 
         // Change utxo
         psbt.addOutput({
             address: payerAddress,
-            value:
-                totalValue - numberOfDummyUtxosToCreate * dummyUtxoValue - fee,
+            value: totalValue - numberOfDummyUtxosToCreate * dummyUtxoValue - fee,
         });
 
         const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
@@ -560,9 +472,7 @@ const OpenOrdex = function () {
             throw new Error("missing dummy utxo");
         }
 
-        const potentialDummyUtxos = this.payerUtxos.filter(
-            (utxo) => utxo.value <= dummyUtxoValue
-        );
+        const potentialDummyUtxos = this.payerUtxos.filter((utxo) => utxo.value <= dummyUtxoValue);
         this.dummyUtxo = undefined;
 
         debugger;
@@ -585,8 +495,7 @@ const OpenOrdex = function () {
             vouts = numberOfDummyUtxosToCreate;
         } else {
             // hideDummyUtxoElements();
-            minimumValueRequired =
-                price + numberOfDummyUtxosToCreate * dummyUtxoValue;
+            minimumValueRequired = price + numberOfDummyUtxosToCreate * dummyUtxoValue;
             vins = 1;
             vouts = 2 + numberOfDummyUtxosToCreate;
         }
@@ -605,20 +514,14 @@ const OpenOrdex = function () {
         }
     };
 
-    this.generatePSBTBuyingInscription = async (
-        payerAddress,
-        receiverAddress,
-        price
-    ) => {
+    this.generatePSBTBuyingInscription = async (payerAddress, receiverAddress, price) => {
         debugger;
         const psbt = new bitcoin.Psbt({ network });
         let totalValue = 0;
         let totalPaymentValue = 0;
 
         // Add dummy utxo input
-        const tx = bitcoin.Transaction.fromHex(
-            await this.getTxHexById(this.dummyUtxo.txid)
-        );
+        const tx = bitcoin.Transaction.fromHex(await this.getTxHexById(this.dummyUtxo.txid));
         for (const output in tx.outs) {
             try {
                 tx.setWitness(parseInt(output), []);
@@ -649,9 +552,7 @@ const OpenOrdex = function () {
 
         // Add payment utxo inputs
         for (const utxo of this.paymentUtxos) {
-            const tx = bitcoin.Transaction.fromHex(
-                await this.getTxHexById(utxo.txid)
-            );
+            const tx = bitcoin.Transaction.fromHex(await this.getTxHexById(utxo.txid));
             for (const output in tx.outs) {
                 try {
                     tx.setWitness(parseInt(output), []);
@@ -675,11 +576,7 @@ const OpenOrdex = function () {
             value: dummyUtxoValue,
         });
 
-        const fee = calculateFee(
-            psbt.txInputs.length,
-            psbt.txOutputs.length,
-            await recommendedFeeRate
-        );
+        const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, await recommendedFeeRate);
 
         const changeValue = totalValue - this.dummyUtxo.value - price - fee;
 

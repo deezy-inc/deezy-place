@@ -7,12 +7,7 @@ const Wrapper = ({ children }) => (
     <>
         {children}
         <ScrollToTop />
-        <ToastContainer
-            theme="dark"
-            autoClose={1500}
-            pauseOnHover={false}
-            pauseOnFocusLoss={false}
-        />
+        <ToastContainer theme="dark" autoClose={1500} pauseOnHover={false} pauseOnFocusLoss={false} />
     </>
 );
 

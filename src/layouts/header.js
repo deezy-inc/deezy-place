@@ -34,10 +34,7 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
                         <div className="header-left">
                             <Logo logo={headerData.logo} />
                             <div className="mainmenu-wrapper">
-                                <nav
-                                    id="sideNav"
-                                    className="mainmenu-nav d-none d-xl-block"
-                                >
+                                <nav id="sideNav" className="mainmenu-nav d-none d-xl-block">
                                     <MainMenu menu={[]} />
                                 </nav>
                             </div>
@@ -75,12 +72,7 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
                     </div>
                 </div>
             </header>
-            <MobileMenu
-                isOpen={offcanvas}
-                onClick={offcanvasHandler}
-                menu={menuData}
-                logo={headerData.logo}
-            />
+            <MobileMenu isOpen={offcanvas} onClick={offcanvasHandler} menu={menuData} logo={headerData.logo} />
         </>
     );
 };

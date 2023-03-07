@@ -4,24 +4,17 @@ import { TESTNET, ASSUMED_TX_BYTES } from "@lib/constants";
 
 bitcoin.initEccLib(ecc);
 
-export const outputValue = (currentUtxo, sendFeeRate) =>
-    currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
+export const outputValue = (currentUtxo, sendFeeRate) => currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 
-export const ordinalsUrl = (utxo) =>
-    `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
+export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
 
-export const ordinalsImageUrl = (utxo) =>
-    `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`;
+export const ordinalsImageUrl = (utxo) => `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`;
 
-export const cloudfrontUrl = (utxo) =>
-    `https://d2v3k2do8kym1f.cloudfront.net/minted-items/${utxo.txid}:${utxo.vout}`;
+export const cloudfrontUrl = (utxo) => `https://d2v3k2do8kym1f.cloudfront.net/minted-items/${utxo.txid}:${utxo.vout}`;
 
 export const shortenStr = (str) => {
     if (!str) return "";
-    return `${str.substring(0, 8)}...${str.substring(
-        str.length - 8,
-        str.length
-    )}`;
+    return `${str.substring(0, 8)}...${str.substring(str.length - 8, str.length)}`;
 };
 
 export const getAddressInfo = (nostrPublicKey) => {

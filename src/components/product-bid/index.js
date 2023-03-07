@@ -28,35 +28,20 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
             case "buy":
                 if (!isExperimental) return <span />;
                 return (
-                    <button
-                        type="button"
-                        className="btn btn-small"
-                        onClick={handleBuyModal}
-                        disabled={!confirmed}
-                    >
+                    <button type="button" className="btn btn-small" onClick={handleBuyModal} disabled={!confirmed}>
                         Buy
                     </button>
                 );
             case "sell":
                 if (!isExperimental) return <span />;
                 return (
-                    <button
-                        type="button"
-                        className="btn btn-small"
-                        onClick={handleSellModal}
-                        disabled={!confirmed}
-                    >
+                    <button type="button" className="btn btn-small" onClick={handleSellModal} disabled={!confirmed}>
                         Sell
                     </button>
                 );
             case "send":
                 return (
-                    <button
-                        type="button"
-                        className="btn btn-small"
-                        onClick={handleSendModal}
-                        disabled={!confirmed}
-                    >
+                    <button type="button" className="btn btn-small" onClick={handleSendModal} disabled={!confirmed}>
                         Send
                     </button>
                 );
@@ -64,9 +49,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
                 return <span />;
         }
     }
-    const minted = !confirmed
-        ? "Unconfirmed"
-        : new Date(date * 1000).toLocaleString();
+    const minted = !confirmed ? "Unconfirmed" : new Date(date * 1000).toLocaleString();
 
     return (
         <div className="bid-react-area">
@@ -77,26 +60,11 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
 
             {Boolean(nostrAddress) && renderMainAction(type)}
 
-            <SendModal
-                show={showSendModal}
-                handleModal={handleSendModal}
-                utxo={utxo}
-                onSale={onSale}
-            />
+            <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
 
-            <SellModal
-                show={showSellModal}
-                handleModal={handleSellModal}
-                utxo={utxo}
-                onSale={onSale}
-            />
+            <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} />
 
-            <BuyModal
-                show={showBuyModal}
-                handleModal={handleBuyModal}
-                utxo={utxo}
-                onSale={onSale}
-            />
+            <BuyModal show={showBuyModal} handleModal={handleBuyModal} utxo={utxo} onSale={onSale} />
         </div>
     );
 };

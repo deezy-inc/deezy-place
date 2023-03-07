@@ -21,8 +21,7 @@ QuicklinkWidget.propTypes = {
         title: PropTypes.string,
         menu: PropTypes.arrayOf(
             PropTypes.shape({
-                id: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-                    .isRequired,
+                id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
                 text: PropTypes.string.isRequired,
                 path: PropTypes.string.isRequired,
             })

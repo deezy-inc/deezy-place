@@ -37,9 +37,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
         const load = async () => {
             setIsLoadingOpenOrders(true);
             // load from cache before updating
-            const sessionOrders = SessionStorage.get(
-                SessionsStorageKeys.INSCRIPTIONS_ON_SALE
-            );
+            const sessionOrders = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_ON_SALE);
             if (sessionOrders) {
                 setOpenOrders(sessionOrders);
             }
@@ -54,10 +52,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         [tagId]: value,
                     }));
                 // Convert array into object of key tagId
-                inscriptionData = Object.assign(
-                    {},
-                    ...inscriptionData.map((o) => o)
-                );
+                inscriptionData = Object.assign({}, ...inscriptionData.map((o) => o));
 
                 const i = deepClone({
                     inscriptionTags: inscriptionData,
@@ -68,10 +63,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                 forSaleInscriptions.push(i);
             }
 
-            SessionStorage.set(
-                SessionsStorageKeys.INSCRIPTIONS_ON_SALE,
-                forSaleInscriptions
-            );
+            SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_ON_SALE, forSaleInscriptions);
 
             setOpenOrders(forSaleInscriptions);
 
@@ -81,14 +73,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     }, []);
 
     return (
-        <div
-            id="selling-collection"
-            className={clsx(
-                "rn-product-area",
-                space === 1 && "rn-section-gapTop",
-                className
-            )}
-        >
+        <div id="selling-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
@@ -99,11 +84,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         />
                         {!Boolean(nostrAddress) && isExperimental && (
                             <span>
-                                <button
-                                    type="button"
-                                    className="btn-transparent"
-                                    onClick={onConnectHandler}
-                                >
+                                <button type="button" className="btn-transparent" onClick={onConnectHandler}>
                                     Connect
                                 </button>{" "}
                                 your wallet to buy an inscription
@@ -117,16 +98,11 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         {openOrders.length > 0 ? (
                             <>
                                 {openOrders.map((utxo) => (
-                                    <div
-                                        key={utxo.id}
-                                        className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-                                    >
+                                    <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
                                         <OrdinalCard
                                             overlay
                                             price={{
-                                                amount: utxo.value.toLocaleString(
-                                                    "en-US"
-                                                ),
+                                                amount: utxo.value.toLocaleString("en-US"),
                                                 currency: "Sats",
                                             }}
                                             type="buy"

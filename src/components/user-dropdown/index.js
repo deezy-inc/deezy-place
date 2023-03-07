@@ -7,12 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
     <div className="icon-box">
         <Anchor path="#">
-            <Image
-                src="/images/logo/nos-ft-logo.png"
-                alt="Images"
-                width={38}
-                height={38}
-            />
+            <Image src="/images/logo/nos-ft-logo.png" alt="Images" width={38} height={38} />
         </Anchor>
         <div className="rn-dropdown">
             <div className="rn-product-inner">
@@ -27,12 +22,8 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
                                         className="btn-close"
                                         aria-label="Copy receive address to clipboard"
                                         onClick={() => {
-                                            navigator.clipboard.writeText(
-                                                receiveAddress
-                                            );
-                                            toast(
-                                                "Receive Address copied to clipboard!"
-                                            );
+                                            navigator.clipboard.writeText(receiveAddress);
+                                            toast("Receive Address copied to clipboard!");
                                         }}
                                     >
                                         <i className="feather-copy" />
@@ -40,13 +31,10 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
                                 </span>
                             </h6>
                             <span className="text">
-                                You can safely receive ordinal inscriptions and
-                                regular bitcoin to this address
+                                You can safely receive ordinal inscriptions and regular bitcoin to this address
                             </span>
                             {/* Add copy to clipboard button */}
-                            <span className="receiveAddress">
-                                {receiveAddress}
-                            </span>
+                            <span className="receiveAddress">{receiveAddress}</span>
                         </div>
                         <div className="button" />
                     </li>

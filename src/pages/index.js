@@ -24,8 +24,7 @@ const App = () => {
     const [refreshHack, setRefreshHack] = useState(false);
 
     const [nostrAddress, setNostrAddress] = useState();
-    const { nostrPublicKey, onConnectHandler, onDisconnectHandler } =
-        useConnectWallet();
+    const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
 
     useEffect(() => {
         const exp = getQueryStringParam("__mode");
@@ -64,21 +63,11 @@ const App = () => {
                 />
 
                 <main id="main-content">
-                    {!nostrPublicKey && (
-                        <HeroArea
-                            data={content["hero-section"]}
-                            onConnectHandler={onConnectHandler}
-                        />
-                    )}
+                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
 
-                    {nostrPublicKey && nostrAddress && (
-                        <OrdinalsArea onSale={setRefreshHack} />
-                    )}
+                    {nostrPublicKey && nostrAddress && <OrdinalsArea onSale={setRefreshHack} />}
 
-                    <OnSaleOrdinalsArea
-                        onConnectHandler={onConnectHandler}
-                        onSale={setRefreshHack}
-                    />
+                    <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} />
                 </main>
 
                 <Footer />

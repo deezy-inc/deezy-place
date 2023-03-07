@@ -32,12 +32,20 @@ const BuyModal = ({ show, handleModal, utxo }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
-    const [destinationBtcAddress, setDestinationBtcAddress] =
-        useState(nostrAddress);
+    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [isOnBuy, setIsOnBuy] = useState(false);
 
     let openOrderx;
+
+    const createDummyUtxo = async () => {
+        try {
+            const txId = await openOrderx.generatePSBTGeneratingDummyUtxos(destinationBtcAddress);
+            toast.info(`Transaction created. Please wait for it to be confirmed. TxId: ${txId}`);
+        } catch (e) {
+            toast.error(e.message);
+        }
+    };
 
     const updatePayerAddress = async (address) => {
         if (!openOrderx) {
@@ -50,6 +58,32 @@ const BuyModal = ({ show, handleModal, utxo }) => {
             toast.error(e.message);
             if (window.confirm("Create dummy UTXO?")) {
                 await createDummyUtxo();
+            }
+        }
+    };
+
+    const onChangeAddress = async (newaddr) => {
+        if (newaddr === "") {
+            setIsBtcInputAddressValid(true);
+            return;
+        }
+
+        try {
+            setDestinationBtcAddress(newaddr);
+        } catch (e) {
+            setIsBtcInputAddressValid(false);
+            toast.error(e.message);
+        }
+
+        try {
+            await updatePayerAddress(newaddr);
+        } catch (e) {
+            if (e.message === "missing dummy utxo") {
+                toast.error("This address does not contain any valid UTXOs. Please try create one before continue.");
+
+                if (window.confirm("Create dummy UTXO?")) {
+                    await createDummyUtxo();
+                }
             }
         }
     };
@@ -86,71 +120,19 @@ const BuyModal = ({ show, handleModal, utxo }) => {
         }
         // Sign and send
         setIsOnBuy(false);
-    };
 
-    const onChangeAddress = async (newaddr) => {
-        if (newaddr === "") {
-            setIsBtcInputAddressValid(true);
-            return;
-        }
-
-        try {
-            setDestinationBtcAddress(newaddr);
-        } catch (e) {
-            setIsBtcInputAddressValid(false);
-            toast.error(e.message);
-        }
-
-        try {
-            await updatePayerAddress(newaddr);
-        } catch (e) {
-            if (e.message === "missing dummy utxo") {
-                toast.error(
-                    "This address does not contain any valid UTXOs. Please try create one before continue."
-                );
-
-                if (window.confirm("Create dummy UTXO?")) {
-                    await createDummyUtxo();
-                }
-            }
-        }
-    };
-
-    const createDummyUtxo = async () => {
-        try {
-            const txId = await openOrderx.generatePSBTGeneratingDummyUtxos(
-                destinationBtcAddress
-            );
-            toast.info(
-                `Transaction created. Please wait for it to be confirmed. TxId: ${txId}`
-            );
-        } catch (e) {
-            toast.error(e.message);
-            return;
-        }
+        return undefined;
     };
 
     return (
-        <Modal
-            className="rn-popup-modal placebid-modal-wrapper"
-            show={show}
-            onHide={handleModal}
-            centered
-        >
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
             {show && (
-                <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={handleModal}
-                >
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
                     <i className="feather-x" />
                 </button>
             )}
             <Modal.Header>
-                <h3 className="modal-title">
-                    Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}
-                </h3>
+                <h3 className="modal-title">Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to buy this NFT</p>
@@ -168,9 +150,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                         <div className="bid-content-top">
                             <div className="bid-content-left">
                                 <InputGroup className="mb-lg-5 notDummy">
-                                    <Form.Label>
-                                        Address to receive payment
-                                    </Form.Label>
+                                    <Form.Label>Address to receive payment</Form.Label>
                                     <Form.Control
                                         defaultValue={nostrAddress}
                                         onChange={async (evt) => {
@@ -195,22 +175,14 @@ const BuyModal = ({ show, handleModal, utxo }) => {
 
                         <div className="bid-content-mid">
                             <div className="bid-content-left">
-                                {Boolean(destinationBtcAddress) && (
-                                    <span>Payment Receive Address</span>
-                                )}
+                                {Boolean(destinationBtcAddress) && <span>Payment Receive Address</span>}
 
                                 {Boolean(utxo.usdPrice) && <span>Price</span>}
                             </div>
                             <div className="bid-content-right">
-                                {Boolean(destinationBtcAddress) && (
-                                    <span>
-                                        {shortenStr(destinationBtcAddress)}
-                                    </span>
-                                )}
+                                {Boolean(destinationBtcAddress) && <span>{shortenStr(destinationBtcAddress)}</span>}
 
-                                {Boolean(utxo.usdPrice) && (
-                                    <span>{utxo.usdPrice}</span>
-                                )}
+                                {Boolean(utxo.usdPrice) && <span>{utxo.usdPrice}</span>}
                             </div>
                         </div>
                     </div>
@@ -237,11 +209,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                                 }
                             }}
                         >
-                            {isOnBuy ? (
-                                <TailSpin stroke="#fec823" speed={0.75} />
-                            ) : (
-                                "Buy"
-                            )}
+                            {isOnBuy ? <TailSpin stroke="#fec823" speed={0.75} /> : "Buy"}
                         </Button>
                     </div>
 

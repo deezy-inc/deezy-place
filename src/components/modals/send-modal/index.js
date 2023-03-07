@@ -41,9 +41,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     async function sendUtxo() {
         const inputAddressInfo = getAddressInfo(nostrPublicKey);
         const psbt = new bitcoin.Psbt({
-            network: TESTNET
-                ? bitcoin.networks.testnet
-                : bitcoin.networks.bitcoin,
+            network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
         });
         const publicKey = Buffer.from(await window.nostr.getPublicKey(), "hex");
 
@@ -77,13 +75,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         const hex = tx.toBuffer().toString("hex");
         const fullTx = bitcoin.Transaction.fromHex(hex);
         console.log(hex);
-        const res = await axios
-            .post(`https://mempool.space/api/tx`, hex)
-            .catch((err) => {
-                console.error(err);
-                alert(err);
-                return null;
-            });
+        const res = await axios.post(`https://mempool.space/api/tx`, hex).catch((err) => {
+            console.error(err);
+            alert(err);
+            return null;
+        });
         if (!res) return false;
 
         setSentTxid(fullTx.getId());
@@ -94,26 +90,14 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     }
 
     return (
-        <Modal
-            className="rn-popup-modal placebid-modal-wrapper"
-            show={show}
-            onHide={handleModal}
-            centered
-        >
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
             {show && (
-                <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={handleModal}
-                >
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
                     <i className="feather-x" />
                 </button>
             )}
             <Modal.Header>
-                <h3 className="modal-title">
-                    Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
-                </h3>
+                <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}</h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to send this NFT</p>
@@ -129,17 +113,8 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                                 setIsBtcInputAddressValid(true);
                                                 return;
                                             }
-                                            if (
-                                                !validate(
-                                                    newaddr,
-                                                    TESTNET
-                                                        ? Network.testnet
-                                                        : Network.mainnet
-                                                )
-                                            ) {
-                                                setIsBtcInputAddressValid(
-                                                    false
-                                                );
+                                            if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
+                                                setIsBtcInputAddressValid(false);
                                                 return;
                                             }
                                             setDestinationBtcAddress(newaddr);
@@ -153,9 +128,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
                                     <Form.Control.Feedback type="invalid">
                                         <br />
-                                        That is not a valid{" "}
-                                        {TESTNET ? "testnet" : "mainnet"} BTC
-                                        address
+                                        That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC address
                                     </Form.Control.Feedback>
                                 </InputGroup>
                                 <InputGroup className="mb-3">
@@ -164,9 +137,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                         min="1"
                                         max="100"
                                         defaultValue={sendFeeRate}
-                                        onChange={(evt) =>
-                                            setSendFeeRate(evt.target.value)
-                                        }
+                                        onChange={(evt) => setSendFeeRate(evt.target.value)}
                                     />
                                 </InputGroup>
                             </div>
@@ -174,25 +145,14 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
                         <div className="bid-content-mid">
                             <div className="bid-content-left">
-                                {!!destinationBtcAddress && (
-                                    <span>Destination</span>
-                                )}
+                                {!!destinationBtcAddress && <span>Destination</span>}
                                 <span>Fee rate</span>
                                 <span>Output Value</span>
                             </div>
                             <div className="bid-content-right">
-                                {!!destinationBtcAddress && (
-                                    <span>
-                                        {shortenStr(destinationBtcAddress)}
-                                    </span>
-                                )}
+                                {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
                                 <span>{sendFeeRate} sat/vbyte</span>
-                                <span>
-                                    {utxo &&
-                                        sendFeeRate &&
-                                        outputValue(utxo, sendFeeRate)}{" "}
-                                    sats
-                                </span>
+                                <span>{utxo && sendFeeRate && outputValue(utxo, sendFeeRate)} sats</span>
                             </div>
                         </div>
                     </div>
@@ -220,11 +180,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                 setIsSending(false);
                             }}
                         >
-                            {isSending ? (
-                                <TailSpin stroke="#fec823" speed={0.75} />
-                            ) : (
-                                "Send"
-                            )}
+                            {isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Send"}
                         </Button>
                     </div>
                 </div>

@@ -13,11 +13,7 @@ const MegaMenu = ({ menu }) => (
                                     <li key={subnav.id}>
                                         <Anchor path={subnav.path}>
                                             {subnav.text}
-                                            {subnav?.icon && (
-                                                <i
-                                                    className={`feather ${subnav.icon}`}
-                                                />
-                                            )}
+                                            {subnav?.icon && <i className={`feather ${subnav.icon}`} />}
                                         </Anchor>
                                     </li>
                                 ))}

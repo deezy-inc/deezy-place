@@ -18,10 +18,7 @@ function useConnectWallet() {
     useEffect(() => {
         async function getAddrInfo() {
             if (nostrPublicKey) {
-                SessionStorage.set(
-                    SessionsStorageKeys.NOSTR_PUBLIC_KEY,
-                    nostrPublicKey
-                );
+                SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, nostrPublicKey);
             }
         }
 

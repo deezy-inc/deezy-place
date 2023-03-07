@@ -7,11 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET, ORDINALS_EXPLORER_URL } from "@lib/constants";
-import {
-    shortenStr,
-    fetchBitcoinPrice,
-    satsToFormattedDollarString,
-} from "@utils/crypto";
+import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
@@ -26,8 +22,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
-    const [destinationBtcAddress, setDestinationBtcAddress] =
-        useState(nostrAddress);
+    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [isOnSale, setIsOnSale] = useState(false);
@@ -50,22 +45,15 @@ const SendModal = ({ show, handleModal, utxo }) => {
             openOrderx = await OpenOrdex.init();
         }
 
-        const inscription = await openOrderx.getInscriptionDataById(
-            utxo.inscriptionId
+        const inscription = await openOrderx.getInscriptionDataById(utxo.inscriptionId);
+        const signedPsbt = await openOrderx.generatePSBTListingInscriptionForSale(
+            inscription.output,
+            ordinalValue,
+            destinationBtcAddress
         );
-        const signedPsbt =
-            await openOrderx.generatePSBTListingInscriptionForSale(
-                inscription.output,
-                ordinalValue,
-                destinationBtcAddress
-            );
 
         try {
-            await openOrderx.submitSignedSalePsbt(
-                utxo,
-                ordinalValue,
-                signedPsbt
-            );
+            await openOrderx.submitSignedSalePsbt(utxo, ordinalValue, signedPsbt);
             toast.info("Ordinal is now on sale");
         } catch (e) {
             toast.error(e.message);
@@ -84,26 +72,14 @@ const SendModal = ({ show, handleModal, utxo }) => {
     };
 
     return (
-        <Modal
-            className="rn-popup-modal placebid-modal-wrapper"
-            show={show}
-            onHide={handleModal}
-            centered
-        >
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
             {show && (
-                <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={handleModal}
-                >
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
                     <i className="feather-x" />
                 </button>
             )}
             <Modal.Header>
-                <h3 className="modal-title">
-                    Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}
-                </h3>
+                <h3 className="modal-title">Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this NFT</p>
@@ -121,9 +97,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                         <div className="bid-content-top">
                             <div className="bid-content-left">
                                 <InputGroup className="mb-lg-5 omg">
-                                    <Form.Label>
-                                        Address to receive payment
-                                    </Form.Label>
+                                    <Form.Label>Address to receive payment</Form.Label>
                                     <Form.Control
                                         defaultValue={nostrAddress}
                                         onChange={(evt) => {
@@ -132,17 +106,8 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                                 setIsBtcInputAddressValid(true);
                                                 return;
                                             }
-                                            if (
-                                                !validate(
-                                                    newaddr,
-                                                    TESTNET
-                                                        ? Network.testnet
-                                                        : Network.mainnet
-                                                )
-                                            ) {
-                                                setIsBtcInputAddressValid(
-                                                    false
-                                                );
+                                            if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
+                                                setIsBtcInputAddressValid(false);
                                                 return;
                                             }
                                             setDestinationBtcAddress(newaddr);
@@ -156,9 +121,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
 
                                     <Form.Control.Feedback type="invalid">
                                         <br />
-                                        That is not a valid{" "}
-                                        {TESTNET ? "testnet" : "mainnet"} BTC
-                                        address
+                                        That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC address
                                     </Form.Control.Feedback>
                                 </InputGroup>
 
@@ -198,25 +161,14 @@ const SendModal = ({ show, handleModal, utxo }) => {
 
                         <div className="bid-content-mid">
                             <div className="bid-content-left">
-                                {!!destinationBtcAddress && (
-                                    <span>Payment Receive Address</span>
-                                )}
-                                {Boolean(ordinalValue) && bitcoinPrice && (
-                                    <span>Price</span>
-                                )}
+                                {!!destinationBtcAddress && <span>Payment Receive Address</span>}
+                                {Boolean(ordinalValue) && bitcoinPrice && <span>Price</span>}
                             </div>
                             <div className="bid-content-right">
-                                {!!destinationBtcAddress && (
-                                    <span>
-                                        {shortenStr(destinationBtcAddress)}
-                                    </span>
-                                )}
+                                {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
 
                                 {Boolean(ordinalValue) && bitcoinPrice && (
-                                    <span>{`$${satsToFormattedDollarString(
-                                        ordinalValue,
-                                        bitcoinPrice
-                                    )}`}</span>
+                                    <span>{`$${satsToFormattedDollarString(ordinalValue, bitcoinPrice)}`}</span>
                                 )}
                             </div>
                         </div>
@@ -239,11 +191,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                 await sale();
                             }}
                         >
-                            {isOnSale ? (
-                                <TailSpin stroke="#fec823" speed={0.75} />
-                            ) : (
-                                "Sale"
-                            )}
+                            {isOnSale ? <TailSpin stroke="#fec823" speed={0.75} /> : "Sale"}
                         </Button>
                     </div>
                 </div>

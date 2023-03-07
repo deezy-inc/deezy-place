@@ -12,8 +12,13 @@ const ClientAvatar = ({ slug, name, image, className }) => (
     // >
 
     // <div className={clsx("avatar", className)} data-tooltip={name}>
-    <div className={clsx("avatar", className)} data-tooltip={name}>
-        <Image src={image.src} alt={image?.alt || name} width={image?.width || 30} height={image?.height || 30} />
+    <div className={clsx("avatar", className)}>
+        <Image
+            src={image.src}
+            alt={image?.alt || name || "Ordinal Image"}
+            width={image?.width || 30}
+            height={image?.height || 30}
+        />
     </div>
 
     // </Anchor>
@@ -21,7 +26,7 @@ const ClientAvatar = ({ slug, name, image, className }) => (
 
 ClientAvatar.propTypes = {
     slug: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    name: PropTypes.string,
     image: ImageType.isRequired,
     className: PropTypes.string,
 };

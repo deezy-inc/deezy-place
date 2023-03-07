@@ -34,9 +34,13 @@ const OrdinalsArea = ({ className, space, onSale }) => {
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
+    const [refreshHack, setRefreshHack] = useState(false);
+
+    const handleRefreshHack = () => {
+        setRefreshHack(!refreshHack);
+    };
 
     useEffect(() => {
-        console.log("OrdinalsArea useEffect");
         const fetchByUtxos = async () => {
             setUtxosReady(false);
 
@@ -79,7 +83,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
             setUtxosReady(true);
         };
         fetchByUtxos();
-    }, []);
+    }, [refreshHack]);
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
@@ -127,7 +131,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                         date={inscription.status.block_time}
                                         authors={collectionAuthor}
                                         utxo={inscription}
-                                        onSale={onSale}
+                                        onSale={handleRefreshHack}
                                     />
                                 </div>
                             ))}

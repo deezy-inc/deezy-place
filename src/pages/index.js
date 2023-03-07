@@ -21,7 +21,6 @@ export async function getStaticProps() {
 
 const App = () => {
     const [isExperimental, setIsExperimental] = useState(false);
-    const [refreshHack, setRefreshHack] = useState(false);
 
     const [nostrAddress, setNostrAddress] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
@@ -38,7 +37,7 @@ const App = () => {
 
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
-    }, [nostrPublicKey, refreshHack]);
+    }, [nostrPublicKey]);
 
     const content = normalizedData(homepageData?.content || []);
 
@@ -65,7 +64,7 @@ const App = () => {
                 <main id="main-content">
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
 
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea onSale={setRefreshHack} />}
+                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
 
                     {/* <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} /> */}
                 </main>

@@ -10,5 +10,5 @@ live at [nosft.xyz](https://nosft.xyz)
 git clone https://github.com/dannydeezy/nosft.git
 cd nosft
 npm install
-npm start
+npm run dev
 ```

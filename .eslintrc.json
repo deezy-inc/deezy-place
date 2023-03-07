@@ -55,6 +55,7 @@
     },
     "plugins": ["react", "react-hooks", "prettier", "jsx-a11y"],
     "rules": {
+        "max-len": ["error", { "code": 140 }],
         "object-curly-newline": "off",
         "import/prefer-default-export": "off",
         "prettier/prettier": "error",

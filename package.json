@@ -3,6 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@netlify/ipx": "^1.3.3",
+        "@netlify/plugin-nextjs": "^4.31.0",
         "@next/bundle-analyzer": "^13.1.6",
         "@react-icons/all-files": "^4.1.0",
         "axios": "^1.2.6",
@@ -16,6 +18,7 @@
         "ecpair": "^2.1.0",
         "framer-motion": "^9.0.3",
         "mdb-react-ui-kit": "^4.0.0",
+        "netlify-plugin-ipx": "0.0.1",
         "next": "^13.1.6",
         "next-themes": "^0.1.1",
         "node-polyfill-webpack-plugin": "^2.0.0",
@@ -41,11 +44,11 @@
     },
     "scripts": {
         "dev": "next dev",
-        "start": "NODE_ENV=development webpack serve",
+        "start": "next start",
         "build": "next build",
         "format": "prettier --ignore-path .prettierignore --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint": "eslint --ignore-path .eslintignore . --ext ts --ext tsx --ext js --ext jsx",
-        "lint:fix": "yarn format & next lint --dir src",
+        "lint:fix": "yarn format & next lint --dir src --fix",
         "clean": "rimraf dist"
     },
     "browserslist": {

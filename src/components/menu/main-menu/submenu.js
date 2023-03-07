@@ -5,10 +5,7 @@ const SubMenu = ({ menu }) => (
     <ul className="submenu">
         {menu.map((nav) => (
             <li key={nav.id}>
-                <Anchor
-                    path={nav.path}
-                    className={nav.isLive ? "live-expo" : ""}
-                >
+                <Anchor path={nav.path} className={nav.isLive ? "live-expo" : ""}>
                     {nav.text}
                     {nav?.icon && <i className={`feather ${nav.icon}`} />}
                 </Anchor>

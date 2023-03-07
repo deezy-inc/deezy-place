@@ -10,13 +10,7 @@ const Offcanvas = memo(({ children, className, isOpen, onClick }) => (
         role="button"
         tabIndex={0}
     >
-        <div
-            className="inner"
-            onClick={(e) => e.stopPropagation()}
-            onKeyPress={onClick}
-            role="button"
-            tabIndex={0}
-        >
+        <div className="inner" onClick={(e) => e.stopPropagation()} onKeyPress={onClick} role="button" tabIndex={0}>
             {children}
         </div>
     </div>

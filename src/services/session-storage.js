@@ -1,5 +1,7 @@
 const SessionsStorageKeys = {
     NOSTR_PUBLIC_KEY: "NOSTR_PUBLIC_KEY",
+    INSCRIPTIONS_ON_SALE: "INSCRIPTIONS_ON_SALE",
+    INSCRIPTIONS_OWNED: "INSCRIPTIONS_OWNED",
 };
 
 const SessionStorage = {

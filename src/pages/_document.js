@@ -19,7 +19,7 @@ class MyDocument extends Document {
                         integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D"
                         crossOrigin="anonymous"
                         async
-                    ></script>
+                    />
                 </body>
             </Html>
         );

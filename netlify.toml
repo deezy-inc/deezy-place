@@ -1,0 +1,4 @@
+# example netlify.toml
+[build]
+  command = "next build"
+  publish = ".next"

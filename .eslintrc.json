@@ -32,7 +32,8 @@
                     ["@utils", "./src/utils/"],
                     ["@hooks", "./src/hooks/"],
                     ["@data", "./src/data/"],
-                    ["@services", "./src/services/"]
+                    ["@services", "./src/services/"],
+                    ["@context", "./src/context/"]
                 ],
                 "extensions": [".js", ".jsx"]
             },
@@ -54,6 +55,7 @@
     },
     "plugins": ["react", "react-hooks", "prettier", "jsx-a11y"],
     "rules": {
+        "max-len": ["error", { "code": 140 }],
         "object-curly-newline": "off",
         "import/prefer-default-export": "off",
         "prettier/prettier": "error",

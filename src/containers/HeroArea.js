@@ -66,6 +66,7 @@ HeroArea.propTypes = {
         buttons: PropTypes.arrayOf(ButtonType),
         images: PropTypes.arrayOf(ImageType),
     }),
+    onConnectHandler: PropTypes.func,
 };
 
 export default HeroArea;

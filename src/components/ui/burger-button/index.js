@@ -2,11 +2,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 
 const BurgerButton = ({ className, onClick }) => (
-    <button
-        type="button"
-        className={clsx(className, "hamberger-button")}
-        onClick={onClick}
-    >
+    <button type="button" className={clsx(className, "hamberger-button")} onClick={onClick}>
         <i className="feather-menu" color="red" />
     </button>
 );

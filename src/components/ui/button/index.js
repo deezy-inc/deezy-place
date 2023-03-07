@@ -3,19 +3,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import Anchor from "../anchor";
 
-const Button = ({
-    children,
-    type,
-    label,
-    onClick,
-    className,
-    path,
-    size,
-    color,
-    shape,
-    fullwidth,
-    ...rest
-}) => {
+const Button = ({ children, type, label, onClick, className, path, size, color, shape, fullwidth, ...rest }) => {
     if (path) {
         return (
             <Anchor

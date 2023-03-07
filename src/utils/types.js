@@ -13,8 +13,7 @@ export const TextType = PropTypes.shape({
 });
 
 export const ImageType = PropTypes.shape({
-    src: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({})])
-        .isRequired,
+    src: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({})]).isRequired,
     alt: PropTypes.string,
     width: PropTypes.number,
     height: PropTypes.number,

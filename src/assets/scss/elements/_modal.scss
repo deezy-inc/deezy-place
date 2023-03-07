@@ -221,6 +221,8 @@ body.modal-open {
                             border: 2px solid transparent;
                             font-size: 1.5rem;
                             color: var(--color-white);
+                            width: 100%;
+
                             &:focus {
                                 border: 2px solid var(--color-primary);
                             }

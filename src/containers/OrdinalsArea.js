@@ -146,7 +146,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                             amount: inscription.value.toLocaleString("en-US"),
                                             currency: "Sats",
                                         }}
-                                        type="sell"
+                                        type="send"
                                         confirmed={inscription.status.confirmed}
                                         date={inscription.status.block_time}
                                         authors={collectionAuthor}

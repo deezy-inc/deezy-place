@@ -67,7 +67,7 @@ const App = () => {
 
                     {nostrPublicKey && nostrAddress && <OrdinalsArea onSale={setRefreshHack} />}
 
-                    <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} />
+                    {/* <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} /> */}
                 </main>
 
                 <Footer />

@@ -2,6 +2,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: 'out',
   reactStrictMode: true,
   images: {
     remotePatterns: [

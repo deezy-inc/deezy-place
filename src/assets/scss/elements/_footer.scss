@@ -8,6 +8,11 @@
             font-size: 18px;
             margin-top: 20px;
             padding: 0 30px 0 0;
+
+            a {
+                border-bottom: 2px solid var(--color-primary);
+            }
+
             @media #{$lg-layout} {
                 padding: 0;
             }
@@ -58,7 +63,7 @@
 }
 
 /*-------------------------
- Footer Widget  
+ Footer Widget
 ------------------------*/
 .footer-widget {
     .widget-title {
@@ -131,7 +136,7 @@
 }
 
 /*-------------------------------
-    Footer Slicky Header Area  
+    Footer Slicky Header Area
 ---------------------------------*/
 .footer-for-left-sticky-header {
     padding-left: 320px;
@@ -186,7 +191,7 @@
 }
 
 /*-----------------------
-    Recent Post  
+    Recent Post
 ---------------------------*/
 
 .footer-recent-post {

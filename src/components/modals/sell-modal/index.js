@@ -82,7 +82,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                 <h3 className="modal-title">Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
             </Modal.Header>
             <Modal.Body>
-                <p>You are about to sell this NFT</p>
+                <p>You are about to sell this Ordinal</p>
                 <iframe
                     id="preview"
                     sandbox="allow-scripts allow-same-origin"
@@ -185,7 +185,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                 if (!destinationBtcAddress) return;
                                 if (!isBtcAmountValid) return;
                                 if (!isBtcInputAddressValid) return;
-                                const msg = `Are you sure you want to sell this NFT for ${ordinalValue} sats?`;
+                                const msg = `Are you sure you want to sell this ordinal for ${ordinalValue} sats?`;
                                 if (!window.confirm(msg)) return;
 
                                 await sale();

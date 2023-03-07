@@ -135,7 +135,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                 <h3 className="modal-title">Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
             </Modal.Header>
             <Modal.Body>
-                <p>You are about to buy this NFT</p>
+                <p>You are about to buy this Ordinal</p>
                 <iframe
                     id="preview"
                     sandbox="allow-scripts allow-same-origin"
@@ -200,7 +200,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                                 if (!isBtcInputAddressValid) return;
 
                                 try {
-                                    const msg = `Are you sure you want to buy this NFT for ${ordinalValue} sats?`;
+                                    const msg = `Are you sure you want to buy this ordinal for ${ordinalValue} sats?`;
                                     if (!window.confirm(msg)) return;
 
                                     await buy();

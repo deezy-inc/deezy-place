@@ -11,6 +11,7 @@ const ClientAvatar = ({ slug, name, image, className }) => (
     //     data-tooltip={name}
     // >
 
+    // <div className={clsx("avatar", className)} data-tooltip={name}>
     <div className={clsx("avatar", className)} data-tooltip={name}>
         <Image src={image.src} alt={image?.alt || name} width={image?.width || 30} height={image?.height || 30} />
     </div>

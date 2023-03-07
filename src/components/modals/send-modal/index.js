@@ -6,7 +6,7 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants";
+import { TESTNET, DEFAULT_FEE_RATE, ORDINALS_EXPLORER_URL } from "@lib/constants";
 import { shortenStr, outputValue, getAddressInfo } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
@@ -65,7 +65,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             [utxo.value],
             bitcoin.Transaction.SIGHASH_DEFAULT
         );
-        console.log(sigHash);
+
         const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
         psbt.updateInput(0, {
             tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
@@ -100,7 +100,16 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}</h3>
             </Modal.Header>
             <Modal.Body>
-                <p>You are about to send this NFT</p>
+                <p>You are about to send this ordinal</p>
+                <iframe
+                    id="preview"
+                    sandbox="allow-scripts allow-same-origin"
+                    scrolling="no"
+                    loading="lazy"
+                    title={utxo.inscriptionId}
+                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
+                />
+
                 <div className="placebid-form-box">
                     <div className="bid-content">
                         <div className="bid-content-top">
@@ -109,6 +118,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                     <Form.Control
                                         onChange={(evt) => {
                                             const newaddr = evt.target.value;
+
                                             if (newaddr === "") {
                                                 setIsBtcInputAddressValid(true);
                                                 return;
@@ -117,6 +127,8 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                                 setIsBtcInputAddressValid(false);
                                                 return;
                                             }
+
+                                            setIsBtcInputAddressValid(true);
                                             setDestinationBtcAddress(newaddr);
                                         }}
                                         placeholder="Paste BTC address here"
@@ -176,7 +188,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                     setTimeout(r, 1000);
                                 });
                                 onSale();
-                                handleModal();
+
                                 setIsSending(false);
                             }}
                         >

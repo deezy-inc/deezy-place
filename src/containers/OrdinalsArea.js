@@ -12,7 +12,8 @@ import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import { INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
-
+import Image from "next/image";
+import { shortenStr } from "@utils/crypto";
 // Use this to fetch data from an API service
 const axios = require("axios");
 
@@ -29,8 +30,10 @@ const collectionAuthor = [
 const OrdinalsArea = ({ className, space, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
 
-    const [inscriptions, setInscriptions] = useState([]);
+    // const [inscriptions, setInscriptions] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
+    const [ownedUtxos, setOwnedUtxos] = useState([]);
+    const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
 
     useEffect(() => {
         console.log("OrdinalsArea useEffect");
@@ -40,74 +43,39 @@ const OrdinalsArea = ({ className, space, onSale }) => {
             const ownedInscriptions = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_OWNED);
 
             if (ownedInscriptions) {
-                setInscriptions(ownedInscriptions);
+                // setInscriptions(ownedInscriptions);
             }
 
             const response = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
             const tempInscriptionsByUtxo = {};
-
-            // TODO: Move to promise.all
-            // TODO: Order if possible, so that we can get the most recent inscriptions first
-            // TODO: Can we remove inscriptions without images?
+            setOwnedUtxos(response.data);
             for (const utxo of response.data) {
                 tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo;
                 // if (!utxo.status.confirmed) continue
                 let currentUtxo = utxo;
-                let currentDepth = 0;
+                console.log("utxo", utxo);
 
-                while (true) {
-                    if (currentDepth > INSCRIPTION_SEARCH_DEPTH) break;
-                    // console.log(`looping ${currentDepth}`);
-                    const inscriptionId = `${currentUtxo.txid}i${currentUtxo.vout}`;
-                    // If there's no inscription here, go back one vin and check again.
-                    // console.log(`Checking inscription id ${inscriptionId}`);
-                    let res = null;
-                    try {
-                        // use getInscriptionDataById
-                        res = await axios.get(`https://ordinals.com/inscription/${inscriptionId}`);
-                    } catch (err) {
-                        console.error(`Error from ordinals.com`);
-                    }
-                    if (!res) {
-                        // console.log(`No inscription for ${inscriptionId}`);
-                        currentDepth += 1;
-                        // get previous vin
-                        const txResp = await axios.get(`https://mempool.space/api/tx/${currentUtxo.txid}`);
-                        const tx = txResp.data;
-                        // console.log(tx);
-                        const firstInput = tx.vin[0];
-                        currentUtxo = {
-                            txid: firstInput.txid,
-                            vout: firstInput.vout,
-                        };
-
-                        continue;
-                    }
-
+                console.log(`Checking utxo ${currentUtxo.txid}:${currentUtxo.vout}`);
+                try {
+                    const res = await axios.get(`https://ordinals.com/output/${currentUtxo.txid}:${currentUtxo.vout}`);
+                    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
+                    const [txid, vout] = inscriptionId.split("i");
                     utxo.inscriptionId = inscriptionId;
-                    tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo;
-                    break;
+                    currentUtxo = { txid, vout };
+                } catch (err) {
+                    console.log(`Error from ordinals.com`);
                 }
+                tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo;
+                const newInscriptionsByUtxo = {};
+                Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo);
+                setInscriptionUtxosByUtxo(newInscriptionsByUtxo);
+                setUtxosReady(true);
             }
 
-            const ownedUtxos = response.data
-                .filter((utxo) => {
-                    const inscriptionId = `${utxo.txid}:${utxo.vout}`;
-                    return tempInscriptionsByUtxo[inscriptionId];
-                })
-                .map((utxo) => {
-                    const inscriptionId = `${utxo.txid}:${utxo.vout}`;
-                    const inscriptionUtxo = tempInscriptionsByUtxo[inscriptionId];
-                    return {
-                        ...utxo,
-                        ...inscriptionUtxo,
-                    };
-                })
-                .sort((a, b) => b.status.block_height - a.status.block_height);
-
             SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, ownedUtxos);
+            setInscriptionUtxosByUtxo(tempInscriptionsByUtxo);
 
-            setInscriptions(ownedUtxos);
+            // setInscriptions(ownedUtxos);
             setUtxosReady(true);
         };
         fetchByUtxos();
@@ -120,7 +88,14 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
                         <span>
-                            You can safely receive ordinal inscriptions and regular bitcoin to this{" "}
+                            <Image
+                                src="/images/logo/ordinals-white.svg"
+                                alt="Ordinal"
+                                width={15}
+                                height={15}
+                                className="mb-1"
+                                priority
+                            />
                             <button
                                 type="button"
                                 className="btn-transparent"
@@ -129,16 +104,17 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                     toast("Receive Address copied to clipboard!");
                                 }}
                             >
-                                address
+                                {" "}
+                                {shortenStr(nostrAddress)}
                             </button>
                         </span>
                     </div>
                 </div>
 
                 <div className="row g-5">
-                    {inscriptions.length > 0 && (
+                    {ownedUtxos.length > 0 && (
                         <>
-                            {inscriptions.map((inscription) => (
+                            {ownedUtxos.map((inscription) => (
                                 <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
                                     <OrdinalCard
                                         overlay
@@ -158,7 +134,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         </>
                     )}
 
-                    {utxosReady && inscriptions.length === 0 && (
+                    {utxosReady && ownedUtxos.length === 0 && (
                         <div>
                             This address does not own anything yet..
                             <br />

@@ -1,5 +1,5 @@
 /*-----------------------
-    Author Styles  
+    Author Styles
 ---------------------------*/
 
 .padding-tb-50 {
@@ -142,27 +142,26 @@
         position: absolute;
         top: -5px;
         left: 50%;
-        transform: translateX(-50%) translateY(var(--translate-y, 0))
-            scale(var(--scale));
+        transform: translateX(-50%) translateY(var(--translate-y, 0)) scale(var(--scale));
         transition: 150ms transform;
         transform-origin: bottom center;
     }
-    &::before {
-        --translate-y: calc(-100% - var(--arrow-size));
-        content: attr(data-tooltip);
-        color: var(--color-white);
-        padding: 12px 8px;
-        background: var(--color-primary-alta);
-        width: max-content;
-        border-radius: 5px;
-        text-align: center;
-    }
-    &::after {
-        --translate-y: calc(-1 * var(--arrow-size));
-        content: "";
-        border: var(--arrow-size) solid transparent;
-        border-top-color: var(--color-primary-alta);
-    }
+    // &::before {
+    //     --translate-y: calc(-100% - var(--arrow-size));
+    //     // content: attr(data-tooltip);
+    //     color: var(--color-white);
+    //     padding: 12px 8px;
+    //     background: var(--color-primary-alta);
+    //     // width: max-content;
+    //     border-radius: 5px;
+    //     text-align: center;
+    // }
+    // &::after {
+    //     --translate-y: calc(-1 * var(--arrow-size));
+    //     content: "";
+    //     border: var(--arrow-size) solid transparent;
+    //     border-top-color: var(--color-primary-alta);
+    // }
     &:hover {
         &::before,
         &::after {

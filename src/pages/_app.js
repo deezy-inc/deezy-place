@@ -5,7 +5,7 @@ import sal from "sal.js";
 import { ThemeProvider } from "next-themes";
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
-import "../assets/css/modal-video.css";
+
 import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
 

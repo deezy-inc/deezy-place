@@ -11,7 +11,6 @@ import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
-import { INSCRIPTION_SEARCH_DEPTH } from "@lib/constants";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 // Use this to fetch data from an API service
@@ -27,10 +26,25 @@ const collectionAuthor = [
     },
 ];
 
+const getOwnedInscriptions = async (nostrAddress) => {
+    const { data } = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
+    const sortedData = data.sort((a, b) => b.status.block_time - a.status.block_time);
+    const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
+    SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
+    return inscriptions;
+};
+
+const getInscriptionId = async (utxoKey) => {
+    const prevInscriptionId = SessionStorage.get(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:${utxoKey}`);
+    if (prevInscriptionId) return prevInscriptionId;
+    const res = await axios.get(`https://ordinals.com/output/${utxoKey}`);
+    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
+    SessionStorage.set(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${utxoKey}`, inscriptionId);
+    return inscriptionId;
+};
+
 const OrdinalsArea = ({ className, space, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
-
-    // const [inscriptions, setInscriptions] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
@@ -43,47 +57,36 @@ const OrdinalsArea = ({ className, space, onSale }) => {
     useEffect(() => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
-
-            const ownedInscriptions = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_OWNED);
-
-            if (ownedInscriptions) {
-                // setInscriptions(ownedInscriptions);
-            }
-
-            const response = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
+            const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
             const tempInscriptionsByUtxo = {};
-            setOwnedUtxos(response.data);
-            for (const utxo of response.data) {
-                tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = utxo;
-                // if (!utxo.status.confirmed) continue
+            setOwnedUtxos(ownedInscriptions);
+            const ownedInscriptionResults = await Promise.allSettled(
+                ownedInscriptions.map((utxo) => getInscriptionId(utxo.key))
+            );
+            for (const [index, utxo] of ownedInscriptions.entries()) {
+                const utxoKey = utxo.key;
+                tempInscriptionsByUtxo[utxoKey] = utxo;
                 let currentUtxo = utxo;
-                console.log("utxo", utxo);
-
-                console.log(`Checking utxo ${currentUtxo.txid}:${currentUtxo.vout}`);
-                try {
-                    const res = await axios.get(`https://ordinals.com/output/${currentUtxo.txid}:${currentUtxo.vout}`);
-                    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
-                    const [txid, vout] = inscriptionId.split("i");
-                    utxo.inscriptionId = inscriptionId;
-                    currentUtxo = { txid, vout };
-                } catch (err) {
-                    console.log(`Error from ordinals.com`);
+                const { value: inscriptionId, status } = ownedInscriptionResults[index];
+                if (status !== "fulfilled" || !inscriptionId) {
+                    // handle failure
+                    console.log(`Error from ordinals.com`, utxoKey);
+                    continue;
                 }
-                tempInscriptionsByUtxo[`${utxo.txid}:${utxo.vout}`] = currentUtxo;
+                const [txid, vout] = inscriptionId.split("i");
+                utxo.inscriptionId = inscriptionId;
+                currentUtxo = { txid, vout };
+                tempInscriptionsByUtxo[utxoKey] = currentUtxo;
                 const newInscriptionsByUtxo = {};
                 Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo);
                 setInscriptionUtxosByUtxo(newInscriptionsByUtxo);
                 setUtxosReady(true);
             }
-
-            SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, ownedUtxos);
             setInscriptionUtxosByUtxo(tempInscriptionsByUtxo);
-
-            // setInscriptions(ownedUtxos);
             setUtxosReady(true);
         };
         fetchByUtxos();
-    }, [refreshHack]);
+    }, [refreshHack, nostrAddress]);
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>

@@ -14,6 +14,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
+import { IframeWithLoader } from "@components/iframe";
 
 const axios = require("axios");
 
@@ -101,7 +102,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to send this ordinal</p>
-                <iframe
+                <IframeWithLoader
                     id="preview"
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"

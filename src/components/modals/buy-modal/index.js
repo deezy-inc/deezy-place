@@ -25,6 +25,7 @@ import { TailSpin } from "react-loading-icons";
 //     generatePSBTBuyingInscription,
 // } from "@utils/openOrdex";
 import { toast } from "react-toastify";
+import { IframeWithLoader } from "@components/iframe";
 
 bitcoin.initEccLib(ecc);
 
@@ -136,7 +137,7 @@ const BuyModal = ({ show, handleModal, utxo }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to buy this Ordinal</p>
-                <iframe
+                <IframeWithLoader
                     id="preview"
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"

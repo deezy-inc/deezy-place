@@ -1,5 +1,5 @@
 /*-------------------------
- Banner Styles  
+ Banner Styles
 ----------------------------*/
 .with-particles {
     position: relative;
@@ -101,7 +101,7 @@
 }
 
 /*--------------------------
-    Banner Style 1 
+    Banner Style 1
 ---------------------------*/
 
 .slider-one {
@@ -137,6 +137,8 @@
         img {
             height: auto;
             width: 100%;
+            box-shadow: 0 0 12px var(--color-primary);
+            border-radius: 50%;
         }
     }
 
@@ -151,7 +153,7 @@
 }
 
 /*--------------------------
-    Banner Style 2 
+    Banner Style 2
 ---------------------------*/
 
 .slider-style-2 {
@@ -176,11 +178,7 @@
                     position: absolute;
                     left: 0;
                     bottom: 0;
-                    background-image: linear-gradient(
-                        180deg,
-                        transparent,
-                        black
-                    );
+                    background-image: linear-gradient(180deg, transparent, black);
                     height: 50%;
                     position: absolute;
                     width: 100%;
@@ -210,7 +208,7 @@
 }
 
 /*--------------------------
-    Banner Style Three  
+    Banner Style Three
 ---------------------------*/
 .slider-style-3 {
     .wrapper {
@@ -347,7 +345,7 @@
 }
 
 /*-------------------------
-    Slider Style Four  
+    Slider Style Four
 ---------------------------*/
 .banner-style-4 {
     .sldier-content {
@@ -452,7 +450,7 @@
 }
 
 /*-------------------------
-    Slider Style 5  
+    Slider Style 5
 ---------------------------*/
 
 .slider-style-5 {
@@ -478,7 +476,7 @@
 }
 
 /*--------------------------
-    Banner Style 6  
+    Banner Style 6
 ---------------------------*/
 
 .slider-style-6 {
@@ -576,7 +574,7 @@
 }
 
 /*--------------------------
-    Banner Style 7 
+    Banner Style 7
 ---------------------------*/
 
 .slider-style-7 {
@@ -675,7 +673,7 @@
 }
 
 /*----------------------
- Common Styles 
+ Common Styles
 ------------------------*/
 .title-badge {
     color: var(--color-primary);
@@ -694,7 +692,7 @@
 }
 
 /*-----------------------
- common slider-nav 
+ common slider-nav
 --------------------------*/
 .slider .previous-slide,
 .slider .next-slide {
@@ -710,15 +708,13 @@
 }
 
 .slider .previous-slide {
-    background: url("https://img.icons8.com/office/16/000000/back.png")
-        no-repeat;
+    background: url("https://img.icons8.com/office/16/000000/back.png") no-repeat;
     background-size: contain;
     display: none !important;
 }
 
 .slider .next-slide {
-    background: url("https://img.icons8.com/office/16/000000/forward.png")
-        no-repeat;
+    background: url("https://img.icons8.com/office/16/000000/forward.png") no-repeat;
     background-size: contain;
     background-position: right;
     display: none !important;

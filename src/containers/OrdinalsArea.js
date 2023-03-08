@@ -116,7 +116,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 </div>
 
                 <div className="row g-5">
-                    {ownedUtxos.length > 0 && (
+                    {ownedUtxos.length > 0 && utxosReady && (
                         <>
                             {ownedUtxos.map((inscription) => (
                                 <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">

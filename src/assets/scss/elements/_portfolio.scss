@@ -112,6 +112,14 @@
         overflow: hidden;
         border-radius: 5px;
         margin: -15px;
+
+        .ordinal-loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 156px;
+        }
+
         a {
             position: relative;
             display: block;

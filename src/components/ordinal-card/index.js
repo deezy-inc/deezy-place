@@ -11,6 +11,7 @@ import { ORDINALS_EXPLORER_URL } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, cloudfrontUrl } from "@utils/crypto";
+import { TailSpin } from "react-loading-icons";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
@@ -19,21 +20,34 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
 
-    const renderImage = () => <Image src={cloudfrontUrl(utxo)} alt={utxo.txId} width={533} height={533} />;
-    const renderIframe = () => (
-        <iframe
-            id="preview"
-            sandbox="allow-scripts allow-same-origin"
-            scrolling="no"
-            loading="lazy"
-            title={utxo.inscriptionId}
-            src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-        />
-    );
+    const renderImage = () => {
+        if (confirmed && !utxo.inscriptionId) {
+            return (
+                <div className="ordinal-loader">
+                    <TailSpin stroke="#fec823" speed={0.75} />
+                </div>
+            );
+        }
+
+        if (confirmed) {
+            return (
+                <iframe
+                    id={`iframe-${utxo.inscriptionId}`}
+                    sandbox="allow-scripts allow-same-origin"
+                    scrolling="no"
+                    loading="lazy"
+                    title={utxo.inscriptionId}
+                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
+                />
+            );
+        }
+
+        return <Image src={cloudfrontUrl(utxo)} alt={utxo.txId} width={533} height={533} />;
+    };
 
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
-            <div className="card-thumbnail">{!confirmed ? renderImage() : renderIframe()}</div>
+            <div className="card-thumbnail">{renderImage()}</div>
             <div className="product-share-wrapper">
                 <div className="profile-share">
                     {authors?.map((client) => (

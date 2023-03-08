@@ -1,9 +1,9 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
+import React from "react";
+// import App from './pages';
+// import { createRoot } from 'react-dom/client';
+// // Importing the Bootstrap CSS
+// import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Importing the Bootstrap CSS
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-ReactDOM.render(<App />, document.getElementById('root'));
-    
+// const container = document.getElementById('root');
+// const root = createRoot(container);
+// root.render(<App />);

@@ -1,0 +1,44 @@
+{
+    "title": "home-01",
+    "content": [
+        {
+            "section": "hero-section",
+            "headings": [
+                {
+                    "id": 1,
+                    "content": "Keep your Ordinals secure and accessible with our Bitcoin web wallet."
+                }
+            ],
+            "texts": [
+                {
+                    "id": 1,
+                    "content": "Manage your ordinals in a safe and convenient way with our wallet. Fully open source and integrated with Nostr, Alby, (and soon OpenOrdex)."
+                }
+            ],
+            "buttons": [
+                {
+                    "id": 1,
+                    "content": "Get Started",
+                    "path": "/"
+                },
+                {
+                    "id": 2,
+                    "color": "primary-alta",
+                    "content": "Mint",
+                    "path": "/astral-babe"
+                }
+            ],
+            "images": [
+                {
+                    "src": "/images/slider/astralbabe.png"
+                }
+            ]
+        },
+        {
+            "section": "your-collection-section",
+            "section_title": {
+                "title": "Your collection"
+            }
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import { useState, useContext, useEffect } from "react";
+import { useContext } from "react";
 import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 import Image from "next/image";
@@ -12,6 +12,7 @@ import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, cloudfrontUrl } from "@utils/crypto";
 import { TailSpin } from "react-loading-icons";
+import { IframeWithLoader } from "@components/iframe";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
@@ -31,7 +32,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
 
         if (confirmed) {
             return (
-                <iframe
+                <IframeWithLoader
                     id={`iframe-${utxo.inscriptionId}`}
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"
@@ -54,7 +55,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                         <ClientAvatar
                             key={client.name}
                             slug={client.slug}
-                            name={utxo.inscriptionId}
+                            name={utxo.inscriptionId || utxo.txid}
                             image={client.image}
                         />
                     ))}

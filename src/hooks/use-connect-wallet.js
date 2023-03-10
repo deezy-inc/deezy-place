@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { connectWallet } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { clearStorageCache } from "src/utils";
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
@@ -13,6 +14,7 @@ function useConnectWallet() {
     const onDisconnectHandler = async () => {
         setNostrPublicKey(undefined);
         SessionStorage.remove(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+        clearStorageCache();
     };
 
     useEffect(() => {

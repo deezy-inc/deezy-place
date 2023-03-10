@@ -14,6 +14,7 @@ import WalletContext from "@context/wallet-context";
 import OpenOrdex from "@utils/openOrdexV3";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
+import { IframeWithLoader } from "@components/iframe";
 
 bitcoin.initEccLib(ecc);
 
@@ -83,7 +84,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this Ordinal</p>
-                <iframe
+                <IframeWithLoader
                     id="preview"
                     sandbox="allow-scripts allow-same-origin"
                     scrolling="no"

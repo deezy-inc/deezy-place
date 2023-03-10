@@ -8,24 +8,23 @@ import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
 import MobileMenu from "@components/menu/mobile-menu";
 import UserDropdown from "@components/user-dropdown";
-import { useOffcanvas, useSticky } from "@hooks";
+import { useOffcanvas } from "@hooks";
 import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
 import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
-    const sticky = useSticky();
+const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }, ref) => {
     const { offcanvas, offcanvasHandler } = useOffcanvas();
     const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
     return (
         <>
             <header
+                ref={ref}
                 className={clsx(
-                    "rn-header haeder-default black-logo-version header--fixed header--sticky",
-                    sticky && "sticky",
+                    "rn-header haeder-default black-logo-version header--fixed header--sticky sticky",
                     className
                 )}
             >
@@ -75,7 +74,7 @@ const Header = ({ className, onConnectHandler, onDisconnectHandler }) => {
             <MobileMenu isOpen={offcanvas} onClick={offcanvasHandler} menu={menuData} logo={headerData.logo} />
         </>
     );
-};
+});
 
 Header.propTypes = {
     className: PropTypes.string,

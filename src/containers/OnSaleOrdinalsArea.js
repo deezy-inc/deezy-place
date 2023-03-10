@@ -1,17 +1,18 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { deepClone } from "@utils/methods";
-import OpenOrdex from "@utils/openOrdexV3";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { OpenOrdex } from "@utils/openOrdexV3";
 import WalletContext from "@context/wallet-context";
-// Use this to fetch data from an API service
-const axios = require("axios");
+import { nostrPool } from "@services/nostr-relay";
+import { MAX_ONSALE } from "@lib/constants.config";
+import { Subject } from "rxjs";
+import { scan } from "rxjs/operators";
 
 const collectionAuthor = [
     {
@@ -27,49 +28,68 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const { nostrAddress, isExperimental } = useContext(WalletContext);
     const [openOrders, setOpenOrders] = useState([]);
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
+    const addOrdinals$ = new Subject();
+
+    addOrdinals$
+        .pipe(
+            scan((acc, curr) => {
+                // We can add only unique ordinals
+                if (acc.find((order) => order.inscriptionId === curr.inscriptionId)) {
+                    return acc;
+                }
+                // We sort by created_at DESC and limit list
+                return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+            }, openOrders)
+        )
+        .subscribe(setOpenOrders);
+
+    const addNewOrdinal = (ordinal) => {
+        addOrdinals$.next(ordinal);
+    };
+
+    const formatOrdinal = useCallback((inscription) => {
+        const inscriptionData = Object.assign(
+            {},
+            ...inscription.tags
+                // .filter(([t, v]) => t === "i" && v)
+                .map(([tagId, value]) => ({
+                    [tagId]: value,
+                }))
+                .map((o) => o)
+        );
+        const forSaleInscription = deepClone({
+            inscriptionTags: inscriptionData,
+            ...inscription,
+        });
+        return forSaleInscription;
+    }, []);
 
     useEffect(() => {
         console.log("OnSaleOrdinalsArea useEffect");
-        // safe on session storage for faster loads
-        window.addEventListener("message", (event) => {
-            console.debug(event);
-        });
+        let latestOrderSubscription;
+        let orderSubscription;
         const load = async () => {
-            setIsLoadingOpenOrders(true);
-            // load from cache before updating
-            const sessionOrders = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_ON_SALE);
-            if (sessionOrders) {
-                setOpenOrders(sessionOrders);
-            }
+            console.log("loading on sale ordinals");
             const openOrderx = await OpenOrdex.init();
-            const orders = await openOrderx.getLatestOrders(25);
-
-            const forSaleInscriptions = [];
-            for (const inscription of orders) {
-                let inscriptionData = inscription.tags
-                    // .filter(([t, v]) => t === "i" && v)
-                    .map(([tagId, value]) => ({
-                        [tagId]: value,
-                    }));
-                // Convert array into object of key tagId
-                inscriptionData = Object.assign({}, ...inscriptionData.map((o) => o));
-
-                const i = deepClone({
-                    inscriptionTags: inscriptionData,
-                    ...inscription,
-                });
-                // console.log(i);
-
-                forSaleInscriptions.push(i);
-            }
-
-            SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_ON_SALE, forSaleInscriptions);
-
-            setOpenOrders(forSaleInscriptions);
-
+            latestOrderSubscription = openOrderx.latestOrders({ limit: 1000 }).subscribe((order) => {
+                const formattedOrdinal = formatOrdinal(order);
+                console.log("from latestOrderSubscription", formattedOrdinal.inscriptionId);
+                addNewOrdinal(formattedOrdinal);
+            });
+            orderSubscription = nostrPool.subscribeOriginals({ limit: MAX_ONSALE }).subscribe((order) => {
+                const formattedOrdinal = formatOrdinal(order);
+                console.log("from orderSubscription", formattedOrdinal.inscriptionId);
+                addNewOrdinal(formatOrdinal(order));
+            });
             setIsLoadingOpenOrders(false);
         };
         load();
+        return () => {
+            console.log("unsubscribe");
+            latestOrderSubscription?.unsubscribe();
+            orderSubscription?.unsubscribe();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -92,34 +112,31 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         )}
                     </div>
                 </div>
-
-                {!!openOrders.length && (
-                    <div className="row g-5">
-                        {openOrders.length > 0 ? (
-                            <>
-                                {openOrders.map((utxo) => (
-                                    <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                                        <OrdinalCard
-                                            overlay
-                                            price={{
-                                                amount: utxo.value.toLocaleString("en-US"),
-                                                currency: "Sats",
-                                            }}
-                                            type="buy"
-                                            confirmed
-                                            date={utxo.created_at}
-                                            authors={collectionAuthor}
-                                            utxo={utxo}
-                                            onSale={onSale}
-                                        />
-                                    </div>
-                                ))}
-                            </>
-                        ) : (
-                            <div>There are no inscriptions for sale yet..</div>
-                        )}
-                    </div>
-                )}
+                <div className="row g-5">
+                    {openOrders.length > 0 ? (
+                        <>
+                            {openOrders.map((utxo) => (
+                                <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: utxo.value.toLocaleString("en-US"),
+                                            currency: "Sats",
+                                        }}
+                                        type="buy"
+                                        confirmed
+                                        date={utxo.created_at}
+                                        authors={collectionAuthor}
+                                        utxo={utxo}
+                                        onSale={onSale}
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div>There are no inscriptions for sale yet..</div>
+                    )}
+                </div>
             </div>
         </div>
     );

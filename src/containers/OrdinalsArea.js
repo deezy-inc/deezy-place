@@ -94,6 +94,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
+                        <br />
                         <span>
                             <Image
                                 src="/images/logo/ordinals-white.svg"
@@ -145,11 +146,6 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         <div>
                             This address does not own anything yet..
                             <br />
-                            <br />
-                            Consider minting an{" "}
-                            <a href="https://astralbabes.ai" target="_blank" rel="noreferrer">
-                                astral babe
-                            </a>
                         </div>
                     )}
                 </div>

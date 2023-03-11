@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { TESTNET } from "@lib/constants";
 import { getAddressInfo, toXOnly } from "@utils/crypto";
+import { getAddressUtxos } from "@utils/utxos";
 import { relayInit, getEventHash } from "nostr-tools";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
@@ -24,9 +25,7 @@ const exchangeName = "nosft";
 const dummyUtxoValue = 1_000;
 const numberOfDummyUtxosToCreate = 1;
 
-let recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
-    .then((response) => response.json())
-    .then((data) => data[feeLevel]);
+let recommendedFeeRate;
 
 async function doesUtxoContainInscription(utxo) {
     const html = await fetch(`${ordinalsExplorerUrl}/output/${utxo.txid}:${utxo.vout}`).then((response) =>
@@ -49,10 +48,6 @@ function btcToSat(btc) {
 
 function satToBtc(sat) {
     return Number(sat) / Math.pow(10, 8);
-}
-
-async function getAddressUtxos(address) {
-    return await fetch(`${baseMempoolApiUrl}/address/${address}/utxo`).then((response) => response.json());
 }
 
 async function selectUtxos(utxos, amount, vins, vouts, recommendedFeeRate) {

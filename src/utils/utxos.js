@@ -2,6 +2,8 @@ import { TESTNET } from "@lib/constants";
 
 const axios = require("axios");
 
+// eslint-disable-next-line no-promise-executor-return
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const baseMempoolUrl = TESTNET ? "https://mempool.space/signet" : "https://mempool.space";
 export const getAddressUtxos = async (address) => {
     console.log(`Getting address utxos`);
@@ -43,6 +45,9 @@ export const getAddressUtxos = async (address) => {
                 }
             }
             lastSeenTxId = txs[txs.length - 1].txid;
+            // Short delay to help get around rate limits.
+            // eslint-disable-next-line no-await-in-loop
+            await delay(50);
         }
         // Now we filter out all outputs that have been spent.
         utxos = outputs.filter((it) => !spentOutpoints.has(`${it.txid}:${it.vout}`));

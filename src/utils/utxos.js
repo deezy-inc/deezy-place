@@ -1,11 +1,14 @@
+import { TESTNET } from "@lib/constants";
+
 const axios = require("axios");
 
+const baseMempoolUrl = TESTNET ? "https://mempool.space/signet" : "https://mempool.space";
 export const getAddressUtxos = async (address) => {
     console.log(`Getting address utxos`);
     let utxos;
     try {
         // Most addresses have few enough utxos that we can fetch them all at once with this call.
-        const { data } = await axios.get(`https://mempool.space/api/address/${address}/utxo`);
+        const { data } = await axios.get(`${baseMempoolUrl}/api/address/${address}/utxo`);
         utxos = data;
     } catch (err) {
         // Some addresses have too many utxos and mempool.space throws an erorr. In this case we need to manually
@@ -16,9 +19,7 @@ export const getAddressUtxos = async (address) => {
         let lastSeenTxId = null;
         // We do one pass through to find all outputs and spent outputs.
         while (true) {
-            const url = `https://mempool.space/api/address/${address}/txs${
-                lastSeenTxId ? `/chain/${lastSeenTxId}` : ""
-            }`;
+            const url = `${baseMempoolUrl}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
             // eslint-disable-next-line no-await-in-loop
             const { data } = await axios.get(url);
             const txs = data;
@@ -46,6 +47,5 @@ export const getAddressUtxos = async (address) => {
         // Now we filter out all outputs that have been spent.
         utxos = outputs.filter((it) => !spentOutpoints.has(`${it.txid}:${it.vout}`));
     }
-    console.log(utxos.length);
     return utxos;
 };

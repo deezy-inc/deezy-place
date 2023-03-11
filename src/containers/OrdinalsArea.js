@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
+import { getAddressUtxos } from "@utils/utxos";
 // Use this to fetch data from an API service
 const axios = require("axios");
 
@@ -27,8 +28,8 @@ const collectionAuthor = [
 ];
 
 const getOwnedInscriptions = async (nostrAddress) => {
-    const { data } = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
-    const sortedData = data.sort((a, b) => b.status.block_time - a.status.block_time);
+    const utxos = await getAddressUtxos(nostrAddress);
+    const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
     const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
     SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
     return inscriptions;

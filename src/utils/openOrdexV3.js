@@ -25,9 +25,7 @@ const exchangeName = "nosft";
 const dummyUtxoValue = 1_000;
 const numberOfDummyUtxosToCreate = 1;
 
-let recommendedFeeRate = fetch(`${baseMempoolApiUrl}/v1/fees/recommended`)
-    .then((response) => response.json())
-    .then((data) => data[feeLevel]);
+let recommendedFeeRate;
 
 async function doesUtxoContainInscription(utxo) {
     const html = await fetch(`${ordinalsExplorerUrl}/output/${utxo.txid}:${utxo.vout}`).then((response) =>

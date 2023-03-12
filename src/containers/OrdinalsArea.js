@@ -15,9 +15,9 @@ import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
 import { matchSorter } from "match-sorter";
+import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 // Use this to fetch data from an API service
 const axios = require("axios");
-import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 
 const collectionAuthor = [
     {
@@ -149,7 +149,8 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         />
                     </div>
                     <div className="col-lg-1 col-md-1 col-sm-1 col-2">
-                        <div
+                        <button
+                            type="button"
                             className={clsx(
                                 "sort-button d-flex flex-row justify-content-center",
                                 activeSort === "date" && "active"
@@ -158,9 +159,10 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 if (activeSort === "date") {
                                     setFilteredOwnedUtxos(
                                         filteredOwnedUtxos.sort((a, b) => {
-                                            return !sortAsc
+                                            const res = !sortAsc
                                                 ? a.status.block_time - b.status.block_time
                                                 : b.status.block_time - a.status.block_time;
+                                            return res;
                                         })
                                     );
                                     setSortAsc(!sortAsc);
@@ -168,9 +170,10 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 }
                                 setFilteredOwnedUtxos(
                                     filteredOwnedUtxos.sort((a, b) => {
-                                        return sortAsc
+                                        const res = sortAsc
                                             ? a.status.block_time - b.status.block_time
                                             : b.status.block_time - a.status.block_time;
+                                        return res;
                                     })
                                 );
                                 setActiveSort("date");
@@ -180,10 +183,11 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                             {activeSort === "date" && (
                                 <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
                             )}
-                        </div>
+                        </button>
                     </div>
                     <div className="col-lg-1 col-md-1 col-sm-1 col-2">
-                        <div
+                        <button
+                            type="button"
                             className={clsx(
                                 "sort-button d-flex flex-row justify-content-center",
                                 activeSort === "value" && "active"
@@ -192,7 +196,8 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 if (activeSort === "value") {
                                     setFilteredOwnedUtxos(
                                         filteredOwnedUtxos.sort((a, b) => {
-                                            return !sortAsc ? a.value - b.value : b.value - a.value;
+                                            const res = !sortAsc ? a.value - b.value : b.value - a.value;
+                                            return res;
                                         })
                                     );
                                     setSortAsc(!sortAsc);
@@ -200,7 +205,8 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                                 }
                                 setFilteredOwnedUtxos(
                                     filteredOwnedUtxos.sort((a, b) => {
-                                        return sortAsc ? a.value - b.value : b.value - a.value;
+                                        const res = sortAsc ? a.value - b.value : b.value - a.value;
+                                        return res;
                                     })
                                 );
                                 setActiveSort("value");
@@ -210,7 +216,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                             {activeSort === "value" && (
                                 <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
                             )}
-                        </div>
+                        </button>
                     </div>
                 </div>
 

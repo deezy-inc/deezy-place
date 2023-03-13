@@ -14,6 +14,8 @@ import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
+import { matchSorter } from "match-sorter";
+import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 // Use this to fetch data from an API service
 const axios = require("axios");
 
@@ -57,7 +59,12 @@ const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
+    const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
     const [refreshHack, setRefreshHack] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const [activeSort, setActiveSort] = useState("date");
+    const [sortAsc, setSortAsc] = useState(false);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -67,6 +74,8 @@ const OrdinalsArea = ({ className, space }) => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
             const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
+            setOwnedUtxos(ownedInscriptions);
+            setFilteredOwnedUtxos(ownedInscriptions);
             const ownedInscriptionResults = await Promise.allSettled(
                 ownedInscriptions.map((utxo) => getInscriptionData(utxo))
             );
@@ -105,12 +114,104 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
+                    <div className="col-lg-4 col-md-4 col-sm-4 col-8">
+                        <input
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                const filteredUtxos = matchSorter(ownedUtxos, e.target.value, {
+                                    keys: [
+                                        "inscriptionId",
+                                        "key",
+                                        "txid",
+                                        "vout",
+                                        "value",
+                                        "status.block_time",
+                                        "status.block_height",
+                                        "status.confirmed",
+                                    ],
+                                });
+                                setFilteredOwnedUtxos(filteredUtxos);
+                            }}
+                        />
+                    </div>
+                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
+                        <button
+                            type="button"
+                            className={clsx(
+                                "sort-button d-flex flex-row justify-content-center",
+                                activeSort === "date" && "active"
+                            )}
+                            onClick={() => {
+                                if (activeSort === "date") {
+                                    setFilteredOwnedUtxos(
+                                        filteredOwnedUtxos.sort((a, b) => {
+                                            const res = !sortAsc
+                                                ? a.status.block_time - b.status.block_time
+                                                : b.status.block_time - a.status.block_time;
+                                            return res;
+                                        })
+                                    );
+                                    setSortAsc(!sortAsc);
+                                    return;
+                                }
+                                setFilteredOwnedUtxos(
+                                    filteredOwnedUtxos.sort((a, b) => {
+                                        const res = sortAsc
+                                            ? a.status.block_time - b.status.block_time
+                                            : b.status.block_time - a.status.block_time;
+                                        return res;
+                                    })
+                                );
+                                setActiveSort("date");
+                            }}
+                        >
+                            <div>Date</div>
+                            {activeSort === "date" && (
+                                <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
+                            )}
+                        </button>
+                    </div>
+                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
+                        <button
+                            type="button"
+                            className={clsx(
+                                "sort-button d-flex flex-row justify-content-center",
+                                activeSort === "value" && "active"
+                            )}
+                            onClick={() => {
+                                if (activeSort === "value") {
+                                    setFilteredOwnedUtxos(
+                                        filteredOwnedUtxos.sort((a, b) => {
+                                            const res = !sortAsc ? a.value - b.value : b.value - a.value;
+                                            return res;
+                                        })
+                                    );
+                                    setSortAsc(!sortAsc);
+                                    return;
+                                }
+                                setFilteredOwnedUtxos(
+                                    filteredOwnedUtxos.sort((a, b) => {
+                                        const res = sortAsc ? a.value - b.value : b.value - a.value;
+                                        return res;
+                                    })
+                                );
+                                setActiveSort("value");
+                            }}
+                        >
+                            <div>Value</div>
+                            {activeSort === "value" && (
+                                <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="row g-5">
                     {utxosReady && ownedUtxos.length > 0 && (
                         <>
-                            {ownedUtxos.map((inscription) => (
+                            {filteredOwnedUtxos.map((inscription) => (
                                 <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
                                     <OrdinalCard
                                         overlay
@@ -127,6 +228,13 @@ const OrdinalsArea = ({ className, space }) => {
                                     />
                                 </div>
                             ))}
+                            {filteredOwnedUtxos.length === 0 && (
+                                <div className="col-12">
+                                    <div className="text-center">
+                                        <h3>No results found</h3>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
 

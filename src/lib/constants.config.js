@@ -1,4 +1,4 @@
-// import * as env from "env-var";
+// import * as env from "env-var"; // TODO: enable env vars
 
 // export const NOSTR_RELAY_URL = "ws://localhost:7001";
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";

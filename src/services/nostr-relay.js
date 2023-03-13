@@ -12,14 +12,24 @@ class NostrRelay {
         this.pool = new SimplePool();
         this.subs = [];
         this.relays = [...RELAYS];
-        this.subscribedToOriginals = false;
+        this.subscriptionOrders = null;
         this.events = [];
     }
 
-    subscribeOriginals({ limit }) {
+    unsubscribeOrders() {
+        if (this.subscriptionOrders) {
+            console.log("unsubscribeOrders");
+            this.subs = this.subs.filter((sub) => sub !== this.subscriptionOrders);
+            this.subscriptionOrders.unsub();
+            this.subscriptionOrders = null;
+        }
+    }
+
+    subscribeOrders({ limit }) {
         return new Observable(async (observer) => {
             try {
-                this.subscribe(
+                this.unsubscribeOrders();
+                this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
                         // debugger
@@ -31,6 +41,7 @@ class NostrRelay {
                         console.log(`eose`);
                     }
                 );
+                console.log("subscribeOrders");
             } catch (error) {
                 observer.error(error);
             }

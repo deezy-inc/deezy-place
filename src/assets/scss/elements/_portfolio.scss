@@ -259,7 +259,7 @@
 .product-share-wrapper {
     display: flex;
     justify-content: space-between;
-    margin-top: 30px;
+    margin-top: 10px;
     align-items: center;
 
     .profile-share {
@@ -372,6 +372,15 @@
             padding: 5px 8px;
             border-radius: 5px;
             z-index: 2;
+        }
+    }
+
+    .inscription-details-area {
+        display: flex;
+        margin-top: 30px;
+        .inscription-number{
+            font-weight: 500;
+            color: var(--color-primary);
         }
     }
 }

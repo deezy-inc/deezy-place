@@ -7,7 +7,6 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { deepClone } from "@utils/methods";
-// import { OpenOrdex } from "@utils/openOrdexV3";
 import WalletContext from "@context/wallet-context";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_ONSALE } from "@lib/constants.config";
@@ -31,6 +30,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
     const orderSubscriptionRef = useRef(null);
+    const [isWindowFocused, setIsWindowFocused] = useState(true);
 
     const addNewOpenOrder = (order) => {
         addOpenOrder$.current.next(order);
@@ -54,50 +54,61 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     }, []);
 
     useEffect(() => {
-        console.log("stream orders");
-        addSubscriptionRef.current = addOpenOrder$.current
-            .pipe(
-                scan((acc, curr) => {
-                    // We can add only unique ordinals
-                    if (acc.find((order) => order.id === curr.id)) {
-                        return acc;
-                    }
-                    // We sort by created_at DESC and limit list
-                    return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
-                }, openOrders)
-            )
-            .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
-            const formattedOrder = formatOrder(order);
-            console.log("from orderSubscription", formattedOrder.inscriptionId);
-            addNewOpenOrder(formatOrder(order));
-        });
+        if (isWindowFocused) {
+            console.log("init stream orders");
+            addSubscriptionRef.current = addOpenOrder$.current
+                .pipe(
+                    scan((acc, curr) => {
+                        // We can add only unique ordinals by id or inscriptionId
+                        // I keep if for test purposes
+                        if (acc.find((order) => order.id === curr.id)) {
+                            return acc;
+                        }
+                        // We sort by created_at DESC and limit list
+                        return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+                    }, openOrders)
+                )
+                .subscribe(setOpenOrders);
+            orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
+                const formattedOrder = formatOrder(order);
+                console.log("from orderSubscription", formattedOrder.inscriptionId);
+                addNewOpenOrder(formatOrder(order));
+            });
+        }
         return () => {
-            orderSubscriptionRef.current.unsubscribe();
-            addSubscriptionRef.current.unsubscribe();
+            console.log("unsubscribe init stream orders");
+            try {
+                orderSubscriptionRef?.current?.unsubscribe();
+                addSubscriptionRef?.current?.unsubscribe();
+                // eslint-disable-next-line no-empty
+            } catch (err) {}
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isWindowFocused]);
 
-    // TODO: it is really necessary to fetch with openOrderx? with nostrPool we get the same.
-    // const latestOrderSubscriptionRef = useRef(null);
-    // useEffect(() => {
-    //     const load = async () => {
-    //         console.log("loading on sale ordinals");
-    //         const openOrderx = await OpenOrdex.init();
-    //         latestOrderSubscriptionRef.current = openOrderx.latestOrders({ limit: MAX_ONSALE }).subscribe((order) => {
-    //             const formattedOrder = formatOrder(order);
-    //             console.log("from latestOrderSubscription", formattedOrder.inscriptionId);
-    //             addNewOpenOrder(formattedOrder);
-    //         });
-    //         setIsLoadingOpenOrders(false);
-    //     };
-    //     load();
-    //     return () => {
-    //         latestOrderSubscriptionRef.current.unsubscribe();
-    //     };
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
+    useEffect(() => {
+        const handleWindowBlur = () => {
+            setIsWindowFocused(false);
+        };
+
+        const handleWindowFocus = () => {
+            setIsWindowFocused(true);
+        };
+
+        const handleVisibilityChange = () => {
+            setIsWindowFocused(!document.hidden);
+        };
+
+        window.addEventListener("blur", handleWindowBlur);
+        window.addEventListener("focus", handleWindowFocus);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener("blur", handleWindowBlur);
+            window.removeEventListener("focus", handleWindowFocus);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, []);
 
     return (
         <div id="selling-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>

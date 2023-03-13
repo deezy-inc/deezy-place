@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
-
+import axios from "axios";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
@@ -33,6 +33,9 @@ const App = () => {
         if (elementRef.current) {
             setHeaderHeight(elementRef.current.clientHeight);
         }
+        axios.get("/api/inscriptions").then((data) => {
+            console.log("api data", data);
+        });
     }, []);
 
     useEffect(() => {

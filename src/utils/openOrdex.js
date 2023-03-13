@@ -1,3 +1,6 @@
+// This file is an adaption of the original https://github.com/orenyomtov/openordex
+// we should try to keep it as close to the original as possible, even though, ideally,
+// we would use the original package if we can make it a library.
 /* eslint-disable */
 import { TESTNET, NOSTR_RELAY_URL, NOSTR_KIND_INSCRIPTION } from "@lib/constants.config";
 import { getAddressInfo, toXOnly } from "@utils/crypto";
@@ -119,11 +122,10 @@ class OpenOrdexFactory {
             .connect()
             .then(() => {
                 this.connected = true;
-                console.log(`connected to nostr relay`);
             })
             .catch((error) => {
                 this.connected = false;
-                console.log("error to nostr relay", error);
+                console.error("error to nostr relay", error);
             });
     }
 
@@ -194,34 +196,13 @@ class OpenOrdexFactory {
         const validatedPrice = this.validateSellerPSBTAndExtractPrice(order.content, inscriptionData.output);
         if (!validatedPrice) return;
 
-        // let inscriptionTags = order.tags
-        //     // .filter(([t, v]) => t === "i" && v)
-        //     .map(([tagId, inscriptionId, signedPsbt]) => ({
-        //         [tagId]: {
-        //             inscriptionId,
-        //             signedPsbt,
-        //         },
-        //     }));
-        // // Convert array into object of key tagId
-        // inscriptionTags = Object.assign(
-        //     {},
-        //     ...inscriptionTags.map((o) => o)
-        // );
-
         const newOrder = {
-            // title: `${satToBtc(
-            //     validatedPrice
-            // )} BTC ($${satsToFormattedDollarString(
-            //     validatedPrice,
-            //     await this.bitcoinPrice
-            // )})`,
             title: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
             txid: order.id,
             inscriptionId,
             value: validatedPrice,
             usdPrice: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
             ...order,
-            // tagsData: inscriptionTags,
         };
 
         return newOrder;
@@ -237,8 +218,7 @@ class OpenOrdexFactory {
                         limit: limit,
                     },
                 ]);
-                // const orders = await this.nostrRelay.list([{ kinds: [0, 1] }]);
-                console.log("INCOMING", orders);
+
                 for (const order of orders) {
                     try {
                         const newOrder = await this.getProcessedOrder(order, latestOrders);
@@ -249,7 +229,6 @@ class OpenOrdexFactory {
                             break;
                         }
                     } catch (e) {
-                        console.log("[latestOrders][error]");
                         console.error(e);
                     }
                 }
@@ -368,7 +347,7 @@ class OpenOrdexFactory {
         };
         event.id = getEventHash(event);
         const signedEvent = await window.nostr.signEvent(event);
-        console.log("$$$[publish:openordex]", signedEvent);
+
         await this.nostrRelay.publish(signedEvent);
     }
 
@@ -468,11 +447,10 @@ class OpenOrdexFactory {
 
         psbt.finalizeAllInputs();
 
-        debugger;
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
         const fullTx = bitcoin.Transaction.fromHex(hex);
-        console.log(hex);
+
         await axios.post(`https://mempool.space/api/tx`, hex);
 
         return fullTx.getId();
@@ -490,7 +468,6 @@ class OpenOrdexFactory {
         const potentialDummyUtxos = this.payerUtxos.filter((utxo) => utxo.value <= dummyUtxoValue);
         this.dummyUtxo = undefined;
 
-        debugger;
         for (const potentialDummyUtxo of potentialDummyUtxos) {
             if (!(await doesUtxoContainInscription(potentialDummyUtxo))) {
                 // hideDummyUtxoElements();
@@ -530,7 +507,6 @@ class OpenOrdexFactory {
     }
 
     async generatePSBTBuyingInscription(payerAddress, receiverAddress, price) {
-        debugger;
         const psbt = new bitcoin.Psbt({ network });
         let totalValue = 0;
         let totalPaymentValue = 0;

@@ -10,7 +10,7 @@ import { shortenStr } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { OpenOrdex } from "@utils/openOrdexV3";
+import { OpenOrdex } from "@utils/openOrdex";
 import { TailSpin } from "react-loading-icons";
 
 // import {

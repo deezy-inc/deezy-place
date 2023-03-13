@@ -2,11 +2,8 @@ import { SimplePool, getEventHash } from "nostr-tools";
 import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
-import { OpenOrdex } from "@utils/openOrdexV3";
+import { OpenOrdex } from "@utils/openOrdex";
 
-export const RELAY_KINDS = {
-    INSCRIPTION: 802, // type
-};
 class NostrRelay {
     constructor() {
         this.pool = new SimplePool();
@@ -18,7 +15,6 @@ class NostrRelay {
 
     unsubscribeOrders() {
         if (this.subscriptionOrders) {
-            console.log("unsubscribeOrders");
             this.subs = this.subs.filter((sub) => sub !== this.subscriptionOrders);
             this.subscriptionOrders.unsub();
             this.subscriptionOrders = null;
@@ -32,8 +28,6 @@ class NostrRelay {
                 this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
-                        // debugger
-                        // console.log(`New event`, event);
                         const order = await OpenOrdex.getProcessedOrder(event);
                         if (order) observer.next(order);
                     },
@@ -41,7 +35,6 @@ class NostrRelay {
                         console.log(`eose`);
                     }
                 );
-                console.log("subscribeOrders");
             } catch (error) {
                 observer.error(error);
             }
@@ -66,11 +59,10 @@ class NostrRelay {
         const event = cleanEvent(_event);
         const pub = this.pool.publish(this.relays, event);
         pub.on("ok", () => {
-            console.log(`Accepted our event`);
             if (onSuccess) onSuccess();
         });
         pub.on("failed", (reason) => {
-            console.log(`failed to publish ${reason}`);
+            console.error(`failed to publish ${reason}`);
             if (onError) onError(reason);
         });
     }

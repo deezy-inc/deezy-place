@@ -11,7 +11,7 @@ import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@uti
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { OpenOrdex } from "@utils/openOrdexV3";
+import { OpenOrdex } from "@utils/openOrdex";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 import { IframeWithLoader } from "@components/iframe";
@@ -43,7 +43,6 @@ const SendModal = ({ show, handleModal, utxo }) => {
     const sale = async () => {
         setIsOnSale(true);
         if (!openOrderx) {
-            console.log("init");
             openOrderx = await OpenOrdex.init();
         }
 
@@ -69,7 +68,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         };
         const signedEvent = await nostrPool.sign(event);
         nostrPool.publish(signedEvent, console.info, console.error); // TODO: it is falling
-        console.log("$$$[SendModal:publish]", signedEvent);
+
         setIsOnSale(false);
         handleModal();
     };

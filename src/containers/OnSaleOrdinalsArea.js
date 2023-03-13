@@ -26,7 +26,7 @@ const collectionAuthor = [
 const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const { nostrAddress, isExperimental } = useContext(WalletContext);
     const [openOrders, setOpenOrders] = useState([]);
-    const [isLoadingOpenOrders] = useState(false); // it is necessary?
+    const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(false); // it is necessary?
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
     const orderSubscriptionRef = useRef(null);
@@ -40,7 +40,6 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
         const inscriptionData = Object.assign(
             {},
             ...inscription.tags
-                // .filter(([t, v]) => t === "i" && v)
                 .map(([tagId, value]) => ({
                     [tagId]: value,
                 }))
@@ -55,7 +54,6 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
 
     useEffect(() => {
         if (isWindowFocused) {
-            console.log("init stream orders");
             addSubscriptionRef.current = addOpenOrder$.current
                 .pipe(
                     scan((acc, curr) => {
@@ -70,13 +68,10 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                 )
                 .subscribe(setOpenOrders);
             orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
-                const formattedOrder = formatOrder(order);
-                console.log("from orderSubscription", formattedOrder.inscriptionId);
                 addNewOpenOrder(formatOrder(order));
             });
         }
         return () => {
-            console.log("unsubscribe init stream orders");
             try {
                 orderSubscriptionRef?.current?.unsubscribe();
                 addSubscriptionRef?.current?.unsubscribe();
@@ -118,8 +113,10 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         <SectionTitle
                             className="mb--0 with-loading"
                             isLoading={isLoadingOpenOrders}
-                            {...{ title: "On sale" }}
+                            {...{ title: "On Sale" }}
+                            subtitle="Buy & sell comming soon"
                         />
+                        <span>Buy and sell comming soon</span>
                         {!Boolean(nostrAddress) && isExperimental && (
                             <span>
                                 <button type="button" className="btn-transparent" onClick={onConnectHandler}>

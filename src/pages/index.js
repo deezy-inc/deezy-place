@@ -36,7 +36,6 @@ const App = () => {
 
     useEffect(() => {
         if (!nostrPublicKey) return;
-
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
     }, [nostrPublicKey]);

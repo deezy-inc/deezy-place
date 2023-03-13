@@ -31,14 +31,18 @@ const getOwnedInscriptions = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
     const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
+    console.log("all utxos", inscriptions);
     SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
     return inscriptions;
 };
 
 const getInscriptionId = async (utxo) => {
     const utxoKey = utxo.key;
-    const data = await axios.get(`/api/inscriptions/${utxoKey}`);
-    console.log("data", data);
+    const { data } = await axios.get(`/api/inscriptions/${utxoKey}`);
+    console.log("data", {
+        ...utxo,
+        inscriptionId: data.inscriptionId,
+    });
     return {
         ...utxo,
         inscriptionId: data.inscriptionId,
@@ -55,17 +59,34 @@ const OrdinalsArea = ({ className, space }) => {
         setRefreshHack(!refreshHack);
     };
 
+    const getDemoInscriptions = async () => {
+        const inscriptions = await axios.get(
+            "https://turbo.ordinalswallet.com/wallet/bc1p8l0pstx8umh6dx3e8vtw7sd3pspe9r0nh94v7ncwkqleljnr5zdqa3cvlm/inscriptions"
+        );
+        console.log("inscriptions", inscriptions);
+    }
+
     useEffect(() => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
             const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
+            let count = 0;
             const ownedInscriptionResults = await Promise.allSettled(
-                ownedInscriptions.map((utxo) => getInscriptionId(utxo))
+                ownedInscriptions
+                    .map((utxo) => {
+                        if (utxo && count < 2) {
+                            count += 1;
+                            return getInscriptionId(utxo);
+                        }
+                    })
+                    .filter((x) => x)
             );
+            console.log("owned", ownedInscriptionResults);
             setOwnedUtxos(ownedInscriptionResults.map((utxo) => utxo.value));
             setUtxosReady(true);
         };
         fetchByUtxos();
+        getDemoInscriptions();
     }, [refreshHack, nostrAddress]);
 
     return (

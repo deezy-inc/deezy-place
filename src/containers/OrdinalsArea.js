@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
+import { getAddressUtxos } from "@utils/utxos";
 // Use this to fetch data from an API service
 const axios = require("axios");
 
@@ -27,27 +28,30 @@ const collectionAuthor = [
 ];
 
 const getOwnedInscriptions = async (nostrAddress) => {
-    const { data } = await axios.get(`https://mempool.space/api/address/${nostrAddress}/utxo`);
-    const sortedData = data.sort((a, b) => b.status.block_time - a.status.block_time);
+    const utxos = await getAddressUtxos(nostrAddress);
+    const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
     const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
     SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
     return inscriptions;
 };
 
-const getInscriptionId = async (utxoKey) => {
+const getInscriptionId = async (utxo) => {
+    const utxoKey = utxo.key;
     const prevInscriptionId = SessionStorage.get(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:${utxoKey}`);
     if (prevInscriptionId) return prevInscriptionId;
     const res = await axios.get(`https://ordinals.com/output/${utxoKey}`);
     const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
     SessionStorage.set(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${utxoKey}`, inscriptionId);
-    return inscriptionId;
+    return {
+        ...utxo,
+        inscriptionId,
+    };
 };
 
-const OrdinalsArea = ({ className, space, onSale }) => {
+const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
-    const [inscriptionUtxosByUtxo, setInscriptionUtxosByUtxo] = useState({});
     const [refreshHack, setRefreshHack] = useState(false);
 
     const handleRefreshHack = () => {
@@ -58,31 +62,10 @@ const OrdinalsArea = ({ className, space, onSale }) => {
         const fetchByUtxos = async () => {
             setUtxosReady(false);
             const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
-            const tempInscriptionsByUtxo = {};
-            setOwnedUtxos(ownedInscriptions);
             const ownedInscriptionResults = await Promise.allSettled(
-                ownedInscriptions.map((utxo) => getInscriptionId(utxo.key))
+                ownedInscriptions.map((utxo) => getInscriptionId(utxo))
             );
-            for (const [index, utxo] of ownedInscriptions.entries()) {
-                const utxoKey = utxo.key;
-                tempInscriptionsByUtxo[utxoKey] = utxo;
-                let currentUtxo = utxo;
-                const { value: inscriptionId, status } = ownedInscriptionResults[index];
-                if (status !== "fulfilled" || !inscriptionId) {
-                    // handle failure
-                    console.log(`Error from ordinals.com`, utxoKey);
-                    continue;
-                }
-                const [txid, vout] = inscriptionId.split("i");
-                utxo.inscriptionId = inscriptionId;
-                currentUtxo = { txid, vout };
-                tempInscriptionsByUtxo[utxoKey] = currentUtxo;
-                const newInscriptionsByUtxo = {};
-                Object.assign(newInscriptionsByUtxo, tempInscriptionsByUtxo);
-                setInscriptionUtxosByUtxo(newInscriptionsByUtxo);
-                setUtxosReady(true);
-            }
-            setInscriptionUtxosByUtxo(tempInscriptionsByUtxo);
+            setOwnedUtxos(ownedInscriptionResults.map((utxo) => utxo.value));
             setUtxosReady(true);
         };
         fetchByUtxos();
@@ -94,6 +77,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
+                        <br />
                         <span>
                             <Image
                                 src="/images/logo/ordinals-white.svg"
@@ -119,7 +103,7 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                 </div>
 
                 <div className="row g-5">
-                    {ownedUtxos.length > 0 && utxosReady && (
+                    {utxosReady && ownedUtxos.length > 0 && (
                         <>
                             {ownedUtxos.map((inscription) => (
                                 <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
@@ -145,11 +129,6 @@ const OrdinalsArea = ({ className, space, onSale }) => {
                         <div>
                             This address does not own anything yet..
                             <br />
-                            <br />
-                            Consider minting an{" "}
-                            <a href="https://astralbabes.ai" target="_blank" rel="noreferrer">
-                                astral babe
-                            </a>
                         </div>
                     )}
                 </div>

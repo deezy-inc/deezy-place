@@ -37,14 +37,11 @@ const getOwnedInscriptions = async (nostrAddress) => {
 
 const getInscriptionId = async (utxo) => {
     const utxoKey = utxo.key;
-    const prevInscriptionId = SessionStorage.get(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:${utxoKey}`);
-    if (prevInscriptionId) return prevInscriptionId;
-    const res = await axios.get(`https://ordinals.com/output/${utxoKey}`);
-    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
-    SessionStorage.set(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${utxoKey}`, inscriptionId);
+    const data = await axios.get(`/api/inscriptions/${utxoKey}`);
+    console.log("data", data);
     return {
         ...utxo,
-        inscriptionId,
+        inscriptionId: data.inscriptionId,
     };
 };
 

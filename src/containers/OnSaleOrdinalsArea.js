@@ -1,17 +1,18 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { deepClone } from "@utils/methods";
-import OpenOrdex from "@utils/openOrdexV3";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+// import { OpenOrdex } from "@utils/openOrdexV3";
 import WalletContext from "@context/wallet-context";
-// Use this to fetch data from an API service
-const axios = require("axios");
+import { nostrPool } from "@services/nostr-relay";
+import { MAX_ONSALE } from "@lib/constants.config";
+import { Subject } from "rxjs";
+import { scan } from "rxjs/operators";
 
 const collectionAuthor = [
     {
@@ -26,51 +27,77 @@ const collectionAuthor = [
 const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
     const { nostrAddress, isExperimental } = useContext(WalletContext);
     const [openOrders, setOpenOrders] = useState([]);
-    const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
+    const [isLoadingOpenOrders] = useState(false); // it is necessary?
+    const addOpenOrder$ = useRef(new Subject());
+    const addSubscriptionRef = useRef(null);
+    const orderSubscriptionRef = useRef(null);
+
+    const addNewOpenOrder = (order) => {
+        addOpenOrder$.current.next(order);
+    };
+
+    const formatOrder = useCallback((inscription) => {
+        const inscriptionData = Object.assign(
+            {},
+            ...inscription.tags
+                // .filter(([t, v]) => t === "i" && v)
+                .map(([tagId, value]) => ({
+                    [tagId]: value,
+                }))
+                .map((o) => o)
+        );
+        const forSaleInscription = deepClone({
+            inscriptionTags: inscriptionData,
+            ...inscription,
+        });
+        return forSaleInscription;
+    }, []);
 
     useEffect(() => {
-        console.log("OnSaleOrdinalsArea useEffect");
-        // safe on session storage for faster loads
-        window.addEventListener("message", (event) => {
-            console.debug(event);
+        console.log("stream orders");
+        addSubscriptionRef.current = addOpenOrder$.current
+            .pipe(
+                scan((acc, curr) => {
+                    // We can add only unique ordinals
+                    if (acc.find((order) => order.id === curr.id)) {
+                        return acc;
+                    }
+                    // We sort by created_at DESC and limit list
+                    return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+                }, openOrders)
+            )
+            .subscribe(setOpenOrders);
+        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
+            const formattedOrder = formatOrder(order);
+            console.log("from orderSubscription", formattedOrder.inscriptionId);
+            addNewOpenOrder(formatOrder(order));
         });
-        const load = async () => {
-            setIsLoadingOpenOrders(true);
-            // load from cache before updating
-            const sessionOrders = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_ON_SALE);
-            if (sessionOrders) {
-                setOpenOrders(sessionOrders);
-            }
-            const openOrderx = await OpenOrdex.init();
-            const orders = await openOrderx.getLatestOrders(25);
-
-            const forSaleInscriptions = [];
-            for (const inscription of orders) {
-                let inscriptionData = inscription.tags
-                    // .filter(([t, v]) => t === "i" && v)
-                    .map(([tagId, value]) => ({
-                        [tagId]: value,
-                    }));
-                // Convert array into object of key tagId
-                inscriptionData = Object.assign({}, ...inscriptionData.map((o) => o));
-
-                const i = deepClone({
-                    inscriptionTags: inscriptionData,
-                    ...inscription,
-                });
-                // console.log(i);
-
-                forSaleInscriptions.push(i);
-            }
-
-            SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_ON_SALE, forSaleInscriptions);
-
-            setOpenOrders(forSaleInscriptions);
-
-            setIsLoadingOpenOrders(false);
+        return () => {
+            orderSubscriptionRef.current.unsubscribe();
+            addSubscriptionRef.current.unsubscribe();
         };
-        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // TODO: it is really necessary to fetch with openOrderx? with nostrPool we get the same.
+    // const latestOrderSubscriptionRef = useRef(null);
+    // useEffect(() => {
+    //     const load = async () => {
+    //         console.log("loading on sale ordinals");
+    //         const openOrderx = await OpenOrdex.init();
+    //         latestOrderSubscriptionRef.current = openOrderx.latestOrders({ limit: MAX_ONSALE }).subscribe((order) => {
+    //             const formattedOrder = formatOrder(order);
+    //             console.log("from latestOrderSubscription", formattedOrder.inscriptionId);
+    //             addNewOpenOrder(formattedOrder);
+    //         });
+    //         setIsLoadingOpenOrders(false);
+    //     };
+    //     load();
+    //     return () => {
+    //         latestOrderSubscriptionRef.current.unsubscribe();
+    //     };
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, []);
 
     return (
         <div id="selling-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
@@ -92,34 +119,31 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                         )}
                     </div>
                 </div>
-
-                {!!openOrders.length && (
-                    <div className="row g-5">
-                        {openOrders.length > 0 ? (
-                            <>
-                                {openOrders.map((utxo) => (
-                                    <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                                        <OrdinalCard
-                                            overlay
-                                            price={{
-                                                amount: utxo.value.toLocaleString("en-US"),
-                                                currency: "Sats",
-                                            }}
-                                            type="buy"
-                                            confirmed
-                                            date={utxo.created_at}
-                                            authors={collectionAuthor}
-                                            utxo={utxo}
-                                            onSale={onSale}
-                                        />
-                                    </div>
-                                ))}
-                            </>
-                        ) : (
-                            <div>There are no inscriptions for sale yet..</div>
-                        )}
-                    </div>
-                )}
+                <div className="row g-5">
+                    {openOrders.length > 0 ? (
+                        <>
+                            {openOrders.map((utxo) => (
+                                <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: utxo.value.toLocaleString("en-US"),
+                                            currency: "Sats",
+                                        }}
+                                        type="buy"
+                                        confirmed
+                                        date={utxo.created_at}
+                                        authors={collectionAuthor}
+                                        utxo={utxo}
+                                        onSale={onSale}
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div>There are no inscriptions for sale yet..</div>
+                    )}
+                </div>
             </div>
         </div>
     );

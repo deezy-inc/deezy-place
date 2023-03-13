@@ -1,6 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL } from "@lib/constants";
+import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL } from "@lib/constants.config";
 
 bitcoin.initEccLib(ecc);
 

@@ -17,6 +17,7 @@ import axios from "axios";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { TURBO_API } from "@lib/constants";
+import { deepClone } from "@utils/methods";
 
 const collectionAuthor = [
     {
@@ -61,11 +62,12 @@ const OrdinalsArea = ({ className, space }) => {
             for (const ins of inscriptions) {
                 // eslint-disable-next-line no-inner-declarations
                 async function populateInscriptionsMap() {
+                    const inscriptionData = deepClone(ins);
                     const {
                         data: {
                             inscription: { outpoint },
                         },
-                    } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
+                    } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${inscriptionData.id}/outpoint`);
                     const rawVout = outpoint.slice(-8);
                     const txid = outpoint
                         .substring(0, outpoint.length - 8)
@@ -83,7 +85,7 @@ const OrdinalsArea = ({ className, space }) => {
 
                     // get an int32 with little endian
                     const vout = view.getInt32(0, 1);
-                    inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+                    inscriptionsByUtxoKey[`${txid}:${vout}`] = inscriptionData;
                 }
                 promises.push(populateInscriptionsMap());
                 if (promises.length === 15) {
@@ -100,6 +102,7 @@ const OrdinalsArea = ({ className, space }) => {
                     ...ins,
                 };
             });
+
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);

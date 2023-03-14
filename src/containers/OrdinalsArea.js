@@ -52,62 +52,58 @@ const OrdinalsArea = ({ className, space }) => {
     // here matching to the utxo
 
     useEffect(() => {
-        const getInscriptions = async () => {
+        const loadUtxos = async () => {
             setUtxosReady(false);
             const { data: inscriptions } = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
             const utxos = await getSortedUtxos(nostrAddress);
+            const inscriptionsByUtxoKey = {};
+            let promises = [];
+            for (const ins of inscriptions) {
+                async function populateInscriptionsMap() {
+                    const {
+                        data: {
+                            inscription: { outpoint },
+                        },
+                    } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
+                    const rawVout = outpoint.slice(-8);
+                    const txid = outpoint
+                        .substring(0, outpoint.length - 8)
+                        .match(/[a-fA-F0-9]{2}/g)
+                        .reverse()
+                        .join("");
 
-            const matchedUtxos = [];
-            const unmatchedUtxos = [];
-            inscriptions.forEach(async (ins) => {
-                const {
-                    data: {
-                        inscription: { outpoint },
-                    },
-                } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
-                const rawVout = outpoint.slice(-8);
-                const txid = outpoint
-                    .substring(0, outpoint.length - 8)
-                    .match(/[a-fA-F0-9]{2}/g)
-                    .reverse()
-                    .join("");
-
-                // Create a buffer
-                let buf = new ArrayBuffer(4);
-                // Create a data view of it
-                let view = new DataView(buf);
-
-                // set bytes
-                rawVout.match(/../g).forEach((b, i) => {
-                    view.setUint8(i, parseInt(b, 16));
-                });
-
-                // get an int32 with little endian
-                const vout = view.getInt32(0, 1);
-
-                const foundMatchingUtxo = utxos.find((x) => x.key === `${txid}:${vout}`);
-                console.log('foundMatchingUtxo', foundMatchingUtxo)
-                if (foundMatchingUtxo) {
-                    matchedUtxos.push({
-                        ...foundMatchingUtxo,
-                        inscriptionId: ins.id,
-                        ...ins,
+                    // Create a buffer
+                    const buf = new ArrayBuffer(4);
+                    const view = new DataView(buf);
+                    // set bytes
+                    rawVout.match(/../g).forEach((b, i) => {
+                        view.setUint8(i, parseInt(b, 16));
                     });
-                } else {
-                    unmatchedUtxos.push()
-                }
 
-                // return {
-                //     ...matchingUtxo,
-                //     inscriptionId: ins.id,
-                //     ...ins,
-                // };
+                    // get an int32 with little endian
+                    const vout = view.getInt32(0, 1);
+                    inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+                }
+                promises.push(populateInscriptionsMap());
+                if (promises.length === 15) {
+                    await Promise.all(promises);
+                    promises = [];
+                }
+            }
+            await Promise.all(promises);
+            const utxosWithInscriptionData = utxos.map((utxo) => {
+                const ins = inscriptionsByUtxoKey[utxo.key];
+                return {
+                    ...utxo,
+                    inscriptionId: ins?.id,
+                    ...ins,
+                };
             });
-            setOwnedUtxos(matchedUtxos);
-            setFilteredOwnedUtxos(matchedUtxos);
+            setOwnedUtxos(utxosWithInscriptionData);
+            setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);
         };
-        getInscriptions();
+        loadUtxos();
     }, [refreshHack, nostrAddress]);
 
     return (

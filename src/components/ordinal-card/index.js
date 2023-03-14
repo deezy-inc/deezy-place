@@ -38,8 +38,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                     scrolling="no"
                     loading="lazy"
                     title={utxo.inscriptionId}
-                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                    height={300}
+                    src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
                 />
             );
         }

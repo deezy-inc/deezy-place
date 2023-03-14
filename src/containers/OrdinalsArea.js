@@ -34,6 +34,8 @@ const getSortedUtxos = async (nostrAddress) => {
     return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [utxosReady, setUtxosReady] = useState(false);
@@ -86,10 +88,11 @@ const OrdinalsArea = ({ className, space }) => {
                     inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
                 }
                 promises.push(populateInscriptionsMap());
-                if (promises.length === 15) {
+                if (promises.length === 50) {
                     await Promise.all(promises);
                     promises = [];
                 }
+                await delay(50);
             }
             await Promise.all(promises);
             const utxosWithInscriptionData = utxos.map((utxo) => {

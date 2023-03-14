@@ -59,6 +59,7 @@ const OrdinalsArea = ({ className, space }) => {
             const inscriptionsByUtxoKey = {};
             let promises = [];
             for (const ins of inscriptions) {
+                // eslint-disable-next-line no-inner-declarations
                 async function populateInscriptionsMap() {
                     const {
                         data: {

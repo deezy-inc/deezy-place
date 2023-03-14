@@ -57,7 +57,7 @@ const OrdinalsArea = ({ className, space }) => {
             const utxos = await getOwnedInscriptions(nostrAddress);
             console.log(
                 "utxo",
-                utxos.find((y) => y.txid === "09014ca2ef2dddbc5fe784c4a249bf62630602c1bf4b06e60cad816611987a3c")
+                utxos.find((y) => y.txid === "09014ca2ef2dddbc5fe784c4a249bf62630602c1bf4b06e60cad816611987a3c:0")
             );
             const matchedUtxos = [];
             data.forEach(async (ins) => {
@@ -68,25 +68,26 @@ const OrdinalsArea = ({ className, space }) => {
                         inscriptionId: ins.id,
                         ...ins,
                     });
+                } else {
+                    const {
+                        data: { inscription },
+                    } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
+                    const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
+                    console.log(
+                        "inscription outpoint",
+                        inscription.outpoint,
+                        "matching utxo",
+                        matchingUtxo,
+                        "utxo",
+                        utxos[0]
+                    );
+                    return undefined;
+                    // return {
+                    //     ...matchingUtxo,
+                    //     inscriptionId: ins.id,
+                    //     ...ins,
+                    // };
                 }
-                const {
-                    data: { inscription },
-                } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
-                const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
-                console.log(
-                    "inscription outpoint",
-                    inscription.outpoint,
-                    "matching utxo",
-                    matchingUtxo,
-                    "utxo",
-                    utxos[0]
-                );
-                return undefined;
-                // return {
-                //     ...matchingUtxo,
-                //     inscriptionId: ins.id,
-                //     ...ins,
-                // };
             });
             setOwnedUtxos(matchedUtxos);
             setFilteredOwnedUtxos(matchedUtxos);

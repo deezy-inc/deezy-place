@@ -70,7 +70,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                         {Boolean(utxo.inscriptionId) && (
                             <Anchor
                                 className="logo-dark"
-                                path={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
+                                path={`${ORDINALS_WALLET}/inscription/${utxo.inscriptionId}`}
                                 target="_blank"
                             >
                                 {shortenStr(utxo.inscriptionId)}

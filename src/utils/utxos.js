@@ -17,7 +17,7 @@ export const getAddressUtxos = async (address) => {
     while (true) {
         // Short delay to help get around rate limits.
         // eslint-disable-next-line no-await-in-loop
-        await delay(50);
+        await delay(100);
         // eslint-disable-next-line no-await-in-loop
         console.log(lastSeenTxId);
         const url = `${baseMempoolUrl}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;

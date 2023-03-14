@@ -51,7 +51,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
             <div className="card-thumbnail">{renderImage()}</div>
             <div className="inscription-details-area">
-                <div className="inscription-number">#{utxo.inscriptionNumber}</div>
+                <div className="inscription-number">#{utxo.num}</div>
             </div>
             <div className="product-share-wrapper">
                 <div className="profile-share">

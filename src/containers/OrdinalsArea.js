@@ -59,35 +59,35 @@ const OrdinalsArea = ({ className, space }) => {
                 "utxo",
                 utxos.find((y) => y.txid === "09014ca2ef2dddbc5fe784c4a249bf62630602c1bf4b06e60cad816611987a3c")
             );
-            const matchedUtxos = data
-                .map(async (ins) => {
-                    const foundMatchingUtxo = utxos.find((x) => x.key === ins.id);
-                    if (foundMatchingUtxo) {
-                        return {
-                            ...foundMatchingUtxo,
-                            inscriptionId: ins.id,
-                            ...ins,
-                        };
-                    }
-                    const {
-                        data: { inscription },
-                    } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
-                    const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
-                    console.log(
-                        "inscription outpoint",
-                        inscription.outpoint,
-                        "matching utxo",
-                        matchingUtxo,
-                        "utxo",
-                        utxos[0]
-                    );
-                    return {
-                        ...matchingUtxo,
+            const matchedUtxos = [];
+            data.forEach(async (ins) => {
+                const foundMatchingUtxo = utxos.find((x) => x.key === ins.id);
+                if (foundMatchingUtxo) {
+                    matchedUtxos.push({
+                        ...foundMatchingUtxo,
                         inscriptionId: ins.id,
                         ...ins,
-                    };
-                })
-                .filter((x) => x);
+                    });
+                }
+                const {
+                    data: { inscription },
+                } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
+                const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
+                console.log(
+                    "inscription outpoint",
+                    inscription.outpoint,
+                    "matching utxo",
+                    matchingUtxo,
+                    "utxo",
+                    utxos[0]
+                );
+                return undefined;
+                // return {
+                //     ...matchingUtxo,
+                //     inscriptionId: ins.id,
+                //     ...ins,
+                // };
+            });
             setOwnedUtxos(matchedUtxos);
             setFilteredOwnedUtxos(matchedUtxos);
             setUtxosReady(true);

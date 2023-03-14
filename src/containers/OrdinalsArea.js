@@ -28,11 +28,10 @@ const collectionAuthor = [
     },
 ];
 
-const getOwnedInscriptions = async (nostrAddress) => {
+const getSortedUtxos = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
-    const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}i${utxo.vout}` }));
-    return inscriptions;
+    return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
 };
 
 const OrdinalsArea = ({ className, space }) => {
@@ -50,18 +49,44 @@ const OrdinalsArea = ({ className, space }) => {
         setRefreshHack(!refreshHack);
     };
 
+    // here matching to the utxo
+
     useEffect(() => {
         const getInscriptions = async () => {
             setUtxosReady(false);
-            const { data } = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
-            const utxos = await getOwnedInscriptions(nostrAddress);
-            console.log(
-                "utxo",
-                utxos.find((y) => y.txid === "09014ca2ef2dddbc5fe784c4a249bf62630602c1bf4b06e60cad816611987a3c:0")
-            );
+            const { data: inscriptions } = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+            const utxos = await getSortedUtxos(nostrAddress);
+
             const matchedUtxos = [];
-            data.forEach(async (ins) => {
-                const foundMatchingUtxo = utxos.find((x) => x.key === ins.id);
+            const unmatchedUtxos = [];
+            inscriptions.forEach(async (ins) => {
+                const {
+                    data: {
+                        inscription: { outpoint },
+                    },
+                } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
+                const rawVout = outpoint.slice(-8);
+                const txid = outpoint
+                    .substring(0, outpoint.length - 8)
+                    .match(/[a-fA-F0-9]{2}/g)
+                    .reverse()
+                    .join("");
+
+                // Create a buffer
+                let buf = new ArrayBuffer(4);
+                // Create a data view of it
+                let view = new DataView(buf);
+
+                // set bytes
+                rawVout.match(/../g).forEach((b, i) => {
+                    view.setUint8(i, parseInt(b, 16));
+                });
+
+                // get an int32 with little endian
+                const vout = view.getInt32(0, 1);
+
+                const foundMatchingUtxo = utxos.find((x) => x.key === `${txid}:${vout}`);
+                console.log('foundMatchingUtxo', foundMatchingUtxo)
                 if (foundMatchingUtxo) {
                     matchedUtxos.push({
                         ...foundMatchingUtxo,
@@ -69,25 +94,14 @@ const OrdinalsArea = ({ className, space }) => {
                         ...ins,
                     });
                 } else {
-                    const {
-                        data: { inscription },
-                    } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
-                    const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
-                    console.log(
-                        "inscription outpoint",
-                        inscription.outpoint,
-                        "matching utxo",
-                        matchingUtxo,
-                        "utxo",
-                        utxos[0]
-                    );
-                    return undefined;
-                    // return {
-                    //     ...matchingUtxo,
-                    //     inscriptionId: ins.id,
-                    //     ...ins,
-                    // };
+                    unmatchedUtxos.push()
                 }
+
+                // return {
+                //     ...matchingUtxo,
+                //     inscriptionId: ins.id,
+                //     ...ins,
+                // };
             });
             setOwnedUtxos(matchedUtxos);
             setFilteredOwnedUtxos(matchedUtxos);

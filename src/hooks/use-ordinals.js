@@ -12,6 +12,8 @@ const filterAscDate = (arr) => arr.sort((a, b) => a.status.block_time - b.status
 const filterDescDate = (arr) => arr.sort((a, b) => b.status.block_time - a.status.block_time);
 const filterAscValue = (arr) => arr.sort((a, b) => a.value - b.value);
 const filterDescValue = (arr) => arr.sort((a, b) => b.value - a.value);
+const filterAscNum = (arr) => arr.sort((a, b) => a.num - b.num);
+const filterDescNum = (arr) => arr.sort((a, b) => b.num - a.num);
 
 const applyFilters = ({ ordinals, activeSort, sortAsc, keyword }) => {
     let filtered = !keyword.trim()
@@ -19,6 +21,8 @@ const applyFilters = ({ ordinals, activeSort, sortAsc, keyword }) => {
         : matchSorter(ordinals, keyword, { keys: ["inscriptionId", "key", "txid", (i) => `#${i.num}`] });
     if (activeSort === "value") {
         filtered = sortAsc ? filterAscValue(filtered) : filterDescValue(filtered);
+    } else if (activeSort === "num") {
+        filtered = sortAsc ? filterAscNum(filtered) : filterDescNum(filtered);
     } else {
         filtered = sortAsc ? filterAscDate(filtered) : filterDescDate(filtered);
     }

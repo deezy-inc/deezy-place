@@ -1,6 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES } from "@lib/constants";
+import { ASSUMED_TX_BYTES } from "@lib/constants";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
@@ -16,16 +16,6 @@ export const cloudfrontUrl = (utxo) => `https://d2v3k2do8kym1f.cloudfront.net/mi
 export const shortenStr = (str) => {
     if (!str) return "";
     return `${str.substring(0, 8)}...${str.substring(str.length - 8, str.length)}`;
-};
-
-export const getAddressInfo = (nostrPublicKey) => {
-    console.log(`Nostr pub: ${nostrPublicKey}`);
-    const pubkeyBuffer = Buffer.from(nostrPublicKey, "hex");
-    const addrInfo = bitcoin.payments.p2tr({
-        pubkey: pubkeyBuffer,
-        network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
-    });
-    return addrInfo;
 };
 
 export const connectWallet = async () => {

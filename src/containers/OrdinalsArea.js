@@ -16,6 +16,7 @@ import { getAddressUtxos } from "@utils/utxos";
 import axios from "axios";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
+import { TURBO_API } from "@lib/constants";
 
 const collectionAuthor = [
     {
@@ -52,19 +53,39 @@ const OrdinalsArea = ({ className, space }) => {
     useEffect(() => {
         const getInscriptions = async () => {
             setUtxosReady(false);
-            const { data } = await axios.get(`https://turbo.ordinalswallet.com/wallet/${nostrAddress}/inscriptions`);
+            const { data } = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
             const utxos = await getOwnedInscriptions(nostrAddress);
-            const matchedUtxos = utxos
-                .map((utxo) => {
-                    const ins = data.find((x) => x.id === utxo.key);
-                    if (ins) {
+            console.log(
+                "utxo",
+                utxos.find((y) => y.txid === "09014ca2ef2dddbc5fe784c4a249bf62630602c1bf4b06e60cad816611987a3c")
+            );
+            const matchedUtxos = data
+                .map(async (ins) => {
+                    const foundMatchingUtxo = utxos.find((x) => x.key === ins.id);
+                    if (foundMatchingUtxo) {
                         return {
-                            ...utxo,
+                            ...foundMatchingUtxo,
                             inscriptionId: ins.id,
                             ...ins,
                         };
                     }
-                    return undefined;
+                    const {
+                        data: { inscription },
+                    } = await axios.get(`${TURBO_API}/inscription/${ins.id}/outpoint`);
+                    const matchingUtxo = utxos.find((x) => x.txid === inscription.outpoint);
+                    console.log(
+                        "inscription outpoint",
+                        inscription.outpoint,
+                        "matching utxo",
+                        matchingUtxo,
+                        "utxo",
+                        utxos[0]
+                    );
+                    return {
+                        ...matchingUtxo,
+                        inscriptionId: ins.id,
+                        ...ins,
+                    };
                 })
                 .filter((x) => x);
             setOwnedUtxos(matchedUtxos);

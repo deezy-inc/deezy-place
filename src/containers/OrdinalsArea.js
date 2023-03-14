@@ -6,7 +6,6 @@
 import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
@@ -14,8 +13,7 @@ import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
-// Use this to fetch data from an API service
-const axios = require("axios");
+import axios from "axios";
 
 const collectionAuthor = [
     {
@@ -30,23 +28,8 @@ const collectionAuthor = [
 const getOwnedInscriptions = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
-    const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
-    console.log("all utxos", inscriptions);
-    SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
+    const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}i${utxo.vout}` }));
     return inscriptions;
-};
-
-const getInscriptionId = async (utxo) => {
-    const utxoKey = utxo.key;
-    const { data } = await axios.get(`/api/inscriptions/${utxoKey}`);
-    console.log("data", {
-        ...utxo,
-        inscriptionId: data.inscriptionId,
-    });
-    return {
-        ...utxo,
-        inscriptionId: data.inscriptionId,
-    };
 };
 
 const OrdinalsArea = ({ className, space }) => {
@@ -59,34 +42,28 @@ const OrdinalsArea = ({ className, space }) => {
         setRefreshHack(!refreshHack);
     };
 
-    const getDemoInscriptions = async () => {
-        const inscriptions = await axios.get(
-            "https://turbo.ordinalswallet.com/wallet/bc1p8l0pstx8umh6dx3e8vtw7sd3pspe9r0nh94v7ncwkqleljnr5zdqa3cvlm/inscriptions"
-        );
-        console.log("inscriptions", inscriptions);
-    }
-
     useEffect(() => {
-        const fetchByUtxos = async () => {
+        const getInscriptions = async () => {
             setUtxosReady(false);
-            const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
-            let count = 0;
-            const ownedInscriptionResults = await Promise.allSettled(
-                ownedInscriptions
-                    .map((utxo) => {
-                        if (utxo && count < 2) {
-                            count += 1;
-                            return getInscriptionId(utxo);
-                        }
-                    })
-                    .filter((x) => x)
-            );
-            console.log("owned", ownedInscriptionResults);
-            setOwnedUtxos(ownedInscriptionResults.map((utxo) => utxo.value));
+            const { data } = await axios.get(`https://turbo.ordinalswallet.com/wallet/${nostrAddress}/inscriptions`);
+            const utxos = await getOwnedInscriptions(nostrAddress);
+            const matchedUtxos = utxos
+                .map((utxo) => {
+                    const ins = data.find((x) => x.id === utxo.key);
+                    if (ins) {
+                        return {
+                            ...utxo,
+                            inscriptionId: ins.id,
+                            ...ins,
+                        };
+                    }
+                    return undefined;
+                })
+                .filter((x) => x);
+            setOwnedUtxos(matchedUtxos);
             setUtxosReady(true);
         };
-        fetchByUtxos();
-        getDemoInscriptions();
+        getInscriptions();
     }, [refreshHack, nostrAddress]);
 
     return (

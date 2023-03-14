@@ -31,6 +31,10 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
         }
 
         if (confirmed) {
+            // load image instead
+            if (/(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type)) {
+                return <img src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`} alt={utxo.txId} />;
+            }
             return (
                 <IframeWithLoader
                     id={`iframe-${utxo.inscriptionId}`}

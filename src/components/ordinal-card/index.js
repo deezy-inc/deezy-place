@@ -7,7 +7,7 @@ import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
-import { ORDINALS_EXPLORER_URL } from "@lib/constants";
+import { ORDINALS_EXPLORER_URL, ORDINALS_WALLET } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, cloudfrontUrl } from "@utils/crypto";
@@ -70,7 +70,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                         {Boolean(utxo.inscriptionId) && (
                             <Anchor
                                 className="logo-dark"
-                                path={`${ORDINALS_EXPLORER_URL}/inscription/${utxo.inscriptionId}`}
+                                path={`${ORDINALS_WALLET}/inscription/${utxo.inscriptionId}`}
                                 target="_blank"
                             >
                                 {shortenStr(utxo.inscriptionId)}

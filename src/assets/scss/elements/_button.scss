@@ -275,3 +275,17 @@ button {
         }
     }
 }
+
+.sort-button {
+    color: var(--color-body);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--color-primary);
+    }
+    border: none;
+    transition: 0.4s;
+}
+.sort-button.active {
+    color: var(--color-primary);
+}

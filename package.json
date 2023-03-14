@@ -17,6 +17,7 @@
         "copy-webpack-plugin": "^11.0.0",
         "ecpair": "^2.1.0",
         "framer-motion": "^9.0.3",
+        "match-sorter": "^6.3.1",
         "mdb-react-ui-kit": "^4.0.0",
         "netlify-plugin-ipx": "0.0.1",
         "next": "^13.1.6",

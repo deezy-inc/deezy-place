@@ -42,11 +42,15 @@ const getInscriptionData = async (utxo) => {
     const utxoKey = utxo.key;
     const prevInscriptionId = SessionStorage.get(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:${utxoKey}`);
     if (prevInscriptionId) return prevInscriptionId;
-    const res = await axios.get(`https://ordinals.com/output/${utxoKey}`);
-    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
+    const res = await fetch(`https://ordinals.com/output/${utxoKey}`, { fetchCache: "force-cache" }).then((response) =>
+        response.text()
+    );
+    const inscriptionId = res.match(/<a href=\/inscription\/(.*?)>/)?.[1];
     returnedUtxo.inscriptionId = inscriptionId;
 
-    const html = await fetch(`https://ordinals.com/inscription/${inscriptionId}`).then((response) => response.text());
+    const html = await fetch(`https://ordinals.com/inscription/${inscriptionId}`, { fetchCache: "force-cache" }).then(
+        (response) => response.text()
+    );
     const inscriptionNumber = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
     returnedUtxo.inscriptionNumber = inscriptionNumber;
     const contentType = html.match(/<dt>content type<\/dt>\s{3}<dd>(\S*)<\/dd>/)[1];

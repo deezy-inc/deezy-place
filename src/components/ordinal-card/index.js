@@ -31,6 +31,11 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
         }
 
         if (confirmed) {
+            let ordinalUrl = `${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`;
+            // load image instead
+            if (/(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type)) {
+                ordinalUrl = `${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`;
+            }
             return (
                 <IframeWithLoader
                     id={`iframe-${utxo.inscriptionId}`}
@@ -38,7 +43,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                     scrolling="no"
                     loading="lazy"
                     title={utxo.inscriptionId}
-                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
+                    src={ordinalUrl}
                 />
             );
         }

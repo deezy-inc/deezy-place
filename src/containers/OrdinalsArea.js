@@ -49,6 +49,8 @@ const getInscriptionData = async (utxo) => {
     const html = await fetch(`https://ordinals.com/inscription/${inscriptionId}`).then((response) => response.text());
     const inscriptionNumber = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
     returnedUtxo.inscriptionNumber = inscriptionNumber;
+    const contentType = html.match(/<dt>content type<\/dt>\s{3}<dd>(\S*)<\/dd>/)[1];
+    returnedUtxo.content_type = contentType;
 
     SessionStorage.set(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${utxoKey}`, inscriptionId);
 

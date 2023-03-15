@@ -9,6 +9,23 @@ export const IframeWithLoader = ({ src, title, width, height, ...props }) => {
         setLoading(false);
     };
 
+    let element = (
+        <iframe
+            src={src}
+            title={title}
+            width={width}
+            height={height}
+            onLoad={handleLoad}
+            style={{ visibility: loading ? "hidden" : "visible" }}
+            {...props}
+        />
+    );
+
+    // We load the content directly if the inscription is an image
+    if (src.includes("content")) {
+        element = <img src={src} alt={src.split(/[\s/]+/).pop()} onLoad={handleLoad} />;
+    }
+
     return (
         <div style={{ position: "relative", width, height }}>
             {loading && (
@@ -25,15 +42,7 @@ export const IframeWithLoader = ({ src, title, width, height, ...props }) => {
                     </div>
                 </div>
             )}
-            <iframe
-                src={src}
-                title={title}
-                width={width}
-                height={height}
-                onLoad={handleLoad}
-                style={{ visibility: loading ? "hidden" : "visible" }}
-                {...props}
-            />
+            {element}
         </div>
     );
 };

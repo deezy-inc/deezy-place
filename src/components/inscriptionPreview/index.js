@@ -30,6 +30,7 @@ export const InscriptionPreview = ({ utxo }) => {
                 loading="lazy"
                 title={utxo.inscriptionId}
                 onLoad={handleLoad}
+                src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
                 style={{ visibility: loading ? "hidden" : "visible" }}
             />
         );

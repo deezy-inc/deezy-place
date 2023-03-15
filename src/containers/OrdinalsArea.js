@@ -3,12 +3,11 @@
 /* eslint-disable no-extra-boolean-cast */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useState, useEffect, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 import SectionTitle from "@components/section-title";
-import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
@@ -17,20 +16,10 @@ import { getAddressUtxos } from "@utils/utxos";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { Subject } from "rxjs";
-import { scan, distinct } from "rxjs/operators";
-// import { scan } from "rxjs/operators";
-// Use this to fetch data from an API service
-const axios = require("axios");
+import InfiniteOrdinalsList from "@components/infinite-ordinal-list";
+import { delay } from "@utils/methods";
 
-const collectionAuthor = [
-    {
-        name: "Danny Deezy",
-        slug: "/deezy",
-        image: {
-            src: "/images/logo/nos-ft-logo.png",
-        },
-    },
-];
+const axios = require("axios");
 
 const getOwnedInscriptions = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
@@ -78,7 +67,7 @@ const getInscriptionData = async (utxo) => {
     return result;
 };
 
-const FETCH_SIZE = 1;
+const FETCH_SIZE = 10;
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [utxosReady, setUtxosReady] = useState(false);
@@ -92,6 +81,9 @@ const OrdinalsArea = ({ className, space }) => {
 
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
+    const loadedInscriptionsCount = useRef(0);
+    const start = useRef(0);
+    const [ownedInscriptions, setOwnedInscriptions] = useState([]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -104,33 +96,54 @@ const OrdinalsArea = ({ className, space }) => {
 
     useEffect(() => {
         const fetchByUtxos = async () => {
-            setUtxosReady(false);
-            const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
-
-            for (let i = 0; i < ownedInscriptions.length; i++) {
-                const inscription = await getInscriptionData(ownedInscriptions[i]);
-                addNewOpenOrder(inscription);
-
-                setUtxosReady(true);
-                // eslint-disable-next-line no-promise-executor-return
-                await new Promise((resolve) => setTimeout(resolve, 100));
-            }
+            const inscriptions = await getOwnedInscriptions(nostrAddress);
+            setOwnedInscriptions(inscriptions);
         };
-
         addSubscriptionRef.current = addOpenOrder$.current.subscribe((order) => {
             setOwnedUtxos((prev) => [...prev, order]);
             setFilteredOwnedUtxos((prev) => [...prev, order]);
         });
-
         fetchByUtxos();
     }, [nostrAddress]);
+
+    const loadInscriptions = useCallback(() => {
+        const fetchInscriptionData = async () => {
+            setUtxosReady(false);
+            const from = start.current;
+            const to = Math.min(ownedInscriptions.length, from + FETCH_SIZE);
+            try {
+                for (let i = from; i < to; i++) {
+                    const inscription = await getInscriptionData(ownedInscriptions[i]);
+                    addNewOpenOrder(inscription);
+                    await delay(100);
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                // We could improve the error handling
+                start.current = to;
+                loadedInscriptionsCount.current += to - from;
+                setUtxosReady(true);
+            }
+        };
+        fetchInscriptionData().catch(console.error);
+    }, [ownedInscriptions]);
+
+    useEffect(() => {
+        if (ownedInscriptions.length > 0) {
+            loadInscriptions();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ownedInscriptions]);
+
+    const isLoading = !utxosReady;
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
+                        <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={isLoading} />
                         <br />
                         <span>
                             <Image
@@ -249,25 +262,15 @@ const OrdinalsArea = ({ className, space }) => {
                 </div>
 
                 <div className="row g-5">
-                    {utxosReady && ownedUtxos.length > 0 && (
+                    {ownedUtxos.length > 0 && (
                         <>
-                            {filteredOwnedUtxos.map((inscription) => (
-                                <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                                    <OrdinalCard
-                                        overlay
-                                        price={{
-                                            amount: inscription.value.toLocaleString("en-US"),
-                                            currency: "Sats",
-                                        }}
-                                        type="send"
-                                        confirmed={inscription.status.confirmed}
-                                        date={inscription.status.block_time}
-                                        authors={collectionAuthor}
-                                        utxo={inscription}
-                                        onSale={handleRefreshHack}
-                                    />
-                                </div>
-                            ))}
+                            <InfiniteOrdinalsList
+                                isLoading={isLoading}
+                                items={filteredOwnedUtxos}
+                                canLoadMore={!isLoading && filteredOwnedUtxos.length < ownedInscriptions.length}
+                                next={loadInscriptions}
+                                onSale={handleRefreshHack}
+                            />
                             {filteredOwnedUtxos.length === 0 && (
                                 <div className="col-12">
                                     <div className="text-center">
@@ -278,7 +281,7 @@ const OrdinalsArea = ({ className, space }) => {
                         </>
                     )}
 
-                    {utxosReady && ownedUtxos.length === 0 && (
+                    {!isLoading && ownedUtxos.length === 0 && (
                         <div>
                             This address does not own anything yet..
                             <br />

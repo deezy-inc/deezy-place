@@ -164,7 +164,11 @@ const getQueryStringParam = function (paramName) {
     return new URL(window.location).searchParams.get(paramName);
 };
 
+// eslint-disable-next-line no-promise-executor-return
+const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
+
 module.exports = {
+    delay,
     slideUp,
     slideDown,
     slideToggle,

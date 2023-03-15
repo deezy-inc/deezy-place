@@ -29,6 +29,7 @@
         "react-bootstrap": "^2.4.0",
         "react-countdown": "^2.3.2",
         "react-dom": "^18.2.0",
+        "react-easy-infinite-scroll-hook": "^2.1.2",
         "react-icons": "^4.7.1",
         "react-loading-icons": "^1.1.0",
         "react-rotating-text": "^1.4.1",

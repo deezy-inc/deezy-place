@@ -18,6 +18,9 @@ import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { Subject } from "rxjs";
 import InfiniteOrdinalsList from "@components/infinite-ordinal-list";
 import { delay } from "@utils/methods";
+// import { scan } from "rxjs/operators";
+// Use this to fetch data from an API service
+const axios = require("axios");
 
 const axios = require("axios");
 
@@ -49,7 +52,6 @@ const getInscriptionNumberFromOrdinals = async (inscriptionId) => {
         LocalStorage.set(`${LocalStorageKeys.INSCRIPTION_NUMBER}:${inscriptionId}`, inscriptionNumber);
         return inscriptionNumber;
     }
-
     return undefined;
 };
 
@@ -58,7 +60,6 @@ const getInscriptionData = async (utxo) => {
     const inscriptionNumber =
         LocalStorage.get(`${LocalStorageKeys.INSCRIPTION_NUMBER}:${inscriptionId}`) ||
         (await getInscriptionNumberFromOrdinals(inscriptionId));
-
     const result = {
         ...utxo,
         inscriptionId,
@@ -68,6 +69,7 @@ const getInscriptionData = async (utxo) => {
 };
 
 const FETCH_SIZE = 10;
+
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [utxosReady, setUtxosReady] = useState(false);

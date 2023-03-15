@@ -7,16 +7,13 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // We use blockstream.info for mainnet because it has a higher rate limit than mempool.space (same API).
 const baseMempoolUrl = TESTNET ? "https://mempool.space/signet" : "https://blockstream.info";
 export const getAddressUtxos = async (address) => {
-    console.log(`Getting address utxos`);
-    // Some addresses have too many utxos and mempool.space throws an erorr. In this case we need to manually
-    // search through all transactions, find the outputs, and then remove the outputs that have been spent.
-    const outputs = []; // This tracks all outputs that have been seen on the address.
-    const spentOutpoints = new Set(); // This tracks all outputs that have been spent from this address.
-    let lastSeenTxId = null;
-    // We do one pass through to find all outputs and spent outputs.
-    while (true) {
-        // Short delay to help get around rate limits.
-        // eslint-disable-next-line no-await-in-loop
+    // console.log(`Getting address utxos`);
+    let utxos;
+    try {
+        // Most addresses have few enough utxos that we can fetch them all at once with this call.
+        const { data } = await axios.get(`${baseMempoolUrl}/api/address/${address}/utxo`);
+        utxos = data;
+    } catch (err) {
         await delay(100);
         // eslint-disable-next-line no-await-in-loop
         console.log(lastSeenTxId);

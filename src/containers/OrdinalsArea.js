@@ -36,6 +36,7 @@ const getSortedUtxos = async (nostrAddress) => {
 
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
+
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);

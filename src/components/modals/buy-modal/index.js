@@ -25,7 +25,7 @@ import { TailSpin } from "react-loading-icons";
 //     generatePSBTBuyingInscription,
 // } from "@utils/openOrdex";
 import { toast } from "react-toastify";
-import { InscriptionPreview } from "@components/inscriptionPreview";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 bitcoin.initEccLib(ecc);
 

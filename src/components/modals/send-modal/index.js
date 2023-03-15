@@ -14,7 +14,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { InscriptionPreview } from "@components/inscriptionPreview";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 const axios = require("axios");
 

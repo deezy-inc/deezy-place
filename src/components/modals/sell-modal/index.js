@@ -14,7 +14,7 @@ import WalletContext from "@context/wallet-context";
 import OpenOrdex from "@utils/openOrdexV3";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { InscriptionPreview } from "@components/inscriptionPreview";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 bitcoin.initEccLib(ecc);
 

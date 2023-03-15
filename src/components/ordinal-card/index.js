@@ -12,7 +12,7 @@ import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, cloudfrontUrl } from "@utils/crypto";
 import { TailSpin } from "react-loading-icons";
-import { InscriptionPreview } from "@components/inscriptionPreview";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,

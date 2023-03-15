@@ -54,44 +54,45 @@ const OrdinalsArea = ({ className, space }) => {
     useEffect(() => {
         const loadUtxos = async () => {
             setUtxosReady(false);
-            const { data: inscriptions } = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+
             const utxos = await getSortedUtxos(nostrAddress);
+            const inscriptions = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+
             const inscriptionsByUtxoKey = {};
-            let promises = [];
-            for (const ins of inscriptions) {
-                // eslint-disable-next-line no-inner-declarations
-                async function populateInscriptionsMap() {
-                    const {
-                        data: {
-                            inscription: { outpoint },
-                        },
-                    } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
-                    const rawVout = outpoint.slice(-8);
-                    const txid = outpoint
-                        .substring(0, outpoint.length - 8)
-                        .match(/[a-fA-F0-9]{2}/g)
-                        .reverse()
-                        .join("");
+            const batchPromises = [];
+            const populateInscriptionsMap = async (ins) => {
+                const {
+                    data: {
+                        inscription: { outpoint },
+                    },
+                } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
 
-                    // Create a buffer
-                    const buf = new ArrayBuffer(4);
-                    const view = new DataView(buf);
-                    // set bytes
-                    rawVout.match(/../g).forEach((b, i) => {
-                        view.setUint8(i, parseInt(b, 16));
-                    });
+                const rawVout = outpoint.slice(-8);
+                const txid = outpoint
+                    .substring(0, outpoint.length - 8)
+                    .match(/[a-fA-F0-9]{2}/g)
+                    .reverse()
+                    .join("");
 
-                    // get an int32 with little endian
-                    const vout = view.getInt32(0, 1);
-                    inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
-                }
-                promises.push(populateInscriptionsMap());
-                if (promises.length === 15) {
-                    await Promise.all(promises);
-                    promises = [];
+                const buf = new ArrayBuffer(4);
+                const view = new DataView(buf);
+                rawVout.match(/../g).forEach((b, i) => {
+                    view.setUint8(i, parseInt(b, 16));
+                });
+
+                const vout = view.getInt32(0, 1);
+                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+            };
+
+            for (const ins of inscriptions.data) {
+                batchPromises.push(populateInscriptionsMap(ins));
+                if (batchPromises.length === 15) {
+                    await Promise.allSettled(batchPromises);
+                    batchPromises.length = 0;
                 }
             }
-            await Promise.all(promises);
+            await Promise.allSettled(batchPromises);
+
             const utxosWithInscriptionData = utxos.map((utxo) => {
                 const ins = inscriptionsByUtxoKey[utxo.key];
                 return {
@@ -100,6 +101,7 @@ const OrdinalsArea = ({ className, space }) => {
                     ...ins,
                 };
             });
+
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);

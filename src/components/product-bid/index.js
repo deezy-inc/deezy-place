@@ -2,8 +2,8 @@
 import PropTypes from "prop-types";
 import { useState, useContext, useEffect } from "react";
 import SendModal from "@components/modals/send-modal";
-import SellModal from "@components/modals/sell-modal";
-import BuyModal from "@components/modals/buy-modal";
+// import SellModal from "@components/modals/sell-modal";
+// import BuyModal from "@components/modals/buy-modal";
 import WalletContext from "@context/wallet-context";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
@@ -62,9 +62,9 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
 
             <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
 
-            <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} />
+            {/* <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} /> */}
 
-            <BuyModal show={showBuyModal} handleModal={handleBuyModal} utxo={utxo} onSale={onSale} />
+            {/* <BuyModal show={showBuyModal} handleModal={handleBuyModal} utxo={utxo} onSale={onSale} /> */}
         </div>
     );
 };

@@ -202,6 +202,16 @@ body.modal-open {
         p {
             margin-bottom: 15px;
         }
+        .inscription-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+
+            img {
+                max-height: 300px;
+            }
+        }
         .placebid-form-box {
             h5 {
                 &.title {

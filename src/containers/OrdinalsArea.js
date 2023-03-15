@@ -6,7 +6,6 @@
 import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
@@ -14,10 +13,11 @@ import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
+import axios from "axios";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
-// Use this to fetch data from an API service
-const axios = require("axios");
+import { TURBO_API } from "@lib/constants";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 const collectionAuthor = [
     {
@@ -29,36 +29,15 @@ const collectionAuthor = [
     },
 ];
 
-const getOwnedInscriptions = async (nostrAddress) => {
+const getSortedUtxos = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
-    const inscriptions = sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
-    SessionStorage.set(SessionsStorageKeys.INSCRIPTIONS_OWNED, inscriptions);
-    return inscriptions;
-};
-
-const getInscriptionData = async (utxo) => {
-    const returnedUtxo = utxo;
-    const utxoKey = utxo.key;
-    const prevInscriptionId = SessionStorage.get(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:${utxoKey}`);
-    if (prevInscriptionId) return prevInscriptionId;
-    const res = await axios.get(`https://ordinals.com/output/${utxoKey}`);
-    const inscriptionId = res.data.match(/<a href=\/inscription\/(.*?)>/)?.[1];
-    returnedUtxo.inscriptionId = inscriptionId;
-
-    const html = await fetch(`https://ordinals.com/inscription/${inscriptionId}`).then((response) => response.text());
-    const inscriptionNumber = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
-    returnedUtxo.inscriptionNumber = inscriptionNumber;
-
-    SessionStorage.set(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${utxoKey}`, inscriptionId);
-
-    return {
-        ...returnedUtxo,
-    };
+    return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
 };
 
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
+
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
@@ -72,19 +51,76 @@ const OrdinalsArea = ({ className, space }) => {
         setRefreshHack(!refreshHack);
     };
 
+    const getOutpointFromCache = async (inscriptionId) => {
+        const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
+        const cachedOutpoint = await LocalStorage.get(key);
+        if (cachedOutpoint) {
+            return cachedOutpoint;
+        }
+
+        const {
+            data: {
+                inscription: { outpoint },
+            },
+        } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${inscriptionId}/outpoint`);
+
+        await LocalStorage.set(key, outpoint);
+
+        return outpoint;
+    };
+
     useEffect(() => {
-        const fetchByUtxos = async () => {
+        const loadUtxos = async () => {
             setUtxosReady(false);
-            const ownedInscriptions = await getOwnedInscriptions(nostrAddress);
-            setOwnedUtxos(ownedInscriptions);
-            setFilteredOwnedUtxos(ownedInscriptions);
-            const ownedInscriptionResults = await Promise.allSettled(
-                ownedInscriptions.map((utxo) => getInscriptionData(utxo))
-            );
-            setOwnedUtxos(ownedInscriptionResults.map((utxo) => utxo.value));
+
+            const utxos = await getSortedUtxos(nostrAddress);
+            const inscriptions = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+
+            const inscriptionsByUtxoKey = {};
+            const batchPromises = [];
+            const populateInscriptionsMap = async (ins) => {
+                const outpoint = await getOutpointFromCache(ins.id);
+
+                const rawVout = outpoint.slice(-8);
+                const txid = outpoint
+                    .substring(0, outpoint.length - 8)
+                    .match(/[a-fA-F0-9]{2}/g)
+                    .reverse()
+                    .join("");
+
+                const buf = new ArrayBuffer(4);
+                const view = new DataView(buf);
+                rawVout.match(/../g).forEach((b, i) => {
+                    view.setUint8(i, parseInt(b, 16));
+                });
+
+                const vout = view.getInt32(0, 1);
+                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+            };
+
+            for (const ins of inscriptions.data) {
+                batchPromises.push(populateInscriptionsMap(ins));
+                if (batchPromises.length === 15) {
+                    await Promise.allSettled(batchPromises);
+                    batchPromises.length = 0;
+                }
+            }
+            await Promise.allSettled(batchPromises);
+
+            const utxosWithInscriptionData = utxos.map((utxo) => {
+                const ins = inscriptionsByUtxoKey[utxo.key];
+                return {
+                    ...utxo,
+                    inscriptionId: ins?.id,
+                    ...ins,
+                };
+            });
+
+            setOwnedUtxos(utxosWithInscriptionData);
+            setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);
         };
-        fetchByUtxos();
+        loadUtxos();
     }, [refreshHack, nostrAddress]);
 
     return (
@@ -213,23 +249,26 @@ const OrdinalsArea = ({ className, space }) => {
                 <div className="row g-5">
                     {utxosReady && ownedUtxos.length > 0 && (
                         <>
-                            {filteredOwnedUtxos.map((inscription) => (
-                                <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                                    <OrdinalCard
-                                        overlay
-                                        price={{
-                                            amount: inscription.value.toLocaleString("en-US"),
-                                            currency: "Sats",
-                                        }}
-                                        type="send"
-                                        confirmed={inscription.status.confirmed}
-                                        date={inscription.status.block_time}
-                                        authors={collectionAuthor}
-                                        utxo={inscription}
-                                        onSale={handleRefreshHack}
-                                    />
-                                </div>
-                            ))}
+                            {filteredOwnedUtxos.map(
+                                (inscription) =>
+                                    inscription.inscriptionId && (
+                                        <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                                            <OrdinalCard
+                                                overlay
+                                                price={{
+                                                    amount: inscription.value.toLocaleString("en-US"),
+                                                    currency: "Sats",
+                                                }}
+                                                type="send"
+                                                confirmed={inscription.status.confirmed}
+                                                date={inscription.status.block_time}
+                                                authors={collectionAuthor}
+                                                utxo={inscription}
+                                                onSale={handleRefreshHack}
+                                            />
+                                        </div>
+                                    )
+                            )}
                             {filteredOwnedUtxos.length === 0 && (
                                 <div className="col-12">
                                     <div className="text-center">

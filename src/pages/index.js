@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
-
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
@@ -37,7 +36,6 @@ const App = () => {
 
     useEffect(() => {
         if (!nostrPublicKey) return;
-
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
     }, [nostrPublicKey]);

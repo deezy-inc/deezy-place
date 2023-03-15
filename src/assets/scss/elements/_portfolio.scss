@@ -361,6 +361,13 @@
 .product-style-one {
     .card-thumbnail {
         position: relative;
+        background-color: #131516;
+        img {
+            height: 150px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
         .countdown {
             position: absolute;
             display: flex;

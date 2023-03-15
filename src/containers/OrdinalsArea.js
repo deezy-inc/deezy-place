@@ -17,6 +17,7 @@ import axios from "axios";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { TURBO_API } from "@lib/constants";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 const collectionAuthor = [
     {
@@ -50,7 +51,23 @@ const OrdinalsArea = ({ className, space }) => {
         setRefreshHack(!refreshHack);
     };
 
-    // here matching to the utxo
+    const getOutpointFromCache = async (inscriptionId) => {
+        const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
+        const cachedOutpoint = await LocalStorage.get(key);
+        if (cachedOutpoint) {
+            return cachedOutpoint;
+        }
+
+        const {
+            data: {
+                inscription: { outpoint },
+            },
+        } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${inscriptionId}/outpoint`);
+
+        await LocalStorage.set(key, outpoint);
+
+        return outpoint;
+    };
 
     useEffect(() => {
         const loadUtxos = async () => {
@@ -62,11 +79,7 @@ const OrdinalsArea = ({ className, space }) => {
             const inscriptionsByUtxoKey = {};
             const batchPromises = [];
             const populateInscriptionsMap = async (ins) => {
-                const {
-                    data: {
-                        inscription: { outpoint },
-                    },
-                } = await axios.get(`https://turbo.ordinalswallet.com/inscription/${ins.id}/outpoint`);
+                const outpoint = await getOutpointFromCache(ins.id);
 
                 const rawVout = outpoint.slice(-8);
                 const txid = outpoint

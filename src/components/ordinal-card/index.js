@@ -7,12 +7,12 @@ import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
-import { ORDINALS_EXPLORER_URL, ORDINALS_WALLET } from "@lib/constants";
+import { ORDINALS_WALLET } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, cloudfrontUrl } from "@utils/crypto";
 import { TailSpin } from "react-loading-icons";
-import { IframeWithLoader } from "@components/iframe";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
@@ -21,38 +21,11 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
 
-    const renderImage = () => {
-        if (confirmed && !utxo.inscriptionId) {
-            return (
-                <div className="ordinal-loader">
-                    <TailSpin stroke="#fec823" speed={0.75} />
-                </div>
-            );
-        }
-
-        if (confirmed) {
-            // load image instead
-            if (/(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type)) {
-                return <img src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`} alt={utxo.txId} />;
-            }
-            return (
-                <IframeWithLoader
-                    id={`iframe-${utxo.inscriptionId}`}
-                    sandbox="allow-scripts allow-same-origin"
-                    scrolling="no"
-                    loading="lazy"
-                    title={utxo.inscriptionId}
-                    src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
-                />
-            );
-        }
-
-        return <Image src={cloudfrontUrl(utxo)} alt={utxo.txId} width={533} height={533} />;
-    };
-
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
-            <div className="card-thumbnail">{renderImage()}</div>
+            <div className="card-thumbnail">
+                <InscriptionPreview utxo={utxo} />
+            </div>
             <div className="inscription-details-area">
                 <div className="inscription-number">#{utxo.num}</div>
             </div>

@@ -1,16 +1,14 @@
-const SessionsStorageKeys = {
-    NOSTR_PUBLIC_KEY: "NOSTR_PUBLIC_KEY",
-    INSCRIPTIONS_ON_SALE: "INSCRIPTIONS_ON_SALE",
-    INSCRIPTIONS_OWNED: "INSCRIPTIONS_OWNED",
+const LocalStorageKeys = {
+    INSCRIPTIONS_OUTPOINT: "INSCRIPTIONS_OUTPOINT",
 };
 
-const SessionStorage = {
+const LocalStorage = {
     set: (id, data) => {
         if (typeof window === "undefined") {
             return undefined;
         }
 
-        window.sessionStorage.setItem(id, JSON.stringify(data));
+        window.localStorage.setItem(id, JSON.stringify(data));
         return undefined;
     },
     get: (id) => {
@@ -18,7 +16,7 @@ const SessionStorage = {
             return undefined;
         }
 
-        const value = window.sessionStorage.getItem(id);
+        const value = window.localStorage.getItem(id);
 
         if (!value || value === "undefined") {
             return undefined;
@@ -31,16 +29,16 @@ const SessionStorage = {
             return undefined;
         }
 
-        return window.sessionStorage.removeItem(id);
+        return window.localStorage.removeItem(id);
     },
     clear: () => {
         if (typeof window === "undefined") {
             return undefined;
         }
 
-        return window.sessionStorage.clear();
+        return window.localStorage.clear();
     },
 };
 
-export default SessionStorage;
-export { SessionsStorageKeys };
+export default LocalStorage;
+export { LocalStorageKeys };

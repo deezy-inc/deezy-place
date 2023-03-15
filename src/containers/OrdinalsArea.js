@@ -35,7 +35,16 @@ const OrdinalsArea = ({ className, space }) => {
 
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
-    const { utxosReady, ownedUtxos, filteredOwnedUtxos, setFilteredOwnedUtxos } = useOrdinals({ nostrAddress });
+    const {
+        utxosReady,
+        ownedUtxos,
+        filteredOwnedUtxos,
+        setFilteredOwnedUtxos,
+        ownedInscriptions,
+        loadMoreInscriptions,
+    } = useOrdinals({
+        nostrAddress,
+    });
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -173,7 +182,7 @@ const OrdinalsArea = ({ className, space }) => {
                             isLoading={isLoading}
                             items={filteredOwnedUtxos}
                             canLoadMore={!isLoading && filteredOwnedUtxos.length < ownedInscriptions.length}
-                            next={loadInscriptions}
+                            next={loadMoreInscriptions}
                             onSale={handleRefreshHack}
                         />
                         {filteredOwnedUtxos.length === 0 && (

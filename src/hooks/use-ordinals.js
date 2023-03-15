@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAddressUtxos } from "@utils/utxos";
 import { TURBO_API } from "@lib/constants";
 const axios = require("axios");
@@ -13,12 +13,20 @@ function useOrdinals({ nostrAddress }) {
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [utxosReady, setUtxosReady] = useState(false);
     const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
+    const loadedInscriptionsCount = useRef(0);
+    const start = useRef(0);
+    const [ownedInscriptions, setOwnedInscriptions] = useState([]);
+
+    const loadMoreInscriptions = () => {
+        console.log("loadMoreInscriptions");
+    };
 
     const loadUtxos = async () => {
         setUtxosReady(false);
 
         const utxos = await getSortedUtxos(nostrAddress);
         const inscriptions = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+        setOwnedInscriptions(inscriptions);
 
         const inscriptionsByUtxoKey = {};
         const batchPromises = [];
@@ -69,7 +77,15 @@ function useOrdinals({ nostrAddress }) {
         loadUtxos();
     }, [nostrAddress]);
 
-    return { ownedUtxos, fetchOwnedUtxos: loadUtxos, filteredOwnedUtxos, utxosReady, setFilteredOwnedUtxos };
+    return {
+        ownedUtxos,
+        fetchOwnedUtxos: loadUtxos,
+        filteredOwnedUtxos,
+        utxosReady,
+        setFilteredOwnedUtxos,
+        ownedInscriptions,
+        loadMoreInscriptions,
+    };
 }
 
 export default useOrdinals;

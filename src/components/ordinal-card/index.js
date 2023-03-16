@@ -2,7 +2,6 @@
 import { useContext } from "react";
 import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
-import Image from "next/image";
 import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
@@ -10,8 +9,7 @@ import ProductBid from "@components/product-bid";
 import { ORDINALS_WALLET } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
-import { shortenStr, cloudfrontUrl } from "@utils/crypto";
-import { TailSpin } from "react-loading-icons";
+import { shortenStr } from "@utils/crypto";
 import { InscriptionPreview } from "@components/inscription-preview";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {

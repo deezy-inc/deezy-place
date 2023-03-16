@@ -39,6 +39,7 @@
         "react-slide-fade-in": "^1.0.7",
         "react-social-icons": "^5.15.0",
         "react-toastify": "^9.1.1",
+        "react-use": "^17.4.0",
         "react-useinterval": "^1.0.2",
         "redis": "^4.6.5",
         "sal.js": "^0.8.5",

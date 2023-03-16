@@ -3,55 +3,63 @@
 /* eslint-disable no-extra-boolean-cast */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
-import { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
-import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { useOrdinals } from "@hooks";
 import InfiniteOrdinalsList from "@components/infinite-ordinal-list";
 
-const collectionAuthor = [
-    {
-        name: "Danny Deezy",
-        slug: "/deezy",
-        image: {
-            src: "/images/logo/nos-ft-logo.png",
-        },
-    },
-];
-
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
-
-    const [refreshHack, setRefreshHack] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-
-    const [activeSort, setActiveSort] = useState("date");
-    const [sortAsc, setSortAsc] = useState(false);
     const {
-        utxosReady,
-        ownedUtxos,
-        filteredOwnedUtxos,
-        setFilteredOwnedUtxos,
-        ownedInscriptions,
-        loadMoreInscriptions,
+        ordinals,
+        isLoading,
+        loadMore,
+        canLoadMore,
+        setKeyword,
+        keyword,
+        activeSort,
+        setActiveSort,
+        sortAsc,
+        setSortAsc,
+        total,
+        fetchOrdinals,
     } = useOrdinals({
         nostrAddress,
     });
 
     const handleRefreshHack = () => {
-        setRefreshHack(!refreshHack);
+        fetchOrdinals();
     };
 
-    console.log("filteredOwnedUtxos", filteredOwnedUtxos);
-    const isLoading = !utxosReady;
+    const onFilterByValue = () => {
+        if (activeSort === "value") {
+            setSortAsc(!sortAsc);
+            return;
+        }
+        setActiveSort("value");
+    };
+    const onFilterByDate = () => {
+        if (activeSort === "date") {
+            setSortAsc(!sortAsc);
+            return;
+        }
+        setActiveSort("date");
+    };
+    const onSearchByKeyword = (event) => {
+        setKeyword(event.target.value);
+    };
+
+    const onCopyAddress = () => {
+        navigator.clipboard.writeText(nostrAddress);
+        toast("Receive Address copied to clipboard!");
+    };
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
@@ -69,40 +77,14 @@ const OrdinalsArea = ({ className, space }) => {
                                 className="mb-1"
                                 priority
                             />
-                            <button
-                                type="button"
-                                className="btn-transparent"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(nostrAddress);
-                                    toast("Receive Address copied to clipboard!");
-                                }}
-                            >
+                            <button type="button" className="btn-transparent" onClick={onCopyAddress}>
                                 {" "}
                                 {shortenStr(nostrAddress)}
                             </button>
                         </span>
                     </div>
                     <div className="col-lg-4 col-md-4 col-sm-4 col-8">
-                        <input
-                            placeholder="Search"
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                const filteredUtxos = matchSorter(ownedUtxos, e.target.value, {
-                                    keys: [
-                                        "inscriptionId",
-                                        "key",
-                                        "txid",
-                                        "vout",
-                                        "value",
-                                        "status.block_time",
-                                        "status.block_height",
-                                        "status.confirmed",
-                                    ],
-                                });
-                                setFilteredOwnedUtxos(filteredUtxos);
-                            }}
-                        />
+                        <input placeholder="Search" value={keyword} onChange={onSearchByKeyword} />
                     </div>
                     <div className="col-lg-1 col-md-1 col-sm-1 col-2">
                         <button
@@ -111,29 +93,7 @@ const OrdinalsArea = ({ className, space }) => {
                                 "sort-button d-flex flex-row justify-content-center",
                                 activeSort === "date" && "active"
                             )}
-                            onClick={() => {
-                                if (activeSort === "date") {
-                                    setFilteredOwnedUtxos(
-                                        filteredOwnedUtxos.sort((a, b) => {
-                                            const res = !sortAsc
-                                                ? a.status.block_time - b.status.block_time
-                                                : b.status.block_time - a.status.block_time;
-                                            return res;
-                                        })
-                                    );
-                                    setSortAsc(!sortAsc);
-                                    return;
-                                }
-                                setFilteredOwnedUtxos(
-                                    filteredOwnedUtxos.sort((a, b) => {
-                                        const res = sortAsc
-                                            ? a.status.block_time - b.status.block_time
-                                            : b.status.block_time - a.status.block_time;
-                                        return res;
-                                    })
-                                );
-                                setActiveSort("date");
-                            }}
+                            onClick={onFilterByDate}
                         >
                             <div>Date</div>
                             {activeSort === "date" && (
@@ -148,25 +108,7 @@ const OrdinalsArea = ({ className, space }) => {
                                 "sort-button d-flex flex-row justify-content-center",
                                 activeSort === "value" && "active"
                             )}
-                            onClick={() => {
-                                if (activeSort === "value") {
-                                    setFilteredOwnedUtxos(
-                                        filteredOwnedUtxos.sort((a, b) => {
-                                            const res = !sortAsc ? a.value - b.value : b.value - a.value;
-                                            return res;
-                                        })
-                                    );
-                                    setSortAsc(!sortAsc);
-                                    return;
-                                }
-                                setFilteredOwnedUtxos(
-                                    filteredOwnedUtxos.sort((a, b) => {
-                                        const res = sortAsc ? a.value - b.value : b.value - a.value;
-                                        return res;
-                                    })
-                                );
-                                setActiveSort("value");
-                            }}
+                            onClick={onFilterByValue}
                         >
                             <div>Value</div>
                             {activeSort === "value" && (
@@ -177,26 +119,18 @@ const OrdinalsArea = ({ className, space }) => {
                 </div>
 
                 <div className="row g-5">
-                    <>
-                        <InfiniteOrdinalsList
-                            isLoading={isLoading}
-                            items={filteredOwnedUtxos}
-                            canLoadMore={!isLoading && filteredOwnedUtxos.length < ownedInscriptions.length}
-                            next={loadMoreInscriptions}
-                            onSale={handleRefreshHack}
-                        />
-                        {filteredOwnedUtxos.length === 0 && (
-                            <div className="col-12">
-                                <div className="text-center">
-                                    <h3>No results found</h3>
-                                </div>
-                            </div>
-                        )}
-                    </>
-
-                    {utxosReady && ownedUtxos.length === 0 && (
+                    <InfiniteOrdinalsList
+                        isLoading={isLoading}
+                        items={ordinals}
+                        canLoadMore={canLoadMore}
+                        next={loadMore}
+                        onSale={handleRefreshHack}
+                    />
+                    {!isLoading && ordinals.length === 0 && (
                         <div>
-                            This address does not own anything yet..
+                            {total === ordinals.length
+                                ? "This address does not own anything yet..."
+                                : "No results found..."}
                             <br />
                         </div>
                     )}

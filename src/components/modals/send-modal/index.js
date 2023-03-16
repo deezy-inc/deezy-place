@@ -78,7 +78,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         console.log(hex);
         const res = await axios.post(`https://mempool.space/api/tx`, hex).catch((err) => {
             console.error(err);
-            alert(err);
+            alert(JSON.stringify(err, null, 2));
             return null;
         });
         if (!res) return false;

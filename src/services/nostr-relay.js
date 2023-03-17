@@ -1,5 +1,5 @@
 import { SimplePool, getEventHash } from "nostr-tools";
-import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
+import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
 import { OpenOrdex } from "@utils/openOrdex";
@@ -29,9 +29,10 @@ class NostrRelay {
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
                         const order = await OpenOrdex.getProcessedOrder(event);
-                        if (order) observer.next(order);
+                        if (order) observer.next({ type: "order", order });
                     },
                     () => {
+                        observer.next({ type: "eose", order: null });
                         console.log(`eose`);
                     }
                 );

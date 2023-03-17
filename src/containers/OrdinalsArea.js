@@ -14,18 +14,9 @@ import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
+import { COLLECTION_AUTHOR } from "@lib/constants";
 // Use this to fetch data from an API service
 const axios = require("axios");
-
-const collectionAuthor = [
-    {
-        name: "Danny Deezy",
-        slug: "/deezy",
-        image: {
-            src: "/images/logo/nos-ft-logo.png",
-        },
-    },
-];
 
 const getOwnedInscriptions = async (nostrAddress) => {
     const utxos = await getAddressUtxos(nostrAddress);
@@ -119,7 +110,7 @@ const OrdinalsArea = ({ className, space }) => {
                                         type="send"
                                         confirmed={inscription.status.confirmed}
                                         date={inscription.status.block_time}
-                                        authors={collectionAuthor}
+                                        authors={COLLECTION_AUTHOR}
                                         utxo={inscription}
                                         onSale={handleRefreshHack}
                                     />

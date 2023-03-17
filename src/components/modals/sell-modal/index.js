@@ -6,7 +6,7 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, ORDINALS_EXPLORER_URL, NOSTR_SELL_KIND_INSCRIPTION } from "@lib/constants.config";
+import { TESTNET, ORDINALS_EXPLORER_URL, NOSTR_SELL_KIND_INSCRIPTION } from "@lib/constants";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";

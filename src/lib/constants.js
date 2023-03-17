@@ -22,17 +22,12 @@ export const MEMPOOL_BASE_URL = IS_PRODUCTION ? "https://mempool.space" : "https
 
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 
-const config = {
-    NOSTR_RELAY_URL,
-    NOSTR_KIND_INSCRIPTION,
-    NOSTR_SELL_KIND_INSCRIPTION,
-    INSCRIPTION_SEARCH_DEPTH,
-    GITHUB_URL,
-    DEFAULT_FEE_RATE,
-    SENDS_ENABLED,
-    TESTNET,
-    ASSUMED_TX_BYTES,
-    RELAYS,
-    ORDINALS_EXPLORER_URL,
-    BITCOIN_PRICE_API_URL,
-};
+export const COLLECTION_AUTHOR = [
+    {
+        name: "Danny Deezy",
+        slug: "/deezy",
+        image: {
+            src: "/images/logo/nos-ft-logo.png",
+        },
+    },
+];

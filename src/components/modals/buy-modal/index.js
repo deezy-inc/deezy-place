@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { ORDINALS_EXPLORER_URL } from "@lib/constants.config";
+import { ORDINALS_EXPLORER_URL } from "@lib/constants";
 import { shortenStr } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";

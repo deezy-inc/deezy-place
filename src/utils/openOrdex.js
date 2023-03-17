@@ -2,7 +2,7 @@
 // we should try to keep it as close to the original as possible, even though, ideally,
 // we would use the original package if we can make it a library.
 /* eslint-disable */
-import { IS_PRODUCTION, NOSTR_RELAY_URL, NOSTR_KIND_INSCRIPTION, MEMPOOL_BASE_URL } from "@lib/constants.config";
+import { IS_PRODUCTION, NOSTR_RELAY_URL, NOSTR_KIND_INSCRIPTION, MEMPOOL_BASE_URL } from "@lib/constants";
 import { getAddressInfo, toXOnly } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
 import { relayInit, getEventHash } from "nostr-tools";

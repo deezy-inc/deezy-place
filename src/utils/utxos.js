@@ -1,4 +1,4 @@
-import { TESTNET } from "@lib/constants.config";
+import { TESTNET } from "@lib/constants";
 
 const axios = require("axios");
 

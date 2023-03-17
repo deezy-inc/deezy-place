@@ -32,6 +32,7 @@ const OrdinalsArea = ({ className, space }) => {
         refetchOrdinals,
     } = useOrdinals({
         nostrAddress,
+        loadAll: true,
     });
 
     const handleRefreshHack = () => {

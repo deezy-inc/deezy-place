@@ -15,12 +15,15 @@
         "buffer": "^6.0.3",
         "clsx": "^1.2.1",
         "copy-webpack-plugin": "^11.0.0",
+        "ecc": "^0.0.2",
         "ecpair": "^2.1.0",
+        "ethers": "^5.7.2",
         "framer-motion": "^9.0.3",
         "match-sorter": "^6.3.1",
         "mdb-react-ui-kit": "^4.0.0",
         "netlify-plugin-ipx": "0.0.1",
         "next": "^13.1.6",
+        "next-auth": "^4.20.1",
         "next-themes": "^0.1.1",
         "node-polyfill-webpack-plugin": "^2.0.0",
         "nostr-tools": "^1.6.0",
@@ -44,7 +47,9 @@
         "redis": "^4.6.5",
         "sal.js": "^0.8.5",
         "sharp": "^0.31.3",
-        "tiny-secp256k1": "^2.2.1"
+        "tiny-secp256k1": "^2.2.1",
+        "wagmi": "^0.12.2",
+        "web3": "^1.8.2"
     },
     "scripts": {
         "dev": "next dev",

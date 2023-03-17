@@ -5,9 +5,21 @@ import sal from "sal.js";
 import { ThemeProvider } from "next-themes";
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
+import { createClient, configureChains, WagmiConfig } from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+import { SessionProvider } from "next-auth/react";
+import { mainnet } from "wagmi/chains";
 
 import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
+
+const { provider, webSocketProvider } = configureChains([mainnet], [publicProvider()]);
+
+const client = createClient({
+    provider,
+    webSocketProvider,
+    autoConnect: true,
+});
 
 const MyApp = ({ Component, pageProps }) => {
     const router = useRouter();
@@ -23,7 +35,11 @@ const MyApp = ({ Component, pageProps }) => {
     });
     return (
         <ThemeProvider defaultTheme="dark">
-            <Component {...pageProps} />
+            <WagmiConfig client={client}>
+                <SessionProvider session={pageProps.session} refetchInterval={0}>
+                    <Component {...pageProps} />
+                </SessionProvider>
+            </WagmiConfig>
         </ThemeProvider>
     );
 };
@@ -32,6 +48,7 @@ MyApp.propTypes = {
     Component: PropTypes.elementType,
     pageProps: PropTypes.shape({
         className: PropTypes.string,
+        session: PropTypes.string,
     }),
 };
 

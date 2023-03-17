@@ -30,6 +30,7 @@
         "react-countdown": "^2.3.2",
         "react-dom": "^18.2.0",
         "react-icons": "^4.7.1",
+        "react-intersection-observer-hook": "^2.1.1",
         "react-loading-icons": "^1.1.0",
         "react-rotating-text": "^1.4.1",
         "react-scripts": "^5.0.1",
@@ -38,6 +39,7 @@
         "react-slide-fade-in": "^1.0.7",
         "react-social-icons": "^5.15.0",
         "react-toastify": "^9.1.1",
+        "react-use": "^17.4.0",
         "react-useinterval": "^1.0.2",
         "redis": "^4.6.5",
         "sal.js": "^0.8.5",
@@ -65,7 +67,7 @@
             "last 1 safari version"
         ]
     },
-    "description": "A simple [create-react-app](CRA-README.md) setup, showcasing one of the lastest React-Bootstrap components!",
+    "description": "Nosft",
     "main": "index.js",
     "keywords": [],
     "author": "",

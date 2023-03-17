@@ -10,8 +10,6 @@ import { deepClone } from "@utils/methods";
 import OpenOrdex from "@utils/openOrdexV3";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import WalletContext from "@context/wallet-context";
-// Use this to fetch data from an API service
-const axios = require("axios");
 
 const collectionAuthor = [
     {

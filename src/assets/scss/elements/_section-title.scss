@@ -3,8 +3,12 @@
 --------------------------*/
 .section-title {
     display: flex;
-
+    align-items: baseline;
     h3 {
-        margin-right: 18px;
+        margin-right: 4px;
     }
+}
+
+.ordinals-counter {
+    font-size: 12px;
 }

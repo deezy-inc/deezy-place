@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 import { InscriptionPreview } from "@components/inscription-preview";
 
-const axios = require("axios");
+import axios from "axios";
 
 bitcoin.initEccLib(ecc);
 

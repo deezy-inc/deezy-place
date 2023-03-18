@@ -1,11 +1,14 @@
+/* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL } from "@lib/constants";
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
+import { ECPairFactory } from "ecpair";
 
 bitcoin.initEccLib(ecc);
 const bip32 = BIP32Factory(ecc);
+const ECPair = ECPairFactory(ecc);
 
 export const outputValue = (currentUtxo, sendFeeRate) => currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 
@@ -40,8 +43,6 @@ const TAPROOT_MESSAGE =
     // will switch to nosft.xyz once sends are implemented
     "Sign this message to generate your Bitcoin Taproot key. This key will be used for your generative.xyz transactions.";
 
-const getBitcoinKeySignContent = (message) => Buffer.from(message);
-
 export const connectWallet = async () => {
     const { ethereum } = window;
 
@@ -52,7 +53,7 @@ export const connectWallet = async () => {
             ethAddress = ethereum.selectedAddress;
         }
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const toSign = `0x${getBitcoinKeySignContent(TAPROOT_MESSAGE).toString("hex")}`;
+        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE).toString("hex")}`;
         const signature = await provider.send("personal_sign", [toSign, ethAddress]);
         const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
         const root = bip32.fromSeed(Buffer.from(seed));
@@ -89,3 +90,55 @@ export const fetchBitcoinPrice = async () =>
     fetch(BITCOIN_PRICE_API_URL)
         .then((response) => response.json())
         .then((data) => data.USD.last);
+
+export function tapTweakHash(pubKey, h) {
+    return bitcoin.crypto.taggedHash("TapTweak", Buffer.concat(h ? [pubKey, h] : [pubKey]));
+}
+
+export function tweakSigner(signer) {
+    function _interopNamespace(e) {
+        const n = Object.create(null);
+        if (e && e.__esModule) return e;
+        if (e) {
+            Object.keys(e).forEach(function (k) {
+                if (k !== "default") {
+                    const d = Object.getOwnPropertyDescriptor(e, k);
+                    Object.defineProperty(
+                        n,
+                        k,
+                        d.get
+                            ? d
+                            : {
+                                enumerable: true,
+                                get: function () {
+                                    return e[k];
+                                  }
+                    });
+                }
+            });
+        }
+        n["default"] = e;
+        return Object.freeze(n);
+    }
+
+    var ecc__namespace = /*#__PURE__*/_interopNamespace(ecc);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    let privateKey = signer.privateKey;
+    if (!signer.privateKey) {
+        throw new Error("Private key is required for tweaking signer!");
+    }
+    if (signer.publicKey[0] === 3) {
+        privateKey = ecc__namespace.privateNegate(privateKey);
+    }
+    const tweakedPrivateKey = ecc__namespace.privateAdd(
+        privateKey,
+        tapTweakHash(toXOnly(signer.publicKey), bitcoin.networks.bitcoin.tweakHash)
+    );
+    if (!tweakedPrivateKey) {
+        throw new Error("Invalid tweaked private key!");
+    }
+    return ECPair.fromPrivateKey(Buffer.from(tweakedPrivateKey), {
+        network: bitcoin.networks.bitcoin,
+    });
+}

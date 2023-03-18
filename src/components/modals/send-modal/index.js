@@ -6,8 +6,8 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE, ORDINALS_EXPLORER_URL } from "@lib/constants";
-import { shortenStr, outputValue, getAddressInfo } from "@utils/crypto";
+import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants";
+import { shortenStr, outputValue, getAddressInfo, tweakSigner, connectWallet } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
@@ -15,10 +15,16 @@ import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 import { InscriptionPreview } from "@components/inscription-preview";
+import BIP32Factory from "bip32";
+import { ethers } from "ethers";
+import { ECPairFactory } from "ecpair";
+
+const ECPair = ECPairFactory(ecc);
 
 import axios from "axios";
 
 bitcoin.initEccLib(ecc);
+const bip32 = BIP32Factory(ecc);
 
 const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
@@ -39,12 +45,38 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         return key.length === 33 ? key.slice(1, 33) : key;
     }
 
+    // sign message with first sign transaction
+    const TAPROOT_MESSAGE =
+        // will switch to nosft.xyz once sends are implemented
+        "Sign this message to generate your Bitcoin Taproot key. This key will be used for your generative.xyz transactions.";
+
     async function sendUtxo() {
         const inputAddressInfo = getAddressInfo(nostrPublicKey);
         const psbt = new bitcoin.Psbt({
             network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
         });
-        const publicKey = Buffer.from(await window.nostr.getPublicKey(), "hex");
+        const { ethereum } = window;
+        const ethAddress = ethereum.selectedAddress;
+        let publicKey = "";
+        let tweakedSigner = "";
+
+        if (ethAddress) {
+            const provider = new ethers.providers.Web3Provider(ethereum);
+            const toSign = `0x${Buffer.from(TAPROOT_MESSAGE).toString("hex")}`;
+            const signature = await provider.send("personal_sign", [toSign, ethAddress]);
+            const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
+            const root = bip32.fromSeed(Buffer.from(seed));
+            const defaultPath = "m/86'/0'/0'/0/0";
+            const taprootChild = root.derivePath(defaultPath);
+            const taprootAddress = bitcoin.payments.p2tr({
+                pubkey: toXOnly(taprootChild.publicKey),
+            });
+            const keyPair = ECPair.fromPrivateKey(taprootChild.privateKey);
+            publicKey = taprootAddress.pubkey;
+            tweakedSigner = tweakSigner(keyPair);
+        } else {
+            publicKey = Buffer.from(await window.nostr.getPublicKey(), "hex");
+        }
 
         const inputParams = {
             hash: utxo.txid,
@@ -60,22 +92,26 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             address: destinationBtcAddress,
             value: outputValue(utxo, sendFeeRate),
         });
-        const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
-            0,
-            [inputAddressInfo.output],
-            [utxo.value],
-            bitcoin.Transaction.SIGHASH_DEFAULT
-        );
 
-        const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
-        psbt.updateInput(0, {
-            tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
-        });
+        if (ethAddress) {
+            psbt.signInput(0, tweakedSigner);
+        } else {
+            const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+                0,
+                [inputAddressInfo.output],
+                [utxo.value],
+                bitcoin.Transaction.SIGHASH_DEFAULT
+            );
+
+            const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
+            psbt.updateInput(0, {
+                tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+            });
+        }
         psbt.finalizeAllInputs();
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
         const fullTx = bitcoin.Transaction.fromHex(hex);
-        console.log(hex);
         const res = await axios.post(`https://mempool.space/api/tx`, hex).catch((err) => {
             console.error(err);
             alert(JSON.stringify(err, null, 2));

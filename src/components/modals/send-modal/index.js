@@ -14,7 +14,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { IframeWithLoader } from "@components/iframe";
+import { InscriptionPreview } from "@components/inscription-preview";
 
 const axios = require("axios");
 
@@ -78,7 +78,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         console.log(hex);
         const res = await axios.post(`https://mempool.space/api/tx`, hex).catch((err) => {
             console.error(err);
-            alert(err);
+            alert(JSON.stringify(err, null, 2));
             return null;
         });
         if (!res) return false;
@@ -102,14 +102,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to send this ordinal</p>
-                <IframeWithLoader
-                    id="preview"
-                    sandbox="allow-scripts allow-same-origin"
-                    scrolling="no"
-                    loading="lazy"
-                    title={utxo.inscriptionId}
-                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                />
+                <div className="inscription-preview">
+                    <InscriptionPreview utxo={utxo} />
+                </div>
 
                 <div className="placebid-form-box">
                     <div className="bid-content">

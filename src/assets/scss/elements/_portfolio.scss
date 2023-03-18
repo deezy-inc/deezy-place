@@ -259,7 +259,7 @@
 .product-share-wrapper {
     display: flex;
     justify-content: space-between;
-    margin-top: 30px;
+    margin-top: 10px;
     align-items: center;
 
     .profile-share {
@@ -361,6 +361,13 @@
 .product-style-one {
     .card-thumbnail {
         position: relative;
+        background-color: #131516;
+        img {
+            height: 150px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
         .countdown {
             position: absolute;
             display: flex;
@@ -372,6 +379,15 @@
             padding: 5px 8px;
             border-radius: 5px;
             z-index: 2;
+        }
+    }
+
+    .inscription-details-area {
+        display: flex;
+        margin-top: 30px;
+        .inscription-number{
+            font-weight: 500;
+            color: var(--color-primary);
         }
     }
 }

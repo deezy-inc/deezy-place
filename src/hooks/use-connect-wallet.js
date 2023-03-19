@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { connectWallet } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-import { clearStorageCache } from "src/utils";
+
+export const clearStorageCache = () => {
+    const inscriptions = SessionStorage.get(SessionsStorageKeys.INSCRIPTIONS_OWNED);
+    if (!inscriptions) return;
+    SessionStorage.remove(SessionsStorageKeys.INSCRIPTIONS_OWNED);
+    inscriptions.forEach(({ key }) => SessionStorage.remove(`${SessionsStorageKeys.INSCRIPTIONS_OWNED}:utxo:${key}`));
+};
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();

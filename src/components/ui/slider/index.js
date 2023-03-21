@@ -31,7 +31,7 @@ Slider.propTypes = {
     options: PropTypes.shape({
         dots: PropTypes.bool,
         infinite: PropTypes.bool,
-        speed: PropTypes.bool,
+        speed: PropTypes.number,
         slidesToShow: PropTypes.number,
         slidesToScroll: PropTypes.number,
         autoplay: PropTypes.bool,
@@ -39,11 +39,6 @@ Slider.propTypes = {
     }),
     children: PropTypes.node.isRequired,
     className: PropTypes.string,
-};
-
-Slider.defaultProps = {
-    prevIcon: "feather-arrow-left",
-    nextIcon: "feather-arrow-right",
 };
 
 export default Slider;

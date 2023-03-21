@@ -1,11 +1,14 @@
-import { useContext, useState, useEffect, useCallback, useRef } from "react";
+/* eslint-disable react/no-array-index-key */
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import WalletContext from "@context/wallet-context";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import Anchor from "@ui/anchor";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+
+import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_ONSALE } from "@lib/constants.config";
 import { Subject } from "rxjs";
@@ -147,9 +150,33 @@ const NostrLive = ({ className, space }) => {
         };
     }, []);
 
-    if (!openOrders.length) {
-        return <></>;
-    }
+    const renderCards = () => {
+        if (openOrders.length) {
+            return openOrders.map((utxo) => (
+                <SliderItem key={utxo.txid} className="ordinal-slide">
+                    <OrdinalCard
+                        overlay
+                        price={{
+                            amount: utxo.value.toLocaleString("en-US"),
+                            currency: "Sats",
+                        }}
+                        type="buy"
+                        confirmed
+                        date={utxo.created_at}
+                        authors={collectionAuthor}
+                        utxo={utxo}
+                        onSale={handleRefreshHack}
+                    />
+                </SliderItem>
+            ));
+        }
+
+        return [...Array(5)].map((_, index) => (
+            <SliderItem key={index} className="ordinal-slide">
+                <OrdinalCard overlay />
+            </SliderItem>
+        ));
+    };
 
     return (
         <div className={clsx(space === 1 && "rn-section-gapTop", className)}>
@@ -171,23 +198,7 @@ const NostrLive = ({ className, space }) => {
                 <div className="row">
                     <div className="col-lg-12">
                         <Slider options={SliderOptions} className="slick-gutter-15">
-                            {openOrders.map((utxo) => (
-                                <SliderItem key={utxo.txid} className="ordinal-slide">
-                                    <OrdinalCard
-                                        overlay
-                                        price={{
-                                            amount: utxo.value.toLocaleString("en-US"),
-                                            currency: "Sats",
-                                        }}
-                                        type="buy"
-                                        confirmed
-                                        date={utxo.created_at}
-                                        authors={collectionAuthor}
-                                        utxo={utxo}
-                                        onSale={handleRefreshHack}
-                                    />
-                                </SliderItem>
-                            ))}
+                            {renderCards()}
                         </Slider>
                     </div>
                 </div>

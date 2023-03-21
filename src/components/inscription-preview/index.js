@@ -2,16 +2,21 @@ import { useState } from "react";
 import { TailSpin } from "react-loading-icons";
 import PropTypes from "prop-types";
 import { ORDINALS_EXPLORER_URL } from "@lib/constants";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 export const InscriptionPreview = ({ utxo }) => {
     const [loading, setLoading] = useState(true);
 
-    const isImage = /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type);
     const handleLoad = () => {
         setLoading(false);
     };
 
     const renderImage = () => {
+        if (!utxo) {
+            return <Skeleton height={160} style={{ lineHeight: 3 }} />;
+        }
+
+        const isImage = /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type);
         if (isImage) {
             return (
                 <img
@@ -37,24 +42,9 @@ export const InscriptionPreview = ({ utxo }) => {
     };
 
     return (
-        <div style={{ position: "relative" }}>
-            {loading && (
-                <div
-                    style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                    }}
-                >
-                    <div className="ordinal-loader">
-                        <TailSpin stroke="#fec823" speed={0.75} />
-                    </div>
-                </div>
-            )}
-
-            {renderImage()}
-        </div>
+        <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
+            <div style={{ position: "relative" }}>{renderImage()}</div>
+        </SkeletonTheme>
     );
 };
 

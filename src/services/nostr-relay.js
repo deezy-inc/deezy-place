@@ -29,6 +29,7 @@ class NostrRelay {
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
                         const order = await OpenOrdex.getProcessedOrder(event);
+
                         if (order) observer.next(order);
                     },
                     () => {

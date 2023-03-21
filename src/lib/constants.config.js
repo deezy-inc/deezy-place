@@ -14,7 +14,7 @@ export const TESTNET = false;
 export const ASSUMED_TX_BYTES = 111;
 export const RELAYS = [NOSTR_RELAY_URL];
 
-export const MAX_ONSALE = 25;
+export const MAX_ONSALE = 15;
 
 export const ORDINALS_EXPLORER_URL = !TESTNET ? "https://ordinals.com" : "https://explorer-signet.openordex.org";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";

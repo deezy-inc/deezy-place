@@ -1,17 +1,16 @@
-/* eslint-disable react/forbid-prop-types */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-extra-boolean-cast */
 import { useContext, useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import OrdinalCard from "@components/ordinal-card";
-import { deepClone } from "@utils/methods";
 import WalletContext from "@context/wallet-context";
+import { deepClone } from "@utils/methods";
+import Slider, { SliderItem } from "@ui/slider";
+import Anchor from "@ui/anchor";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_ONSALE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
+import OrdinalCard from "@components/ordinal-card";
 
 const collectionAuthor = [
     {
@@ -23,14 +22,51 @@ const collectionAuthor = [
     },
 ];
 
-const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
-    const { nostrAddress, isExperimental } = useContext(WalletContext);
+const SliderOptions = {
+    infinite: true,
+    slidesToShow: 5,
+    slidesToScroll: 1,
+    autoplay: true,
+    speed: 4000,
+    responsive: [
+        {
+            breakpoint: 1399,
+            settings: {
+                slidesToShow: 4,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 1200,
+            settings: {
+                slidesToShow: 3,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 992,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 576,
+            settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+            },
+        },
+    ],
+};
+
+const NostrLive = ({ className, space }) => {
+    const [isWindowFocused, setIsWindowFocused] = useState(true);
+
     const [openOrders, setOpenOrders] = useState([]);
-    const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(false); // it is necessary?
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
     const orderSubscriptionRef = useRef(null);
-    const [isWindowFocused, setIsWindowFocused] = useState(true);
     const [refreshHack, setRefreshHack] = useState(false);
 
     const handleRefreshHack = () => {
@@ -73,6 +109,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                 )
                 .subscribe(setOpenOrders);
             orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
+                console.log("order", order);
                 addNewOpenOrder(formatOrder(order));
             });
         }
@@ -110,65 +147,62 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
         };
     }, []);
 
-    // TODO: SHOW UP ESQUELETON
     if (!openOrders.length) {
         return <></>;
     }
 
     return (
-        <div id="selling-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
+        <div className={clsx(space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
-                <div className="row mb--50 align-items-center">
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <SectionTitle
-                            className="mb--0 with-loading"
-                            isLoading={isLoadingOpenOrders}
-                            {...{ title: "On Sale" }}
-                            subtitle="Buy & sell comming soon"
-                        />
-                        {!Boolean(nostrAddress) && isExperimental && (
-                            <span>
-                                <button type="button" className="btn-transparent" onClick={onConnectHandler}>
-                                    Connect
-                                </button>{" "}
-                                your wallet to buy an inscription
-                            </span>
-                        )}
+                <div className="row mb--20">
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt_mobile--15">
+                        <SectionTitle className="mb--0 live-title" {...{ title: "On Sale" }} />
                     </div>
-                </div>
-                <div className="row g-5">
-                    {openOrders.map((utxo) => (
-                        <div key={utxo.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                            <OrdinalCard
-                                overlay
-                                price={{
-                                    amount: utxo.value.toLocaleString("en-US"),
-                                    currency: "Sats",
-                                }}
-                                type="buy"
-                                confirmed
-                                date={utxo.created_at}
-                                authors={collectionAuthor}
-                                utxo={utxo}
-                                onSale={handleRefreshHack}
-                            />
+                    {/* TODO: LET USER GO TO VIEW ALL OF THEM! */}
+                    {/* <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
+                        <div className="view-more-btn text-start text-sm-end ">
+                            <Anchor className="btn-transparent" path="/nostr-inscriptions">
+                                VIEW ALL
+                            </Anchor>
                         </div>
-                    ))}
+                    </div> */}
+                </div>
+
+                <div className="row">
+                    <div className="col-lg-12">
+                        <Slider options={SliderOptions} className="slick-gutter-15">
+                            {openOrders.map((utxo) => (
+                                <SliderItem key={utxo.txid} className="ordinal-slide">
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: utxo.value.toLocaleString("en-US"),
+                                            currency: "Sats",
+                                        }}
+                                        type="buy"
+                                        confirmed
+                                        date={utxo.created_at}
+                                        authors={collectionAuthor}
+                                        utxo={utxo}
+                                        onSale={handleRefreshHack}
+                                    />
+                                </SliderItem>
+                            ))}
+                        </Slider>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-OnSaleOrdinalsArea.propTypes = {
+NostrLive.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
-    onClick: PropTypes.func,
-    onConnectHandler: PropTypes.func,
 };
 
-OnSaleOrdinalsArea.defaultProps = {
+NostrLive.defaultProps = {
     space: 1,
 };
 
-export default OnSaleOrdinalsArea;
+export default NostrLive;

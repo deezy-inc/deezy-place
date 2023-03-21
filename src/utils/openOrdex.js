@@ -189,20 +189,31 @@ class OpenOrdexFactory {
 
     async getProcessedOrder(order, orders = []) {
         if (!this.isSaleOrder(order)) return;
+        // debugger;
         const inscriptionId = this.getInscriptionId(order);
         if (this.isProcessed(orders, inscriptionId)) return;
 
-        const inscriptionData = await this.getInscriptionDataById(inscriptionId);
-        const validatedPrice = this.validateSellerPSBTAndExtractPrice(order.content, inscriptionData.output);
+        const inscriptionData = await fetch(`https://turbo.ordinalswallet.com/inscription/${inscriptionId}`).then(
+            (response) => response.json()
+        );
+
+        // TODO: Remove this call, not needed.
+
+        const inscriptionRawData = await this.getInscriptionDataById(inscriptionId);
+        const validatedPrice = this.validateSellerPSBTAndExtractPrice(order.content, inscriptionRawData.output);
         if (!validatedPrice) return;
 
+        if (!this.bitcoinPrice) await this.init();
+
+        const btcPrice = await this.bitcoinPrice;
         const newOrder = {
-            title: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
+            title: `$${satsToFormattedDollarString(validatedPrice, btcPrice)}`,
             txid: order.id,
             inscriptionId,
             value: validatedPrice,
-            usdPrice: `$${satsToFormattedDollarString(validatedPrice, await this.bitcoinPrice)}`,
+            usdPrice: `$${satsToFormattedDollarString(validatedPrice, btcPrice)}`,
             ...order,
+            ...inscriptionData,
         };
 
         return newOrder;
@@ -266,7 +277,7 @@ class OpenOrdexFactory {
         try {
             data.number = html.match(/<h1>Inscription (\d*)<\/h1>/)[1];
         } catch {
-            throw new Error(error);
+            // throw new Error(error);
         }
         if (verifyIsInscriptionNumber && String(data.number) != String(verifyIsInscriptionNumber)) {
             throw new Error(error);
@@ -291,7 +302,7 @@ class OpenOrdexFactory {
             } catch {}
         }
 
-        debugger;
+        // debugger;
         psbt.addInput({
             hash: ordinalUtxoTxId,
             index: parseInt(ordinalUtxoVout),
@@ -390,7 +401,7 @@ class OpenOrdexFactory {
         const publicKey = Buffer.from(await window.nostr.getPublicKey(), "hex");
         const inputAddressInfo = getAddressInfo(publicKey);
 
-        debugger;
+        // debugger;
         let totalValue = 0;
 
         if (!this.payerUtxos.length) {

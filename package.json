@@ -31,6 +31,7 @@
         "react-dom": "^18.2.0",
         "react-icons": "^4.7.1",
         "react-loading-icons": "^1.1.0",
+        "react-loading-skeleton": "^3.2.0",
         "react-rotating-text": "^1.4.1",
         "react-scripts": "^5.0.1",
         "react-scroll": "^1.8.9",
@@ -40,6 +41,7 @@
         "react-toastify": "^9.1.1",
         "react-useinterval": "^1.0.2",
         "redis": "^4.6.5",
+        "rxjs": "^7.8.0",
         "sal.js": "^0.8.5",
         "sharp": "^0.31.3",
         "tiny-secp256k1": "^2.2.1"

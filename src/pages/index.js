@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
+
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
@@ -11,6 +12,7 @@ import { getAddressInfo } from "@utils/crypto";
 import homepageData from "@data/general/home.json";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
+import NostrLive from "@containers/NostrLive";
 
 export async function getStaticProps() {
     return { props: { className: "template-color-1" } };
@@ -65,9 +67,9 @@ const App = () => {
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
 
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
+                    <NostrLive />
 
-                    {/* <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} /> */}
+                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
                 </main>
 
                 <Footer />

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL } from "@lib/constants";
+import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants";
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
 import { ECPairFactory } from "ecpair";
@@ -32,36 +32,33 @@ export const getAddressInfo = (publicKey) => {
         pubkey: pubkeyBuffer,
         network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
     });
-    console.log("Taproot address:", addrInfo.address);
     return addrInfo;
 };
 
-const defaultPath = "m/86'/0'/0'/0/0";
-
 // sign message with first sign transaction
-const TAPROOT_MESSAGE =
+export const TAPROOT_MESSAGE = (domain) =>
     // will switch to nosft.xyz once sends are implemented
-    "Sign this message to generate your Bitcoin Taproot key. This key will be used for your generative.xyz transactions.";
+    `Sign this message to generate your Bitcoin Taproot key. This key will be used for your ${domain} transactions.`;
 
-export const connectWallet = async () => {
+export const connectWallet = async (metamask) => {
     const { ethereum } = window;
 
-    if (ethereum) {
+    if (ethereum && metamask) {
         let ethAddress = ethereum.selectedAddress;
         if (!ethAddress) {
             await ethereum.request({ method: "eth_requestAccounts" });
             ethAddress = ethereum.selectedAddress;
         }
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE).toString("hex")}`;
+        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamask)).toString("hex")}`;
         const signature = await provider.send("personal_sign", [toSign, ethAddress]);
         const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
         const root = bip32.fromSeed(Buffer.from(seed));
-        const taprootChild = root.derivePath(defaultPath);
+        const taprootChild = root.derivePath(DEFAULT_DERIV_PATH);
         const taprootAddress = bitcoin.payments.p2tr({
             internalPubkey: toXOnly(taprootChild.publicKey),
         });
-        return taprootAddress.pubkey;
+        return taprootAddress.pubkey.toString('hex');
     }
     if (window.nostr && window.nostr.enable) {
         await window.nostr.enable();

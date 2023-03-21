@@ -4,7 +4,7 @@ import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
+const UserDropdown = ({ onConnect, onDisconnect, pubKey, receiveAddress }) => (
     <div className="icon-box">
         <Anchor path="#">
             <Image src="/images/logo/nos-ft-logo.png" alt="Images" width={38} height={38} />
@@ -69,6 +69,20 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
 
             <ul className="list-inner">
                 <li>
+                    <button type="button" onClick={() => onConnect("ordswap.io")}>
+                        Switch to ordswap.io Metamask wallet
+                    </button>
+                </li>
+            </ul>
+            <ul className="list-inner">
+                <li>
+                    <button type="button" onClick={() => onConnect("generative.xyz")}>
+                        Switch to generative.xyz Metamask wallet
+                    </button>
+                </li>
+            </ul>
+            <ul className="list-inner">
+                <li>
                     <button type="button" onClick={onDisconnect}>
                         Disconnect Wallet
                     </button>
@@ -79,6 +93,7 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => (
 );
 
 UserDropdown.propTypes = {
+    onConnect: PropTypes.func,
     onDisconnect: PropTypes.func.isRequired,
     pubKey: PropTypes.string,
     receiveAddress: PropTypes.string,

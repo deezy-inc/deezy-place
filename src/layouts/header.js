@@ -8,16 +8,17 @@ import Logo from "@components/logo";
 import MainMenu from "@components/menu/main-menu";
 import MobileMenu from "@components/menu/mobile-menu";
 import UserDropdown from "@components/user-dropdown";
+import WalletDropdown from "@components/wallet-dropdown";
 import { useOffcanvas } from "@hooks";
-import Button from "@ui/button";
 import BurgerButton from "@ui/burger-button";
+import Button from "@ui/button";
 import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
 const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }, ref) => {
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-    const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
+    const { nostrPublicKey, nostrAddress, ethProvider } = useContext(WalletContext);
 
     return (
         <>
@@ -41,21 +42,23 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
                         <div className="header-right">
                             {!Boolean(nostrPublicKey) && (
                                 <div className="setting-option header-btn">
-                                    <div className="icon-box">
+                                    <div className="setting-option rn-icon-list user-account">
                                         <Button
                                             color="primary-alta"
                                             className="connectBtn"
                                             size="small"
-                                            onClick={onConnectHandler}
+                                            onClick={() => onConnectHandler("nosft.xyz")}
                                         >
                                             Connect Wallet
                                         </Button>
+                                        {ethProvider && <WalletDropdown onConnect={onConnectHandler} />}
                                     </div>
                                 </div>
                             )}
                             {nostrPublicKey && nostrAddress && (
                                 <div className="setting-option rn-icon-list user-account">
                                     <UserDropdown
+                                        onConnect={onConnectHandler}
                                         onDisconnect={onDisconnectHandler}
                                         pubKey={nostrPublicKey}
                                         receiveAddress={nostrAddress}

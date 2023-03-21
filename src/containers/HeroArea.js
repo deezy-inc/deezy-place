@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import Image from "next/image";
 import Button from "@ui/button";
 import { HeadingType, TextType, ButtonType, ImageType } from "@utils/types";
+import WalletDropdown from "@components/wallet-dropdown";
 
 const HeroArea = ({ data, onConnectHandler }) => (
     <div className="slider-one rn-section-gapTop">
@@ -30,7 +31,7 @@ const HeroArea = ({ data, onConnectHandler }) => (
                         </p>
                     ))}
 
-                    <div className="button-group">
+                    <div className="button-group rn-icon-list user-account">
                         <Button
                             // data-sal-delay={400 + 1 * 100}
                             // data-sal="slide-up"
@@ -39,6 +40,7 @@ const HeroArea = ({ data, onConnectHandler }) => (
                         >
                             Connect Wallet
                         </Button>
+                        <WalletDropdown onConnect={onConnectHandler} />
                     </div>
                 </div>
                 <div className="col-lg-5 col-md-6 col-sm-12 offset-lg-1">

@@ -114,7 +114,6 @@ const BuyModal = ({ show, handleModal, utxo }) => {
                 destinationBtcAddress,
                 utxo.value
             );
-            console.log(psbt);
             return psbt;
         } catch (e) {
             toast.error(e.message);

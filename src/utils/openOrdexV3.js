@@ -1,11 +1,12 @@
 /* eslint-disable */
 import { TESTNET } from "@lib/constants";
-import { getAddressInfo, toXOnly } from "@utils/crypto";
+import { getAddressInfo, toXOnly, connectWallet } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
 import { relayInit, getEventHash } from "nostr-tools";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
@@ -279,8 +280,9 @@ const OpenOrdex = function () {
     // Sell
     this.generatePSBTListingInscriptionForSale = async function (ordinalOutput, price, paymentAddress) {
         let psbt = new bitcoin.Psbt({ network });
+        const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
 
-        const pk = await window.nostr.getPublicKey();
+        const pk = await connectWallet(metamaskDomain);
         const publicKey = Buffer.from(pk, "hex");
         const inputAddressInfo = getAddressInfo(pk);
 
@@ -452,7 +454,6 @@ const OpenOrdex = function () {
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
         const fullTx = bitcoin.Transaction.fromHex(hex);
-        console.log(hex);
         await axios.post(`https://mempool.space/api/tx`, hex);
 
         return fullTx.getId();

@@ -6,8 +6,9 @@ import LocalStorage from "@services/local-storage";
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
 
-    const onConnectHandler = async () => {
-        const pubKey = await connectWallet();
+    const onConnectHandler = async (metamask) => {
+        const pubKey = await connectWallet(metamask);
+        SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
         setNostrPublicKey(pubKey);
     };
 

@@ -64,8 +64,6 @@ const SliderOptions = {
 };
 
 const NostrLive = ({ className, space }) => {
-    const [isWindowFocused, setIsWindowFocused] = useState(true);
-
     const [openOrders, setOpenOrders] = useState([]);
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
@@ -97,25 +95,23 @@ const NostrLive = ({ className, space }) => {
     }, []);
 
     useEffect(() => {
-        if (isWindowFocused) {
-            addSubscriptionRef.current = addOpenOrder$.current
-                .pipe(
-                    scan((acc, curr) => {
-                        // We can add only unique ordinals by id or inscriptionId
-                        // I keep if for test purposes
-                        if (acc.find((order) => order.id === curr.id)) {
-                            return acc;
-                        }
-                        // We sort by created_at DESC and limit list
-                        return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
-                    }, openOrders)
-                )
-                .subscribe(setOpenOrders);
-            orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
-                console.log("order", order);
-                addNewOpenOrder(formatOrder(order));
-            });
-        }
+        addSubscriptionRef.current = addOpenOrder$.current
+            .pipe(
+                scan((acc, curr) => {
+                    // We can add only unique ordinals by id or inscriptionId
+                    // I keep if for test purposes
+                    if (acc.find((order) => order.id === curr.id)) {
+                        return acc;
+                    }
+                    // We sort by created_at DESC and limit list
+                    return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+                }, openOrders)
+            )
+            .subscribe(setOpenOrders);
+        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
+            addNewOpenOrder(formatOrder(order));
+        });
+
         return () => {
             try {
                 orderSubscriptionRef?.current?.unsubscribe();
@@ -124,30 +120,6 @@ const NostrLive = ({ className, space }) => {
             } catch (err) {}
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isWindowFocused]);
-
-    useEffect(() => {
-        const handleWindowBlur = () => {
-            setIsWindowFocused(false);
-        };
-
-        const handleWindowFocus = () => {
-            setIsWindowFocused(true);
-        };
-
-        const handleVisibilityChange = () => {
-            setIsWindowFocused(!document.hidden);
-        };
-
-        window.addEventListener("blur", handleWindowBlur);
-        window.addEventListener("focus", handleWindowFocus);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            window.removeEventListener("blur", handleWindowBlur);
-            window.removeEventListener("focus", handleWindowFocus);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-        };
     }, []);
 
     const renderCards = () => {
@@ -184,6 +156,7 @@ const NostrLive = ({ className, space }) => {
                 <div className="row mb--20">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt_mobile--15">
                         <SectionTitle className="mb--0 live-title" {...{ title: "On Sale" }} />
+                        <span>Buy and sell coming soon</span>
                     </div>
                     {/* TODO: LET USER GO TO VIEW ALL OF THEM! */}
                     {/* <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">

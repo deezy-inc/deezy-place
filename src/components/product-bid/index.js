@@ -50,11 +50,13 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
         }
     }
     const minted = !confirmed ? "Unconfirmed" : new Date(date * 1000).toLocaleString();
+    const sats = `${price.amount} ${price.currency}`;
+    const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
 
     return (
         <div className="bid-react-area">
             <div className="last-bid">
-                {`${price.amount} ${price.currency}`}
+                {textPrice}
                 <span className="minted">{` ${minted}`}</span>
             </div>
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { connectWallet } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import LocalStorage from "@services/local-storage";
-import { clearStorageCache } from "src/utils";
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
@@ -16,7 +15,6 @@ function useConnectWallet() {
         setNostrPublicKey(undefined);
         SessionStorage.clear();
         LocalStorage.clear();
-        clearStorageCache();
     };
 
     useEffect(() => {

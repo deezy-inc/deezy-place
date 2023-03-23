@@ -18,10 +18,10 @@ export async function getStaticProps() {
 
 const App = () => {
     const [isExperimental, setIsExperimental] = useState(false);
-    const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
+    const [headerHeight, setHeaderHeight] = useState(148); 
     const elementRef = useRef(null);
 
-    const [nostrAddress, setNostrAddress] = useState();
+    const [nostrAddress, setNostrAddress] = useState<String>();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
 
     useEffect(() => {
@@ -64,12 +64,8 @@ const App = () => {
                 />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
-
                     {nostrPublicKey && nostrAddress && <OrdinalsArea />}
-
-                    {/* <OnSaleOrdinalsArea onConnectHandler={onConnectHandler} onSale={setRefreshHack} /> */}
                 </main>
-
                 <Footer />
             </Wrapper>
         </WalletContext.Provider>

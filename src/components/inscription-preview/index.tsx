@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { TailSpin } from "react-loading-icons";
-import PropTypes from "prop-types";
 import { ORDINALS_EXPLORER_URL } from "@lib/constants";
+import { RawUtxo } from "@utils/types";
 
-export const InscriptionPreview = ({ utxo }) => {
+export const InscriptionPreview = ({ utxo }: {utxo: RawUtxo}) => {
     const [loading, setLoading] = useState(true);
 
     const isImage = /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type);
@@ -56,12 +56,4 @@ export const InscriptionPreview = ({ utxo }) => {
             {renderImage()}
         </div>
     );
-};
-
-InscriptionPreview.propTypes = {
-    utxo: PropTypes.shape({
-        content_type: PropTypes.string.isRequired,
-        inscriptionId: PropTypes.string,
-        txId: PropTypes.string,
-    }),
 };

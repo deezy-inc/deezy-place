@@ -1,24 +1,35 @@
 /* eslint-disable react/forbid-prop-types */
 import { useContext } from "react";
 import dynamic from "next/dynamic";
-import PropTypes from "prop-types";
-import Image from "next/image";
 import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
 import { ORDINALS_WALLET } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
-import { ImageType } from "@utils/types";
-import { shortenStr, cloudfrontUrl } from "@utils/crypto";
-import { TailSpin } from "react-loading-icons";
+import { Author, RawUtxo } from "@utils/types";
+import { shortenStr } from "@utils/crypto";
 import { InscriptionPreview } from "@components/inscription-preview";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
     ssr: false,
 });
 
-const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
+interface OrdinalCardProps {
+    overlay: boolean;
+    price: {
+        amount: string,
+        currency: string,
+    },
+    authors: Author[],
+    utxo: RawUtxo,
+    confirmed: boolean,
+    date: number,
+    type: "buy" | "sell" | "send"
+    onSale: () => void,
+};
+
+const OrdinalCard = ({ overlay = false, price, type, utxo, authors, confirmed, date, onSale }: OrdinalCardProps) => {
     const { nostrAddress } = useContext(WalletContext);
 
     return (
@@ -60,32 +71,6 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
             <ProductBid price={price} utxo={utxo} confirmed={confirmed} date={date} type={type} onSale={onSale} />
         </div>
     );
-};
-
-OrdinalCard.propTypes = {
-    overlay: PropTypes.bool,
-
-    // description: PropTypes.string.isRequired,
-    price: PropTypes.shape({
-        amount: PropTypes.string.isRequired,
-        currency: PropTypes.string.isRequired,
-    }).isRequired,
-    authors: PropTypes.arrayOf(
-        PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            slug: PropTypes.string.isRequired,
-            image: ImageType.isRequired,
-        })
-    ),
-    utxo: PropTypes.object,
-    confirmed: PropTypes.bool,
-    date: PropTypes.number,
-    type: PropTypes.oneOf(["buy", "sell", "send"]).isRequired,
-    onSale: PropTypes.func,
-};
-
-OrdinalCard.defaultProps = {
-    overlay: false,
 };
 
 export default OrdinalCard;

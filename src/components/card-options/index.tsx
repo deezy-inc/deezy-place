@@ -1,10 +1,9 @@
-/* eslint-disable react/forbid-prop-types */
-import PropTypes from "prop-types";
 import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import SendModal from "@components/modals/send-modal";
+import type { RawUtxo } from "@utils/types";
 
-const CardOptions = ({ utxo, onSale }) => {
+const CardOptions = ({ utxo, onSale }: {utxo: RawUtxo, onSale: () => void }) => {
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -35,11 +34,6 @@ const CardOptions = ({ utxo, onSale }) => {
             <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
         </>
     );
-};
-
-CardOptions.propTypes = {
-    utxo: PropTypes.object, // TODO: DEFINE UXTO TYPE in @utils/types.js
-    onSale: PropTypes.func,
 };
 
 export default CardOptions;

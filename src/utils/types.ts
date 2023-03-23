@@ -12,14 +12,6 @@ export const TextType = PropTypes.shape({
     content: PropTypes.string.isRequired,
 });
 
-export const ImageType = PropTypes.shape({
-    src: PropTypes.oneOfType([PropTypes.string, PropTypes.shape({})]).isRequired,
-    alt: PropTypes.string,
-    width: PropTypes.number,
-    height: PropTypes.number,
-    layout: PropTypes.string,
-});
-
 export const ButtonComponentType = {
     children: PropTypes.node.isRequired,
     type: PropTypes.oneOf(["button", "submit", "reset"]),
@@ -116,3 +108,96 @@ export const NotifactionType = PropTypes.shape({
     time: PropTypes.string,
     image: ImageType,
 });
+
+export interface Meta {
+    name: string;
+}
+
+export interface RawInscription {
+    collection: unknown;
+    content_type: string;
+    escrow: number | undefined;
+    id: string;
+    meta: Meta | undefined;
+    num: number;
+}
+
+export interface RawUtxo {
+    txid: string;
+    version: number;
+    locktime: number;
+    vin: Vin[];
+    vout: Vout[];
+    size: number;
+    weight: number;
+    fee: number;
+    status: Status;
+}
+
+export interface Vin {
+    txid: string;
+    vout: number;
+    prevout: null[];
+    scriptsig: string;
+    scriptsig_asm: string;
+    witness: null[];
+    is_coinbase: boolean;
+    sequence: number;
+}
+
+export interface Vout {
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    scriptpubkey_address: string;
+    value: number;
+}
+
+export interface Inscription {
+    txid: string;
+    version: number;
+    locktime: number;
+    size: number;
+    weight: number;
+    fee: number;
+    status: Status;
+    inscriptionId: string;
+    collection: Collection;
+    content_type: string;
+    escrow: number | null;
+    id: string;
+    meta: Meta;
+    num: number;
+    value: number;
+}
+
+export interface Collection {
+    creator_address: string | null;
+    name: string;
+    slug: string;
+}
+
+export interface Meta {
+    name: string;
+}
+
+export interface Status {
+    confirmed: boolean;
+    block_height: number;
+    block_hash: string;
+    block_time: number;
+}
+
+export interface ImageType {
+    src: string | {};
+    alt: string;
+    width: number;
+    height: number;
+    layout: string;
+}
+
+export interface Author {
+    name: string;
+    slug: string;
+    image: ImageType;
+}

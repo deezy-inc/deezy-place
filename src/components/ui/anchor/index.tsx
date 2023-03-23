@@ -1,7 +1,16 @@
 import Link from "next/link";
-import PropTypes from "prop-types";
+import { ReactNode } from "react";
 
-const Anchor = ({ path, children, className, rel, label, target, onClick, ...rest }) => {
+const Anchor = ({
+    path,
+    children,
+    className,
+    rel = "noopener noreferrer",
+    label,
+    target = "_blank",
+    onClick,
+    ...rest
+}: AnchorProps) => {
     if (!path) return null;
     const internal = /^\/(?!\/)/.test(path);
     if (!internal) {
@@ -35,21 +44,14 @@ const Anchor = ({ path, children, className, rel, label, target, onClick, ...res
     );
 };
 
-Anchor.defaultProps = {
-    target: "_blank",
-    rel: "noopener noreferrer",
-};
-
-Anchor.propTypes = {
-    children: PropTypes.node.isRequired,
-    path: PropTypes.string.isRequired,
-    className: PropTypes.string,
-    rel: PropTypes.string,
-    label: PropTypes.string,
-    target: PropTypes.oneOf(["_blank", "_self", "_parent", "_top"]),
-    onClick: PropTypes.func,
-};
-
-Anchor.displayName = "Anchor";
+interface AnchorProps {
+    children: ReactNode;
+    path: string;
+    className: string;
+    rel: string;
+    label: string;
+    target: "_blank" | "_self" | "_parent" | "_top";
+    onClick: () => void;
+}
 
 export default Anchor;

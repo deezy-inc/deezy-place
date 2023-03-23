@@ -7,7 +7,7 @@ import { ItemType } from "@utils/types";
 
 import footerData from "../data/general/footer.json";
 
-const Footer = ({ space, className, data }) => (
+const Footer = ({ space = 1, className, data }: FooterProps) => (
     <div
         className={clsx(
             "rn-footer-one bg-color--2",
@@ -59,16 +59,12 @@ const Footer = ({ space, className, data }) => (
     </div>
 );
 
-Footer.propTypes = {
-    space: PropTypes.oneOf([1, 2, 3]),
-    className: PropTypes.string,
-    data: PropTypes.shape({
-        items: PropTypes.arrayOf(ItemType),
-    }),
-};
-
-Footer.defaultProps = {
-    space: 1,
+interface FooterProps {
+    space: 1 | 2 | 3,
+    className: string,
+    data: {
+        items: ItemType[],
+    },
 };
 
 export default Footer;

@@ -3,7 +3,7 @@ import { TailSpin } from "react-loading-icons";
 import { ORDINALS_EXPLORER_URL } from "@lib/constants";
 import { RawUtxo } from "@utils/types";
 
-export const InscriptionPreview = ({ utxo }: {utxo: RawUtxo}) => {
+export const InscriptionPreview = ({ utxo }: { utxo: RawUtxo }) => {
     const [loading, setLoading] = useState(true);
 
     const isImage = /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type);

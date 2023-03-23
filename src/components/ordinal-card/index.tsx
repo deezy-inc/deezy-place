@@ -18,16 +18,16 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 interface OrdinalCardProps {
     overlay: boolean;
     price: {
-        amount: string,
-        currency: string,
-    },
-    authors: Author[],
-    utxo: RawUtxo,
-    confirmed: boolean,
-    date: number,
-    type: "buy" | "sell" | "send"
-    onSale: () => void,
-};
+        amount: string;
+        currency: string;
+    };
+    authors: Author[];
+    utxo: RawUtxo;
+    confirmed: boolean;
+    date: number;
+    type: "buy" | "sell" | "send";
+    onSale: () => void;
+}
 
 const OrdinalCard = ({ overlay = false, price, type, utxo, authors, confirmed, date, onSale }: OrdinalCardProps) => {
     const { nostrAddress } = useContext(WalletContext);

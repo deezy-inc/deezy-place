@@ -1,113 +1,105 @@
-import PropTypes from "prop-types";
+export interface HeadingType {
+    id: string | number;
+    content: string;
+};
 
-export const IDType = PropTypes.oneOfType([PropTypes.string, PropTypes.number]);
+export interface TextType {
+    id: string | number;
+    content: string.,
+};
 
-export const HeadingType = PropTypes.shape({
-    id: IDType,
-    content: PropTypes.string.isRequired,
-});
-
-export const TextType = PropTypes.shape({
-    id: IDType,
-    content: PropTypes.string.isRequired,
-});
-
-export const ButtonComponentType = {
-    children: PropTypes.node.isRequired,
-    type: PropTypes.oneOf(["button", "submit", "reset"]),
-    label: PropTypes.string,
-    onClick: PropTypes.func,
-    className: PropTypes.string,
-    path: PropTypes.string,
-    size: PropTypes.oneOf(["large", "small", "medium"]),
-    color: PropTypes.oneOf(["primary", "primary-alta"]),
-    fullwidth: PropTypes.bool,
+export interface ButtonComponentType {
+    children: ReactNode;
+    type: "button" | "submit" |  "reset";
+    label: string;
+    onClick: () => void;
+    className: string;
+    path: string;
+    size: "large" | "small" | "medium";
+    color: "primary" | "primary-alta";
+    fullwidth: boolean;
 };
 
 // eslint-disable-next-line no-unused-vars
-const { children, ...restButtonTypes } = ButtonComponentType;
+// interface { children, ...restButtonTypes } = ButtonComponentType;
 
-export const ButtonType = PropTypes.shape({
-    content: PropTypes.string.isRequired,
-    ...restButtonTypes,
-});
+/*
+    * export interface ButtonType = {
+    content: string;
+    ...restButtonTypes;
+};
+*/
 
-export const SectionTitleType = PropTypes.shape({
-    title: PropTypes.string,
-    subtitle: PropTypes.string,
-});
+export interface SectionTitleType {
+    title: string;
+    subtitle: string;
+};
 
-export const ItemType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    title: PropTypes.string,
-    subtitle: PropTypes.string,
-    path: PropTypes.string,
-    description: PropTypes.string,
-    images: PropTypes.arrayOf(ImageType),
+export interface ItemType {
+    id: string | number;
+    title: string,
+    subtitle: string,
+    path: string,
+    description: string,
+    images: ImageType[],
     image: ImageType,
-});
+};
 
-export const OrdinalType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    title: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    price: PropTypes.shape({
-        amount: PropTypes.number.isRequired,
-        currency: PropTypes.string.isRequired,
-    }).isRequired,
-    likeCount: PropTypes.number,
-    image: ImageType,
-    authors: PropTypes.arrayOf(
-        PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            slug: PropTypes.string.isRequired,
-            image: ImageType,
-        })
-    ),
-    utxo: PropTypes.number,
-});
+export interface OrdinalType {
+    id: string | number;
+    title: string;
+    slug: string;
+    description: string;
+    price: {
+        amount: number;
+        currency: string;
+    },
+    likeCount: number;
+    image: ImageType;
+    authors: Author[];
+    utxo: number;
+};
 
-export const SellerType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    total_sale: PropTypes.number.isRequired,
-    image: ImageType.isRequired,
-    top_since: PropTypes.string,
-    isVarified: PropTypes.bool,
-});
+export interface SellerType {
+    id: string | number;
+    name: string;
+    slug: string;
+    total_sale: number;
+    image: ImageType;
+    top_since: string;
+    isVarified: boolean;
+};
 
-export const CollectionType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    title: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    total_item: PropTypes.number.isRequired,
-    image: ImageType.isRequired,
-    thumbnails: PropTypes.arrayOf(ImageType).isRequired,
-    profile_image: ImageType.isRequired,
-});
+export interface CollectionType {
+    id: string | number;
+    title: string;
+    slug: string;
+    total_item: number;
+    image: ImageType;
+    thumbnails: ImageType[];
+    profile_image: ImageType
+};
 
-export const FeatureProductsType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    title: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        slug: PropTypes.string,
-    }),
-    image: ImageType.isRequired,
-});
+export interface FeatureProductsType {
+    id: string | number;
+    title: string;
+    slug: string;
+    author: {
+        name: string;
+        slug: string;
+    },
+    image: ImageType;
+};
 
-export const NotifactionType = PropTypes.shape({
-    id: IDType,
-    title: PropTypes.string,
-    description: PropTypes.string,
-    path: PropTypes.string,
-    date: PropTypes.string,
-    time: PropTypes.string,
-    image: ImageType,
-});
+export interface NotifactionType {
+    id: IDType;
+    title: string;
+    description: string;
+    path: string;
+    date: string;
+    time: string;
+    image: ImageType;
+};
 
 export interface Meta {
     name: string;

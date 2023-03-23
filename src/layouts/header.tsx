@@ -1,7 +1,5 @@
 /* eslint no-extra-boolean-cast: "off" */
-
 import React, { useContext } from "react";
-import PropTypes from "prop-types";
 import clsx from "clsx";
 
 import Logo from "@components/logo";
@@ -15,7 +13,7 @@ import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }, ref) => {
+const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }: HeaderProps, ref) => {
     const { offcanvas, offcanvasHandler } = useOffcanvas();
     const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
@@ -76,10 +74,10 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
     );
 });
 
-Header.propTypes = {
-    className: PropTypes.string,
-    onConnectHandler: PropTypes.func,
-    onDisconnectHandler: PropTypes.func,
+interface HeaderProps {
+    className: string;
+    onConnectHandler: () => void;
+    onDisconnectHandler: () => void;
 };
 
 export default Header;

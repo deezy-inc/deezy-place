@@ -1,9 +1,8 @@
-import PropTypes from "prop-types";
 import Image from "next/image";
 import Button from "@ui/button";
 import { HeadingType, TextType, ButtonType, ImageType } from "@utils/types";
 
-const HeroArea = ({ data, onConnectHandler }) => (
+const HeroArea = ({ data, onConnectHandler }: HeroAreaProps) => (
     <div className="slider-one rn-section-gapTop">
         <div className="container">
             <div className="row row-reverce-sm align-items-center">
@@ -59,14 +58,14 @@ const HeroArea = ({ data, onConnectHandler }) => (
     </div>
 );
 
-HeroArea.propTypes = {
-    data: PropTypes.shape({
-        headings: PropTypes.arrayOf(HeadingType),
-        texts: PropTypes.arrayOf(TextType),
-        buttons: PropTypes.arrayOf(ButtonType),
-        images: PropTypes.arrayOf(ImageType),
-    }),
-    onConnectHandler: PropTypes.func,
+interface HeroAreaProps {
+    data: {
+        headings: HeadingType[],
+        texts: TextType[],
+        buttons: ButtonType[],
+        images: ImageType[],
+    },
+    onConnectHandler: () => void,
 };
 
 export default HeroArea;

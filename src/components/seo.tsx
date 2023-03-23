@@ -1,8 +1,7 @@
 import React from "react";
 import Head from "next/head";
-import PropTypes from "prop-types";
 
-const SEO = ({ pageTitle }) => {
+const SEO = ({ pageTitle }: { pageTitle: string }) => {
     const title = `${pageTitle} | Nosft`;
     return (
         <Head>
@@ -17,10 +16,6 @@ const SEO = ({ pageTitle }) => {
             <link rel="icon" href="/images/logo/favicon.svg" type="image/svg+xml" />
         </Head>
     );
-};
-
-SEO.propTypes = {
-    pageTitle: PropTypes.string.isRequired,
 };
 
 export default SEO;

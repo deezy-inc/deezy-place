@@ -18,7 +18,7 @@ export async function getStaticProps() {
 
 const App = () => {
     const [isExperimental, setIsExperimental] = useState(false);
-    const [headerHeight, setHeaderHeight] = useState(148); 
+    const [headerHeight, setHeaderHeight] = useState(148);
     const elementRef = useRef(null);
 
     const [nostrAddress, setNostrAddress] = useState<String>();

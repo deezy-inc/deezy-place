@@ -101,7 +101,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}</h3>
             </Modal.Header>
             <Modal.Body>
-                <p>You are about to send this ordinal</p>
+                <p>You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}</p>
                 <div className="inscription-preview">
                     <InscriptionPreview utxo={utxo} />
                 </div>

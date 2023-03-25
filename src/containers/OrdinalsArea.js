@@ -249,26 +249,23 @@ const OrdinalsArea = ({ className, space }) => {
                 <div className="row g-5">
                     {utxosReady && ownedUtxos.length > 0 && (
                         <>
-                            {filteredOwnedUtxos.map(
-                                (inscription) =>
-                                    inscription.inscriptionId && (
-                                        <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                                            <OrdinalCard
-                                                overlay
-                                                price={{
-                                                    amount: inscription.value.toLocaleString("en-US"),
-                                                    currency: "Sats",
-                                                }}
-                                                type="send"
-                                                confirmed={inscription.status.confirmed}
-                                                date={inscription.status.block_time}
-                                                authors={collectionAuthor}
-                                                utxo={inscription}
-                                                onSale={handleRefreshHack}
-                                            />
-                                        </div>
-                                    )
-                            )}
+                            {filteredOwnedUtxos.map((inscription) => (
+                                <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                                    <OrdinalCard
+                                        overlay
+                                        price={{
+                                            amount: inscription.value.toLocaleString("en-US"),
+                                            currency: "Sats",
+                                        }}
+                                        type="send"
+                                        confirmed={inscription.status.confirmed}
+                                        date={inscription.status.block_time}
+                                        authors={collectionAuthor}
+                                        utxo={inscription}
+                                        onSale={handleRefreshHack}
+                                    />
+                                </div>
+                            ))}
                             {filteredOwnedUtxos.length === 0 && (
                                 <div className="col-12">
                                     <div className="text-center">

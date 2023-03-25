@@ -12,15 +12,12 @@ export const InscriptionPreview = ({ utxo }) => {
     };
 
     const renderImage = () => {
-        if (isImage) {
-            return (
-                <img
-                    src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
-                    alt={utxo.txId}
-                    onLoad={handleLoad}
-                    loading="lazy"
-                />
-            );
+        if (isImage || !utxo.inscriptionId) {
+            let imgUrl = `${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`;
+            if (!utxo.inscriptionId) {
+                imgUrl = "/images/logo/bitcoin.png";
+            }
+            return <img src={imgUrl} alt={utxo.txId} onLoad={handleLoad} loading="lazy" />;
         }
 
         return (

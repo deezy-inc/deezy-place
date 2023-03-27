@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
 import { useState, useEffect, useMemo, useRef } from "react";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
@@ -6,9 +5,8 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import HeroArea from "@containers/HeroArea";
 import OrdinalsArea from "@containers/OrdinalsArea";
-import { normalizedData, getQueryStringParam } from "@utils/methods";
+import { getQueryStringParam } from "@utils/methods";
 import { getAddressInfo } from "@utils/crypto";
-import homepageData from "@data/general/home.json";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 
@@ -40,7 +38,6 @@ const App = () => {
         setNostrAddress(address);
     }, [nostrPublicKey]);
 
-    const content = normalizedData(homepageData?.content || []);
 
     const obj = useMemo(
         () => ({
@@ -57,13 +54,11 @@ const App = () => {
                 <SEO pageTitle="Deezy" />
                 <Header
                     ref={elementRef}
-                    nostrPublicKey={nostrPublicKey}
                     onConnectHandler={onConnectHandler}
                     onDisconnectHandler={onDisconnectHandler}
-                    address={nostrAddress}
                 />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
+                    {!nostrPublicKey && <HeroArea onConnectHandler={onConnectHandler} />}
                     {nostrPublicKey && nostrAddress && <OrdinalsArea />}
                 </main>
                 <Footer />

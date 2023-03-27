@@ -83,32 +83,6 @@ function slugify(text) {
         .replace(/-+$/, ""); // Trim - from end of text
 }
 
-function normalizedData(data, key = "section") {
-    let allContetnt;
-
-    data.forEach((item) => {
-        const newObj = Object.entries(item).reduce((acc, cur) => {
-            const [k, property] = cur;
-            if (property === null) {
-                return acc;
-            }
-            return {
-                ...acc,
-                [k]: property,
-            };
-        }, {});
-
-        allContetnt = {
-            ...allContetnt,
-            [newObj[key]]: {
-                ...newObj,
-            },
-        };
-    });
-
-    return allContetnt;
-}
-
 const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 
 const getMonth = (date) => months[date.getMonth()];
@@ -160,16 +134,13 @@ const deepClone = (obj) => {
     return copy;
 };
 
-const getQueryStringParam = function (paramName) {
-    return new URL(window.location).searchParams.get(paramName);
-};
+const getQueryStringParam = (paramName) => new URL(window.location).searchParams.get(paramName);
 
 module.exports = {
     slideUp,
     slideDown,
     slideToggle,
     flatDeep,
-    normalizedData,
     slugify,
     getMonth,
     containsObject,

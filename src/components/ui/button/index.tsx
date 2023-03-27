@@ -1,9 +1,8 @@
-/* eslint-disable react/button-has-type */
-import PropTypes from "prop-types";
+import { ReactNode } from "react";
 import clsx from "clsx";
 import Anchor from "../anchor";
 
-const Button = ({ children, type, label, onClick, className, path, size, color, shape, fullwidth, ...rest }) => {
+const Button = ({ children, type = "button", label, onClick, className, path, size = "large", color = "primary", shape, fullwidth, ...rest }: ButtonProps) => {
     if (path) {
         return (
             <Anchor
@@ -45,23 +44,17 @@ const Button = ({ children, type, label, onClick, className, path, size, color, 
     );
 };
 
-Button.propTypes = {
-    children: PropTypes.node.isRequired,
-    type: PropTypes.oneOf(["button", "submit", "reset"]),
-    label: PropTypes.string,
-    onClick: PropTypes.func,
-    className: PropTypes.string,
-    path: PropTypes.string,
-    size: PropTypes.oneOf(["large", "small", "medium"]),
-    color: PropTypes.oneOf(["primary", "primary-alta"]),
-    shape: PropTypes.oneOf(["square", "ellipse"]),
-    fullwidth: PropTypes.bool,
-};
-
-Button.defaultProps = {
-    type: "button",
-    size: "large",
-    color: "primary",
+interface ButtonProps {
+    children: ReactNode;
+    type?: "button" | "submit"  | "reset";
+    label?: string,
+    onClick: () => void,
+    className?: string,
+    path?: string,
+    size?: "large" | "small" | "medium";
+    color?: "primary" | "primary-alta";
+    shape?: "square" | "ellipse";
+    fullwidth?: boolean,
 };
 
 export default Button;

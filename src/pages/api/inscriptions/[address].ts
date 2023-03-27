@@ -1,8 +1,9 @@
 import { BLOCKSTREAM_API, TURBO_API, TESTNET } from "@lib/constants";
 import axios from "axios";
 import { validate, Network } from "bitcoin-address-validation";
+import { NextApiRequest, NextApiResponse } from "next";
 
-const getInscriptions = async (address) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
+const getInscriptions = async (address: string) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
 
 const getUtxoForInscription = async (inscription, address) => {
     const {
@@ -33,7 +34,7 @@ const getUtxoForInscription = async (inscription, address) => {
     };
 };
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const {
         query: { address = "", offset = 0, limit = 10 },
     } = req;

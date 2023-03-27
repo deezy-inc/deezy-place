@@ -3,18 +3,12 @@ import React, { useContext } from "react";
 import clsx from "clsx";
 
 import Logo from "@components/logo";
-import MainMenu from "@components/menu/main-menu";
-import MobileMenu from "@components/menu/mobile-menu";
 import UserDropdown from "@components/user-dropdown";
-import { useOffcanvas } from "@hooks";
 import Button from "@ui/button";
-import BurgerButton from "@ui/burger-button";
 import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
-import menuData from "../data/general/menu.json";
 
 const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }: HeaderProps, ref) => {
-    const { offcanvas, offcanvasHandler } = useOffcanvas();
     const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
     return (
@@ -30,11 +24,6 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
                     <div className="header-inner">
                         <div className="header-left">
                             <Logo logo={headerData.logo} />
-                            <div className="mainmenu-wrapper">
-                                <nav id="sideNav" className="mainmenu-nav d-none d-xl-block">
-                                    <MainMenu menu={[]} />
-                                </nav>
-                            </div>
                         </div>
                         <div className="header-right">
                             {!Boolean(nostrPublicKey) && (
@@ -60,22 +49,16 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
                                     />
                                 </div>
                             )}
-                            <div className="setting-option mobile-menu-bar d-block d-xl-none">
-                                <div className="hamberger">
-                                    <BurgerButton onClick={offcanvasHandler} />
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </header>
-            <MobileMenu isOpen={offcanvas} onClick={offcanvasHandler} menu={menuData} logo={headerData.logo} />
         </>
     );
 });
 
 interface HeaderProps {
-    className: string;
+    className?: string;
     onConnectHandler: () => void;
     onDisconnectHandler: () => void;
 };

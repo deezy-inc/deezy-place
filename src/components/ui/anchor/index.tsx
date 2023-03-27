@@ -47,11 +47,11 @@ const Anchor = ({
 interface AnchorProps {
     children: ReactNode;
     path: string;
-    className: string;
-    rel: string;
-    label: string;
-    target: "_blank" | "_self" | "_parent" | "_top";
-    onClick: () => void;
+    className?: string;
+    rel?: string;
+    label?: string;
+    target?: "_blank" | "_self" | "_parent" | "_top";
+    onClick?: () => void;
 }
 
 export default Anchor;

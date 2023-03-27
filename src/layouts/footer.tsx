@@ -60,9 +60,9 @@ const Footer = ({ space = 1, className, data }: FooterProps) => (
 );
 
 interface FooterProps {
-    space: 1 | 2 | 3,
-    className: string,
-    data: {
+    space?: 1 | 2 | 3,
+    className?: string,
+    data?: {
         items: ItemType[],
     },
 };

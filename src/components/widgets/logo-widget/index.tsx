@@ -2,10 +2,9 @@ import PropTypes from "prop-types";
 import Logo from "@components/logo";
 import Anchor from "@ui/anchor";
 
-const LogoWidget = ({ data }) => (
+const LogoWidget = ({ data }: LogoWidgetProps) => (
     <div className="footer-left">
         <Logo logo={data.logo} path="https://deezy.io" />
-        {/* {data?.text && <p className="rn-footer-describe">{data.text}</p>} */}
         <div className="rn-footer-describe">
             Launch your own collection in collaboration with{" "}
             <Anchor path="https://deezy.io" target="_blank">
@@ -15,16 +14,13 @@ const LogoWidget = ({ data }) => (
     </div>
 );
 
-LogoWidget.propTypes = {
-    data: PropTypes.shape({
-        logo: PropTypes.arrayOf(
-            PropTypes.shape({
-                src: PropTypes.string.isRequired,
-                alt: PropTypes.string,
-            })
-        ),
-        text: PropTypes.string,
-    }),
+interface LogoWidgetProps {
+    data: {
+        logo: {
+            src: string,
+            alt: string,
+        }[];
+    },
 };
 
 export default LogoWidget;

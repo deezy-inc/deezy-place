@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Anchor from "@ui/anchor";
 
 const QuicklinkWidget = ({ data }) => (
@@ -16,17 +15,15 @@ const QuicklinkWidget = ({ data }) => (
     </div>
 );
 
-QuicklinkWidget.propTypes = {
-    data: PropTypes.shape({
-        title: PropTypes.string,
-        menu: PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-                text: PropTypes.string.isRequired,
-                path: PropTypes.string.isRequired,
-            })
-        ),
-    }),
+interface QuicklinkWidgetProps {
+    data: {
+        title: string,
+        menu: {
+                id: number | string;
+                text: string;
+                path: string;
+            }[]
+    },
 };
 
 export default QuicklinkWidget;

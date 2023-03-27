@@ -1,40 +1,3 @@
-export interface HeadingType {
-    id: string | number;
-    content: string;
-};
-
-export interface TextType {
-    id: string | number;
-    content: string.,
-};
-
-export interface ButtonComponentType {
-    children: ReactNode;
-    type: "button" | "submit" |  "reset";
-    label: string;
-    onClick: () => void;
-    className: string;
-    path: string;
-    size: "large" | "small" | "medium";
-    color: "primary" | "primary-alta";
-    fullwidth: boolean;
-};
-
-// eslint-disable-next-line no-unused-vars
-// interface { children, ...restButtonTypes } = ButtonComponentType;
-
-/*
-    * export interface ButtonType = {
-    content: string;
-    ...restButtonTypes;
-};
-*/
-
-export interface SectionTitleType {
-    title: string;
-    subtitle: string;
-};
-
 export interface ItemType {
     id: string | number;
     title: string,
@@ -92,7 +55,7 @@ export interface FeatureProductsType {
 };
 
 export interface NotifactionType {
-    id: IDType;
+    id: string | number;
     title: string;
     description: string;
     path: string;

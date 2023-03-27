@@ -77,16 +77,18 @@ export interface RawInscription {
     num: number;
 }
 
-export interface RawUtxo {
+export interface Utxo {
+    txId: string;
     txid: string;
-    version: number;
-    locktime: number;
+    inscriptionId: string;
+    num: number;
     vin: Vin[];
     vout: Vout[];
     size: number;
     weight: number;
     fee: number;
     status: Status;
+    content_type: string
 }
 
 export interface Vin {
@@ -144,15 +146,17 @@ export interface Status {
 }
 
 export interface ImageType {
-    src: string | {};
-    alt: string;
-    width: number;
-    height: number;
-    layout: string;
+    src: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+    layout?: string;
 }
 
 export interface Author {
     name: string;
     slug: string;
-    image: ImageType;
+    image: {
+        src: string
+    };
 }

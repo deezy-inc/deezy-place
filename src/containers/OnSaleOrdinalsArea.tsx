@@ -1,6 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-extra-boolean-cast */
 import { useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
@@ -10,8 +7,6 @@ import { deepClone } from "@utils/methods";
 import OpenOrdex from "@utils/openOrdexV3";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import WalletContext from "@context/wallet-context";
-// Use this to fetch data from an API service
-const axios = require("axios");
 
 const collectionAuthor = [
     {

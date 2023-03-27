@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Image from "next/image";
 import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";

@@ -1,10 +1,8 @@
-import PropTypes from "prop-types";
 import clsx from "clsx";
 import Image from "next/image";
-import Anchor from "@ui/anchor";
 import { ImageType } from "@utils/types";
 
-const ClientAvatar = ({ slug, name, image, className }: ClientAvatarProps) => (
+const ClientAvatar = ({ name, image, className }: ClientAvatarProps) => (
     <div className={clsx("avatar", className)}>
         <Image
             src={image.src}
@@ -16,10 +14,9 @@ const ClientAvatar = ({ slug, name, image, className }: ClientAvatarProps) => (
 );
 
 interface ClientAvatarProps {
-    slug: string;
     name: string;
     image: ImageType;
-    className: string;
+    className?: string;
 }
 
 export default ClientAvatar;

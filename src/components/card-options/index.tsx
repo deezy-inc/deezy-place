@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import SendModal from "@components/modals/send-modal";
-import type { RawUtxo } from "@utils/types";
+import type { Utxo } from "@utils/types";
 
-const CardOptions = ({ utxo, onSale }: { utxo: RawUtxo; onSale: () => void }) => {
+const CardOptions = ({ utxo, onSale }: { utxo: Utxo; onSale: () => void }) => {
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);

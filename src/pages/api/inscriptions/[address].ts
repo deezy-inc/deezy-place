@@ -37,15 +37,19 @@ const getUtxoForInscription = async (inscription, address) => {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const {
-        query: { address = "", offset = 0, limit = 10 },
+        query: { address = "", offset = '0', limit = '10' },
     } = req;
+
+    if ( Array.isArray(address) || Array.isArray(offset) || Array.isArray(limit))  {
+        return res.status(400).json({ error: "address, limit and offset values should not be arrays" });
+    }
 
     if (!validate(address, TESTNET ? Network.testnet : Network.mainnet)) {
         res.status(400).json({ error: "Invalid address" });
         return;
     }
 
-    if (limit > 100) {
+    if (parseInt(limit )> 100) {
         res.status(400).json({ error: "Limit cannot be greater than 100" });
         return;
     }
@@ -53,15 +57,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const from = parseInt(offset, 10);
     const to = from + parseInt(limit, 10);
     const data = await getInscriptions(address);
-    const inscriptions = data?.slice(from, to);
-    const inscriptionsWithUtxo = (
-        await Promise.allSettled(inscriptions.map((inscription) => getUtxoForInscription(inscription, address)))
-    )
-        .filter((i) => i.status === "fulfilled")
+    const inscriptionsSlice = data?.slice(from, to);
+    const inscriptionsWithUtxo = (await Promise.allSettled(inscriptionsSlice.map((inscription) => getUtxoForInscription(inscription, address)))) as {status: 'fulfilled' | 'rejected', value: {}}[]
+
+    const inscriptions = inscriptionsWithUtxo.filter((i) => i.status === "fulfilled")
         .map((i) => i.value);
 
     const result = {
-        data: { inscriptions: inscriptionsWithUtxo },
+        data: { inscriptions },
         count: data.length,
         size: inscriptionsWithUtxo.length,
     };

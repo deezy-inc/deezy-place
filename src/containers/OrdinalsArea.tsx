@@ -1,10 +1,4 @@
-/* eslint-disable react/forbid-prop-types */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-extra-boolean-cast */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-continue */
 import { useContext, useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
@@ -35,7 +29,7 @@ const getSortedUtxos = async (nostrAddress) => {
     return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
 };
 
-const OrdinalsArea = ({ className, space }) => {
+const OrdinalsArea = ({ className, space = 1 }: OrdinalsAreaProps) => {
     const { nostrAddress } = useContext(WalletContext);
 
     const [utxosReady, setUtxosReady] = useState(false);
@@ -94,7 +88,7 @@ const OrdinalsArea = ({ className, space }) => {
                     view.setUint8(i, parseInt(b, 16));
                 });
 
-                const vout = view.getInt32(0, 1);
+                const vout = view.getInt32(0, true);
                 inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
             };
 
@@ -288,14 +282,9 @@ const OrdinalsArea = ({ className, space }) => {
     );
 };
 
-OrdinalsArea.propTypes = {
-    className: PropTypes.string,
-    space: PropTypes.oneOf([1, 2]),
-    onSale: PropTypes.func,
-};
-
-OrdinalsArea.defaultProps = {
-    space: 1,
+interface OrdinalsAreaProps {
+    className?: string;
+    space?: 1 |  2;
 };
 
 export default OrdinalsArea;

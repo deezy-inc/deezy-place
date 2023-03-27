@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import clsx from "clsx";
 import Image from "next/image";
 import LogoWidget from "@widgets/logo-widget";

@@ -2,6 +2,15 @@ import Image from "next/image";
 import Anchor from "@ui/anchor";
 import clsx from "clsx";
 
+interface LogoProps {
+    className?: string;
+    path?: string;
+    logo: {
+        src: string;
+        alt?: string;
+    }[];
+}
+
 const Logo = ({ className, logo, path }: LogoProps) => (
     <div className={clsx("logo-thumbnail logo-custom-css", className)}>
         {logo?.[0]?.src && (
@@ -17,13 +26,5 @@ const Logo = ({ className, logo, path }: LogoProps) => (
     </div>
 );
 
-interface LogoProps {
-    className?: string;
-    path?: string;
-    logo: {
-        src: string;
-        alt?: string;
-    }[];
-}
 
 export default Logo;

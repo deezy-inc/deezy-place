@@ -1,4 +1,3 @@
-/* eslint no-extra-boolean-cast: "off" */
 import React, { useContext } from "react";
 import clsx from "clsx";
 
@@ -8,12 +7,19 @@ import Button from "@ui/button";
 import WalletContext from "@context/wallet-context";
 import headerData from "../data/general/header.json";
 
+interface HeaderProps {
+    className?: string;
+    onConnectHandler: () => void;
+    onDisconnectHandler: () => void;
+}
+
 const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }: HeaderProps, ref) => {
     const { nostrPublicKey, nostrAddress } = useContext(WalletContext);
 
     return (
         <>
             <header
+                // @ts-ignore
                 ref={ref}
                 className={clsx(
                     "rn-header haeder-default black-logo-version header--fixed header--sticky sticky",
@@ -57,10 +63,6 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
     );
 });
 
-interface HeaderProps {
-    className?: string;
-    onConnectHandler: () => void;
-    onDisconnectHandler: () => void;
-}
+Header.displayName = "Header";
 
 export default Header;

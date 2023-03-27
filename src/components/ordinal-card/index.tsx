@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
 import { useContext } from "react";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -7,7 +6,7 @@ import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
 import { ORDINALS_WALLET } from "@lib/constants";
 import WalletContext from "@context/wallet-context";
-import { Author, RawUtxo } from "@utils/types";
+import { Author, Utxo } from "@utils/types";
 import { shortenStr } from "@utils/crypto";
 import { InscriptionPreview } from "@components/inscription-preview";
 
@@ -22,7 +21,7 @@ interface OrdinalCardProps {
         currency: string;
     };
     authors: Author[];
-    utxo: RawUtxo;
+    utxo: Utxo;
     confirmed: boolean;
     date: number;
     type: "buy" | "sell" | "send";
@@ -45,7 +44,6 @@ const OrdinalCard = ({ overlay = false, price, type, utxo, authors, confirmed, d
                     {authors?.map((client) => (
                         <ClientAvatar
                             key={client.name}
-                            slug={client.slug}
                             name={utxo.inscriptionId || utxo.txid}
                             image={client.image}
                         />
@@ -64,10 +62,6 @@ const OrdinalCard = ({ overlay = false, price, type, utxo, authors, confirmed, d
                 </div>
                 {nostrAddress && type !== "send" && type !== "buy" && <CardOptions utxo={utxo} onSale={onSale} />}
             </div>
-            {/* <Anchor path={`#${slug}`}>
-            <span className="product-name">{title}</span>
-        </Anchor>
-        <span className="latest-bid">{description}</span> */}
             <ProductBid price={price} utxo={utxo} confirmed={confirmed} date={date} type={type} onSale={onSale} />
         </div>
     );

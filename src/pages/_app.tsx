@@ -12,7 +12,10 @@ import "../assets/scss/style.scss";
 const MyApp = ({ Component, pageProps }) => {
     const router = useRouter();
     useEffect(() => {
-        sal({ threshold: 0.1, once: true });
+        sal({
+            threshold: 0.1, once: true,
+            root: undefined
+        });
     }, [router.asPath]);
 
     useEffect(() => {

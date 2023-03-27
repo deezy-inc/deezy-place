@@ -1,7 +1,8 @@
+import { BLOCKSTREAM_API, TURBO_API, TESTNET } from "@lib/constants";
 import axios from "axios";
-import { BLOCKSTREAM_API, TURBO_API } from "@lib/constants";
+import { validate, Network } from "bitcoin-address-validation";
 
-const getInscriptions = async (address) => axios.get(`${TURBO_API}/wallet/${address}/inscriptions`);
+const getInscriptions = async (address) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
 
 const getUtxoForInscription = async (inscription, address) => {
     const {
@@ -18,8 +19,14 @@ const getUtxoForInscription = async (inscription, address) => {
 
     const { data: utxo } = await axios.get(`${BLOCKSTREAM_API}/tx/${txid}`);
     const { value } = utxo.vout.find((v) => v.scriptpubkey_address === address);
+    const { version, locktime, size, weight, fee, status } = utxo;
     return {
-        ...utxo,
+        version,
+        locktime,
+        size,
+        weight,
+        fee,
+        status,
         inscriptionId: inscription?.id,
         ...inscription,
         value,
@@ -28,13 +35,33 @@ const getUtxoForInscription = async (inscription, address) => {
 
 export default async function handler(req, res) {
     const {
-        query: { address, offset, limit },
+        query: { address = "", offset = 0, limit = 10 },
     } = req;
-    const { data } = await getInscriptions(address);
-    const inscriptions = data?.slice(offset, limit);
-    const inscriptionsWithUtxo = await Promise.allSettled(
-        inscriptions.map((inscription) => getUtxoForInscription(inscription, address))
-    );
 
-    res.status(200).json({ inscriptionsWithUtxo: inscriptionsWithUtxo.map((x) => x.value) });
+    if (!validate(address, TESTNET ? Network.testnet : Network.mainnet)) {
+        res.status(400).json({ error: "Invalid address" });
+        return;
+    }
+
+    if (limit > 100) {
+        res.status(400).json({ error: "Limit cannot be greater than 100" });
+        return;
+    }
+
+    const from = parseInt(offset, 10);
+    const to = from + parseInt(limit, 10);
+    const data = await getInscriptions(address);
+    const inscriptions = data?.slice(from, to);
+    const inscriptionsWithUtxo = (
+        await Promise.allSettled(inscriptions.map((inscription) => getUtxoForInscription(inscription, address)))
+    )
+        .filter((i) => i.status === "fulfilled")
+        .map((i) => i.value);
+
+    const result = {
+        data: { inscriptions: inscriptionsWithUtxo },
+        count: data.length,
+        size: inscriptionsWithUtxo.length,
+    };
+    res.status(200).json(result);
 }

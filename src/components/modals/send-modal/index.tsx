@@ -59,6 +59,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             address: destinationBtcAddress,
             value: outputValue(utxo, sendFeeRate),
         });
+        // @ts-ignore
         const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
             0,
             [inputAddressInfo.output],
@@ -144,7 +145,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                         min="1"
                                         max="100"
                                         defaultValue={sendFeeRate}
-                                        onChange={(evt) => setSendFeeRate(evt.target.value)}
+                                        onChange={(evt) => setSendFeeRate(parseInt(evt.target.value))}
                                     />
                                 </InputGroup>
                             </div>

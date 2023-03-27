@@ -12,6 +12,7 @@ const Button = ({
     size = "large",
     color = "primary",
     shape,
+    disabled = false,
     fullwidth,
     ...rest
 }: ButtonProps) => {
@@ -58,6 +59,7 @@ const Button = ({
 
 interface ButtonProps {
     children: ReactNode;
+    disabled?: boolean;
     type?: "button" | "submit" | "reset";
     label?: string;
     onClick: () => void;

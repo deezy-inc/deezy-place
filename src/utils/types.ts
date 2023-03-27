@@ -88,7 +88,7 @@ export interface Utxo {
     weight: number;
     fee: number;
     status: Status;
-    content_type: string
+    content_type: string;
 }
 
 export interface Vin {
@@ -157,6 +157,12 @@ export interface Author {
     name: string;
     slug: string;
     image: {
-        src: string
+        src: string;
     };
+}
+
+declare global {
+    interface Window {
+        nostr: any;
+    }
 }

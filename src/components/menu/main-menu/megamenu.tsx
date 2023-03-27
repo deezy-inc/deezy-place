@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import Anchor from "@ui/anchor";
 
-const MegaMenu = ({ menu }) => (
+const MegaMenu = ({ menu }: MegaMenuProps) => (
     <div className="rn-megamenu">
         <div className="wrapper">
             <div className="row row--0">
@@ -26,8 +26,16 @@ const MegaMenu = ({ menu }) => (
     </div>
 );
 
-MegaMenu.propTypes = {
-    menu: PropTypes.arrayOf(PropTypes.shape({})),
-};
+export interface MegaMenuProps {
+    menu: {
+        id: string; 
+        submenu: { 
+            id: string; 
+            path: string; 
+            text: string; 
+            icon?: string;
+        }
+    }[];
+}
 
 export default MegaMenu;

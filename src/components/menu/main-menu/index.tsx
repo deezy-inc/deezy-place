@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import Anchor from "@ui/anchor";
 import clsx from "clsx";
-import SubMenu from "./submenu";
-import MegaMenu from "./megamenu";
+import SubMenu, { SubMenuProps } from "./submenu";
+import MegaMenu, { MegaMenuProps } from "./megamenu";
 
-const MainMenu = ({ menu }) => (
+const MainMenu = ({ menu }: MainMenuProps) => (
     <ul className="mainmenu">
         {menu.map((nav) => (
             <li
@@ -24,8 +24,12 @@ const MainMenu = ({ menu }) => (
     </ul>
 );
 
-MainMenu.propTypes = {
-    menu: PropTypes.arrayOf(PropTypes.shape({})),
-};
+interface MainMenuProps {
+    menu: {
+        id: string;
+        submenu?: SubMenuProps;
+        megamenu?: MegaMenuProps;
+    }[];
+}
 
 export default MainMenu;

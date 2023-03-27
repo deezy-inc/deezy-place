@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import Anchor from "@ui/anchor";
 
-const SubMenu = ({ menu }) => (
+const SubMenu = ({ menu }: SubMenuProps) => (
     <ul className="submenu">
         {menu.map((nav) => (
             <li key={nav.id}>
@@ -14,8 +14,14 @@ const SubMenu = ({ menu }) => (
     </ul>
 );
 
-SubMenu.propTypes = {
-    menu: PropTypes.arrayOf(PropTypes.shape({})),
-};
+export interface SubMenuProps {
+    menu: { 
+        id: string;
+        path: string;
+        isLive: boolean;
+        text: string;
+        icon?: string;
+    }
+}
 
 export default SubMenu;

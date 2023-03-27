@@ -17,10 +17,10 @@ const LogoWidget = ({ data }: LogoWidgetProps) => (
 interface LogoWidgetProps {
     data: {
         logo: {
-            src: string,
-            alt: string,
+            src: string;
+            alt: string;
         }[];
-    },
-};
+    };
+}
 
 export default LogoWidget;

@@ -1,12 +1,12 @@
 export interface ItemType {
     id: string | number;
-    title: string,
-    subtitle: string,
-    path: string,
-    description: string,
-    images: ImageType[],
-    image: ImageType,
-};
+    title: string;
+    subtitle: string;
+    path: string;
+    description: string;
+    images: ImageType[];
+    image: ImageType;
+}
 
 export interface OrdinalType {
     id: string | number;
@@ -16,12 +16,12 @@ export interface OrdinalType {
     price: {
         amount: number;
         currency: string;
-    },
+    };
     likeCount: number;
     image: ImageType;
     authors: Author[];
     utxo: number;
-};
+}
 
 export interface SellerType {
     id: string | number;
@@ -31,7 +31,7 @@ export interface SellerType {
     image: ImageType;
     top_since: string;
     isVarified: boolean;
-};
+}
 
 export interface CollectionType {
     id: string | number;
@@ -40,8 +40,8 @@ export interface CollectionType {
     total_item: number;
     image: ImageType;
     thumbnails: ImageType[];
-    profile_image: ImageType
-};
+    profile_image: ImageType;
+}
 
 export interface FeatureProductsType {
     id: string | number;
@@ -50,9 +50,9 @@ export interface FeatureProductsType {
     author: {
         name: string;
         slug: string;
-    },
+    };
     image: ImageType;
-};
+}
 
 export interface NotifactionType {
     id: string | number;
@@ -62,7 +62,7 @@ export interface NotifactionType {
     date: string;
     time: string;
     image: ImageType;
-};
+}
 
 export interface Meta {
     name: string;

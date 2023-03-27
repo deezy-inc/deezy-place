@@ -61,6 +61,6 @@ interface HeaderProps {
     className?: string;
     onConnectHandler: () => void;
     onDisconnectHandler: () => void;
-};
+}
 
 export default Header;

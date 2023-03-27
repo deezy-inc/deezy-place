@@ -3,7 +3,8 @@ import axios from "axios";
 import { validate, Network } from "bitcoin-address-validation";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const getInscriptions = async (address: string) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
+const getInscriptions = async (address: string) =>
+    (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
 
 const getUtxoForInscription = async (inscription, address) => {
     const {

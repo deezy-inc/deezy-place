@@ -2,7 +2,19 @@ import { ReactNode } from "react";
 import clsx from "clsx";
 import Anchor from "../anchor";
 
-const Button = ({ children, type = "button", label, onClick, className, path, size = "large", color = "primary", shape, fullwidth, ...rest }: ButtonProps) => {
+const Button = ({
+    children,
+    type = "button",
+    label,
+    onClick,
+    className,
+    path,
+    size = "large",
+    color = "primary",
+    shape,
+    fullwidth,
+    ...rest
+}: ButtonProps) => {
     if (path) {
         return (
             <Anchor
@@ -46,15 +58,15 @@ const Button = ({ children, type = "button", label, onClick, className, path, si
 
 interface ButtonProps {
     children: ReactNode;
-    type?: "button" | "submit"  | "reset";
-    label?: string,
-    onClick: () => void,
-    className?: string,
-    path?: string,
+    type?: "button" | "submit" | "reset";
+    label?: string;
+    onClick: () => void;
+    className?: string;
+    path?: string;
     size?: "large" | "small" | "medium";
     color?: "primary" | "primary-alta";
     shape?: "square" | "ellipse";
-    fullwidth?: boolean,
-};
+    fullwidth?: boolean;
+}
 
 export default Button;

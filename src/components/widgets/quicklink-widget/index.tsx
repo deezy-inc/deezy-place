@@ -17,13 +17,13 @@ const QuicklinkWidget = ({ data }) => (
 
 interface QuicklinkWidgetProps {
     data: {
-        title: string,
+        title: string;
         menu: {
-                id: number | string;
-                text: string;
-                path: string;
-            }[]
-    },
-};
+            id: number | string;
+            text: string;
+            path: string;
+        }[];
+    };
+}
 
 export default QuicklinkWidget;

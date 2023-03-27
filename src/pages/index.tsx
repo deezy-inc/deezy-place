@@ -38,7 +38,6 @@ const App = () => {
         setNostrAddress(address);
     }, [nostrPublicKey]);
 
-
     const obj = useMemo(
         () => ({
             nostrPublicKey,

@@ -21,9 +21,9 @@ interface LogoProps {
     className?: string;
     path?: string;
     logo: {
-            src: string;
-            alt?: string;
-        }[]
-};
+        src: string;
+        alt?: string;
+    }[];
+}
 
 export default Logo;

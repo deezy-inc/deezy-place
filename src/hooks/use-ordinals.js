@@ -46,7 +46,11 @@ function useOrdinals({ nostrAddress }) {
         setIsFetching(true);
         const currentOffset = pOffset || offset;
         const {
-            data: { inscriptions, count, size },
+            data: {
+                data: { inscriptions },
+                count,
+                size,
+            },
         } = await axios.get(`/api/inscriptions/${nostrAddress}?offset=${currentOffset}&limit=${FETCH_SIZE}`);
         const loaded = size + currentOffset;
         setTotal(count);

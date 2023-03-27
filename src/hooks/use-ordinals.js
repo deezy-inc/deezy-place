@@ -31,7 +31,7 @@ function useOrdinals({ nostrAddress }) {
     const [keyword, setKeyword] = useState("");
     const [debouncedKeyword, setDebouncedKeyword] = useState("");
     const [activeSort, setActiveSort] = useState("date");
-    const [sortAsc, setSortAsc] = useState(false);
+    const [sortAsc, setSortAsc] = useState(true);
     const [isFetching, setIsFetching] = useState(false);
 
     useDebounce(

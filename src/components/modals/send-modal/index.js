@@ -98,7 +98,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 </button>
             )}
             <Modal.Header>
-                <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}</h3>
+                <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}</p>

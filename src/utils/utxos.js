@@ -12,50 +12,67 @@ export const getAddressUtxos = async (address) => {
     // search through all transactions, find the outputs, and then remove the outputs that have been spent.
     const outputs = []; // This tracks all outputs that have been seen on the address.
     const spentOutpoints = new Set(); // This tracks all outputs that have been spent from this address.
-    let lastSeenTxId = null;
-    // We do one pass through to find all outputs and spent outputs.
-    while (true) {
-        // Short delay to help get around rate limits.
+    let resp;
+    try {
+        const url = `${baseMempoolUrl}/api/address/${address}/utxo`;
         // eslint-disable-next-line no-await-in-loop
-        await delay(100);
-        // eslint-disable-next-line no-await-in-loop
-        console.log(lastSeenTxId);
-        const url = `${baseMempoolUrl}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
-        // eslint-disable-next-line no-await-in-loop
-        let resp;
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            resp = await axios.get(url);
-        } catch (e) {
-            console.log(`Error`);
-            console.error(e);
-            // eslint-disable-next-line no-await-in-loop
-            await delay(5000);
-            // eslint-disable-next-line no-continue
-            continue;
-        }
+        resp = await axios.get(url);
         const txs = resp.data;
-        if (txs.length === 0) break;
+        if (txs.length === 0) return outputs;
         // eslint-disable-next-line no-restricted-syntax
         for (const tx of txs) {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const input of tx.vin) {
-                spentOutpoints.add(`${input.txid}:${input.vout}`);
+            outputs.push({
+                txid: tx.txid,
+                vout: tx.vout,
+                status: tx.status,
+                value: tx.value,
+            });
+        }
+        return outputs;
+    } catch (e) {
+        let lastSeenTxId = null;
+        // We do one pass through to find all outputs and spent outputs.
+        while (true) {
+            // Short delay to help get around rate limits.
+            // eslint-disable-next-line no-await-in-loop
+            await delay(100);
+            // eslint-disable-next-line no-await-in-loop
+            console.log(lastSeenTxId);
+            const url = `${baseMempoolUrl}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                resp = await axios.get(url);
+            } catch (e2) {
+                console.log(`Error`);
+                console.error(e2);
+                // eslint-disable-next-line no-await-in-loop
+                await delay(5000);
+                // eslint-disable-next-line no-continue
+                continue;
             }
-            for (let n = 0; n < tx.vout.length; n++) {
-                const output = tx.vout[n];
-                if (output.scriptpubkey_address === address) {
-                    outputs.push({
-                        txid: tx.txid,
-                        vout: n,
-                        status: tx.status,
-                        value: output.value,
-                    });
+            const txs = resp.data;
+            if (txs.length === 0) break;
+            // eslint-disable-next-line no-restricted-syntax
+            for (const tx of txs) {
+                // eslint-disable-next-line no-restricted-syntax
+                for (const input of tx.vin) {
+                    spentOutpoints.add(`${input.txid}:${input.vout}`);
+                }
+                for (let n = 0; n < tx.vout.length; n++) {
+                    const output = tx.vout[n];
+                    if (output.scriptpubkey_address === address) {
+                        outputs.push({
+                            txid: tx.txid,
+                            vout: n,
+                            status: tx.status,
+                            value: output.value,
+                        });
+                    }
                 }
             }
+            lastSeenTxId = txs[txs.length - 1].txid;
         }
-        lastSeenTxId = txs[txs.length - 1].txid;
+        // Now we filter out all outputs that have been spent.
+        return outputs.filter((it) => !spentOutpoints.has(`${it.txid}:${it.vout}`));
     }
-    // Now we filter out all outputs that have been spent.
-    return outputs.filter((it) => !spentOutpoints.has(`${it.txid}:${it.vout}`));
 };

@@ -1,6 +1,6 @@
 import { TESTNET } from "@lib/constants";
 
-const axios = require("axios");
+import axios from "axios";
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

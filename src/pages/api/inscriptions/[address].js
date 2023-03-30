@@ -37,19 +37,13 @@ const getUtxoForInscription = async (inscription, address) => {
     };
 };
 
-export default async function handler(req, res) {
-    const {
-        query: { address = "", offset = 0, limit = 10 },
-    } = req;
-
+export const processAddress = async ({ address, offset, limit }) => {
     if (!validate(address, TESTNET ? Network.testnet : Network.mainnet)) {
-        res.status(400).json({ error: "Invalid address" });
-        return;
+        throw new Error("Invalid address");
     }
 
     if (limit > 100) {
-        res.status(400).json({ error: "Limit cannot be greater than 100" });
-        return;
+        throw new Error("Limit cannot be greater than 100");
     }
 
     const from = parseInt(offset, 10);
@@ -67,5 +61,18 @@ export default async function handler(req, res) {
         count: data.length,
         size: inscriptionsWithUtxo.length,
     };
-    res.status(200).json(result);
+    return result;
+};
+
+export default async function handler(req, res) {
+    const {
+        query: { address = "", offset = 0, limit = 10 },
+    } = req;
+
+    try {
+        const result = await processAddress({ address, offset, limit });
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message || error });
+    }
 }

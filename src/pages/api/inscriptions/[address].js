@@ -2,15 +2,19 @@ import { BLOCKSTREAM_API, TURBO_API, TESTNET } from "@lib/constants";
 import axios from "axios";
 import { validate, Network } from "bitcoin-address-validation";
 import { getAddressUtxos } from "@utils/utxos";
+import { setupCache } from "axios-cache-interceptor";
 
 const getInscriptions = async (address) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
+
+// Defaults to 5 minute cache
+const axiosC = setupCache(axios);
 
 const getOutpointForInscription = async (inscription) => {
     const {
         data: {
             inscription: { outpoint },
         },
-    } = await axios.get(`${TURBO_API}/inscription/${inscription.id}/outpoint`);
+    } = await axiosC.get(`${TURBO_API}/inscription/${inscription.id}/outpoint`);
 
     const txid = outpoint
         .substring(0, outpoint.length - 8)

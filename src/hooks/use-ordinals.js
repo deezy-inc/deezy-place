@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FETCH_SIZE } from "@lib/constants";
 import { useDebounce } from "react-use";
 import { matchSorter } from "match-sorter";
-
-import axios from "axios";
+import { nosft } from "nosft-core-ajs";
 
 const filterAscDate = (arr) => arr.sort((a, b) => a.status.block_time - b.status.block_time);
 const filterDescDate = (arr) => arr.sort((a, b) => b.status.block_time - a.status.block_time);
@@ -46,12 +45,14 @@ function useOrdinals({ nostrAddress }) {
         setIsFetching(true);
         const currentOffset = pOffset || offset;
         const {
-            data: {
-                data: { inscriptions },
-                count,
-                size,
-            },
-        } = await axios.get(`/api/inscriptions/${nostrAddress}?offset=${currentOffset}&limit=${FETCH_SIZE}`);
+            data: { inscriptions },
+            count,
+            size,
+        } = await nosft.getAddressInscriptions({
+            address: nostrAddress,
+            offset: currentOffset,
+            limit: FETCH_SIZE,
+        });
         const loaded = size + currentOffset;
         setTotal(count);
         setOffset((prev) => size + prev);

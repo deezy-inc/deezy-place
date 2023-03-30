@@ -18,6 +18,7 @@ const getUtxoForInscription = async (inscription, address) => {
         .join("");
 
     const { data: utxo } = await axios.get(`${BLOCKSTREAM_API}/tx/${txid}`);
+    const vout = utxo.vout.findIndex((v) => v.scriptpubkey_address === address);
     const { value } = utxo.vout.find((v) => v.scriptpubkey_address === address);
 
     const { version, locktime, size, weight, fee, status } = utxo;
@@ -30,8 +31,8 @@ const getUtxoForInscription = async (inscription, address) => {
         fee,
         status,
         inscriptionId: inscription?.id,
-        txid: "", // TODO: please implement.
-        vout: "", // TODO: please implement.
+        txid,
+        vout,
         ...inscription,
         value,
     };

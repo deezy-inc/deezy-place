@@ -6,6 +6,7 @@ import { useDebounce } from "react-use";
 import { matchSorter } from "match-sorter";
 
 import axios from "axios";
+import { processAddress } from "src/pages/api/inscriptions/[address]";
 
 const filterAscDate = (arr) => arr.sort((a, b) => a.status.block_time - b.status.block_time);
 const filterDescDate = (arr) => arr.sort((a, b) => b.status.block_time - a.status.block_time);
@@ -45,13 +46,19 @@ function useOrdinals({ nostrAddress }) {
     const loadOrdinals = async (pOffset) => {
         setIsFetching(true);
         const currentOffset = pOffset || offset;
+        // Temporarily disabled due to request rate issues
+        // const {
+        //     data: {
+        //         data: { inscriptions },
+        //         count,
+        //         size,
+        //     },
+        // } = await axios.get(`/api/inscriptions/${nostrAddress}?offset=${currentOffset}&limit=${FETCH_SIZE}`);
         const {
-            data: {
-                data: { inscriptions },
-                count,
-                size,
-            },
-        } = await axios.get(`/api/inscriptions/${nostrAddress}?offset=${currentOffset}&limit=${FETCH_SIZE}`);
+            data: { inscriptions },
+            count,
+            size,
+        } = await processAddress({ address: nostrAddress, offset: currentOffset, limit: FETCH_SIZE });
         const loaded = size + currentOffset;
         setTotal(count);
         setOffset((prev) => size + prev);

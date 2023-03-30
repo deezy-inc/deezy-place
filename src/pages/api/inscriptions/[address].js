@@ -1,10 +1,11 @@
 import { BLOCKSTREAM_API, TURBO_API, TESTNET } from "@lib/constants";
 import axios from "axios";
 import { validate, Network } from "bitcoin-address-validation";
+import { getAddressUtxos } from "@utils/utxos";
 
 const getInscriptions = async (address) => (await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`)).data;
 
-const getUtxoForInscription = async (inscription, address) => {
+const getOutpointForInscription = async (inscription) => {
     const {
         data: {
             inscription: { outpoint },
@@ -17,24 +18,12 @@ const getUtxoForInscription = async (inscription, address) => {
         .reverse()
         .join("");
 
-    const { data: utxo } = await axios.get(`${BLOCKSTREAM_API}/tx/${txid}`);
-    const { value } = utxo.vout.find((v) => v.scriptpubkey_address === address);
-
-    const { version, locktime, size, weight, fee, status } = utxo;
-
-    return {
-        version,
-        locktime,
-        size,
-        weight,
-        fee,
-        status,
+    const item = {
         inscriptionId: inscription?.id,
-        txid: "", // TODO: please implement.
-        vout: "", // TODO: please implement.
+        txid,
         ...inscription,
-        value,
     };
+    return item;
 };
 
 export default async function handler(req, res) {
@@ -51,21 +40,32 @@ export default async function handler(req, res) {
         res.status(400).json({ error: "Limit cannot be greater than 100" });
         return;
     }
-
     const from = parseInt(offset, 10);
     const to = from + parseInt(limit, 10);
-    const data = await getInscriptions(address);
-    const inscriptions = data?.slice(from, to);
-    const inscriptionsWithUtxo = (
-        await Promise.allSettled(inscriptions.map((inscription) => getUtxoForInscription(inscription, address)))
+    const utxos = await getAddressUtxos(address);
+    const filteredUtxos = utxos?.slice(from, to);
+    const inscriptionData = await getInscriptions(address);
+    const inscriptionsWithOutpoint = (
+        await Promise.allSettled(inscriptionData.map((inscription) => getOutpointForInscription(inscription)))
     )
         .filter((i) => i.status === "fulfilled")
         .map((i) => i.value);
 
+    const inscriptionsWithOutpointMap = new Map();
+    inscriptionsWithOutpoint.forEach((inscription) => inscriptionsWithOutpointMap.set(inscription.txid, inscription));
+
+    const utxosWithInscriptionData = filteredUtxos.map((utxo) => {
+        const ins = inscriptionsWithOutpointMap.get(utxo.txid);
+        return {
+            ...utxo,
+            ...ins,
+        };
+    });
+
     const result = {
-        data: { inscriptions: inscriptionsWithUtxo },
-        count: data.length,
-        size: inscriptionsWithUtxo.length,
+        data: { inscriptions: utxosWithInscriptionData },
+        count: utxos.length,
+        size: utxosWithInscriptionData.length,
     };
     res.status(200).json(result);
 }

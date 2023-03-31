@@ -46,6 +46,13 @@ const OrdinalsArea = ({ className, space }) => {
         }
         setActiveSort("value");
     };
+    const onFilterByNum = () => {
+        if (activeSort === "num") {
+            setSortAsc(!sortAsc);
+            return;
+        }
+        setActiveSort("num");
+    };
     const onFilterByDate = () => {
         if (activeSort === "date") {
             setSortAsc(!sortAsc);
@@ -87,7 +94,7 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
-                    <div className="col-lg-4 col-md-4 col-sm-4 col-8">
+                    <div className="col-lg-3 col-md-4 col-sm-4 col-6">
                         <input placeholder="Search" value={keyword} onChange={onSearchByKeyword} />
                     </div>
                     <div className="col-lg-1 col-md-1 col-sm-1 col-2">
@@ -118,6 +125,19 @@ const OrdinalsArea = ({ className, space }) => {
                             {activeSort === "value" && (
                                 <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
                             )}
+                        </button>
+                    </div>
+                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
+                        <button
+                            type="button"
+                            className={clsx(
+                                "sort-button d-flex flex-row justify-content-center",
+                                activeSort === "num" && "active"
+                            )}
+                            onClick={onFilterByNum}
+                        >
+                            <div>#</div>
+                            {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                         </button>
                     </div>
                 </div>

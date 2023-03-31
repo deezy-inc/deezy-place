@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import clsx from "clsx";
+import { TailSpin } from "react-loading-icons";
 
-const SectionTitle = ({ title, className, disableAnimation, counter, ...restProps }) => (
+const SectionTitle = ({ title, className, disableAnimation, isLoading, ...restProps }) => (
     <div className="section-title">
         <h3
             className={clsx(className)}
@@ -11,7 +12,7 @@ const SectionTitle = ({ title, className, disableAnimation, counter, ...restProp
             {...restProps}
             dangerouslySetInnerHTML={{ __html: title }}
         />
-        <span className="ordinals-counter">{counter}</span>
+        {isLoading && <TailSpin stroke="#fec823" speed={0.75} />}
     </div>
 );
 
@@ -20,7 +21,7 @@ SectionTitle.propTypes = {
     subtitle: PropTypes.string,
     className: PropTypes.string,
     disableAnimation: PropTypes.bool,
-    counter: PropTypes.string,
+    isLoading: PropTypes.bool,
 };
 
 export default SectionTitle;

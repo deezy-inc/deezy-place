@@ -11,4 +11,3 @@ export const ORDINALS_WALLET = "https://ordinalswallet.com/";
 export const TURBO_API = "https://turbo.ordinalswallet.com";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 export const BLOCKSTREAM_API = "https://blockstream.info/api";
-export const FETCH_SIZE = 5;

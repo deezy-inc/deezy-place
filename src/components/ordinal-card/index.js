@@ -28,7 +28,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                     <InscriptionPreview utxo={utxo} />
                 </div>
                 <div className="inscription-details-area">
-                    {utxo && <div className="inscription-number">#{utxo.num}</div>}
+                    {utxo && <div className="inscription-number">{utxo.inscriptionId ? `#${utxo.num}` : "\u00A0"}</div>}
                     {!utxo && <Skeleton width={50} />}
                 </div>
                 <div className="product-share-wrapper">

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { TailSpin } from "react-loading-icons";
 import PropTypes from "prop-types";
 import { ORDINALS_EXPLORER_URL } from "@lib/constants";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
@@ -17,15 +16,12 @@ export const InscriptionPreview = ({ utxo }) => {
         }
 
         const isImage = /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo.content_type);
-        if (isImage) {
-            return (
-                <img
-                    src={`${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`}
-                    alt={utxo.txId}
-                    onLoad={handleLoad}
-                    loading="lazy"
-                />
-            );
+        if (isImage || !utxo.inscriptionId) {
+            let imgUrl = `${ORDINALS_EXPLORER_URL}/content/${utxo.inscriptionId}`;
+            if (!utxo.inscriptionId) {
+                imgUrl = "/images/logo/bitcoin.png";
+            }
+            return <img src={imgUrl} alt={utxo.txId} onLoad={handleLoad} loading="lazy" />;
         }
 
         return (

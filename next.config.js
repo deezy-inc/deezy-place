@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable */
 const path = require("path");
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({

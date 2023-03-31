@@ -3,9 +3,9 @@
 --------------------------*/
 .section-title {
     display: flex;
-
+    align-items: baseline;
     h3 {
-        margin-right: 18px;
+        margin-right: 4px;
     }
 }
 
@@ -42,4 +42,8 @@
         opacity: 1;
         animation: customOne 1.2s infinite;
     }
+}
+
+.ordinals-counter {
+    font-size: 12px;
 }

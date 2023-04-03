@@ -67,8 +67,7 @@ const App = () => {
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
 
-                    <NostrLive />
-
+                    {nostrPublicKey && nostrAddress && <NostrLive />}
                     {nostrPublicKey && nostrAddress && <OrdinalsArea />}
                 </main>
 

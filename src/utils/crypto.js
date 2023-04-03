@@ -106,11 +106,12 @@ export function tweakSigner(signer) {
                         d.get
                             ? d
                             : {
-                                enumerable: true,
-                                get: function () {
-                                    return e[k];
-                                  }
-                    });
+                                  enumerable: true,
+                                  get: function () {
+                                      return e[k];
+                                  },
+                              }
+                    );
                 }
             });
         }
@@ -118,7 +119,7 @@ export function tweakSigner(signer) {
         return Object.freeze(n);
     }
 
-    var ecc__namespace = /*#__PURE__*/_interopNamespace(ecc);
+    var ecc__namespace = /*#__PURE__*/ _interopNamespace(ecc);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     let privateKey = signer.privateKey;

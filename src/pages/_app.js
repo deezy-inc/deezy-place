@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useRouter } from "next/router";
 import sal from "sal.js";
-import Script from 'next/script'
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
@@ -24,22 +24,23 @@ const MyApp = ({ Component, pageProps }) => {
     });
     return (
         <>
-        <Script strategy="afterInteractive" src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"/>
-        <Script
-          id='google-analytics'
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
+            <Script strategy="afterInteractive" src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX" />
+                
+            <Script
+                id="google-analytics"
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{
+                    __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', 'G-T3FQG97YST');
             `,
-            }}
-        />
-        <ThemeProvider defaultTheme="dark">
-            <Component {...pageProps} />
-        </ThemeProvider>
+                }}
+            />
+            <ThemeProvider defaultTheme="dark">
+                <Component {...pageProps} />
+            </ThemeProvider>
         </>
     );
 };

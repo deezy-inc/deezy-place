@@ -58,7 +58,7 @@ export const connectWallet = async (metamask) => {
         const taprootAddress = bitcoin.payments.p2tr({
             internalPubkey: toXOnly(taprootChild.publicKey),
         });
-        return taprootAddress.pubkey.toString('hex');
+        return taprootAddress.pubkey.toString("hex");
     }
     if (window.nostr && window.nostr.enable) {
         await window.nostr.enable();

@@ -4,6 +4,9 @@
     "private": true,
     "dependencies": {
         "@next/bundle-analyzer": "^13.1.6",
+        "@scure/base": "^1.1.1",
+        "@scure/btc-signer": "^0.5.1",
+        "@stacks/common": "^6.0.0",
         "axios": "^1.2.6",
         "bip32": "^3.1.0",
         "bitcoin-address-validation": "^2.2.1",
@@ -25,7 +28,8 @@
         "react-toastify": "^9.1.1",
         "react-use": "^17.4.0",
         "sal.js": "^0.8.5",
-        "tiny-secp256k1": "^2.2.1"
+        "tiny-secp256k1": "^2.2.1",
+        "varuint-bitcoin": "^1.1.2"
     },
     "scripts": {
         "dev": "next dev",

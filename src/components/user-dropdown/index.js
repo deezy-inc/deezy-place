@@ -4,6 +4,7 @@ import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { signBip322MessageSimple } from "@utils/crypto";
 
 const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
     const getLogoUrl = () => {
@@ -83,6 +84,11 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
                 </div>
 
                 <ul className="list-inner">
+                    <li>
+                        <button type="button" onClick={signBip322MessageSimple}>
+                            Sign BIP322 Message
+                        </button>
+                    </li>
                     <li>
                         <button type="button" onClick={onDisconnect}>
                             Disconnect Wallet

@@ -64,7 +64,6 @@ export function hashBip322Message(message) {
 }
 
 export async function signBip322MessageSimple() {
-    // testing sign message logging
     const message = await prompt("Please enter BIP322 message to sign", "");
     let publicKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
     const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
@@ -171,6 +170,51 @@ export async function signBip322MessageSimple() {
     return toReturn
   }
 
+  export async function signPsbt() {
+    const message = await prompt("Please enter PSBT to sign", "");
+    const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+    const virtualToSign = bitcoin.Psbt.fromBase64(message);
+    const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [virtualToSign.data.inputs[0].witnessUtxo.script],
+        [virtualToSign.data.inputs[0].witnessUtxo.value],
+        bitcoin.Transaction.SIGHASH_ANYONECANPAY
+    );
+
+    if (metamaskDomain) {
+        const { ethereum } = window;
+        let ethAddress = ethereum.selectedAddress;
+        if (!ethAddress) {
+            await ethereum.request({ method: "eth_requestAccounts" });
+            ethAddress = ethereum.selectedAddress;
+        }
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamaskDomain)).toString("hex")}`;
+        const signature = await provider.send("personal_sign", [toSign, ethAddress]);
+        const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
+        const root = bip32.fromSeed(Buffer.from(seed));
+        const taprootChild = root.derivePath(DEFAULT_DERIV_PATH);
+        const privateKey=taprootChild.privateKey;
+        const keyPair = ECPair.fromPrivateKey(privateKey);
+        const sig = keyPair.signSchnorr(sigHash);
+        virtualToSign.updateInput(0, {
+            tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+        });
+    } else {
+        const sig =  await window.nostr.signSchnorr(sigHash.toString("hex"));
+        virtualToSign.updateInput(0, {
+            tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+        });
+    }
+    
+    virtualToSign.finalizeAllInputs();  
+
+    const toSignTx = virtualToSign.toHex();
+    const sig = `Your PSBT is: ${toSignTx}`;
+    alert(sig);
+    console.log(toSignTx);
+    return toSignTx;
+  }
 
 export const connectWallet = async (metamask) => {
     const { ethereum } = window;

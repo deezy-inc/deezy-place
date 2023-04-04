@@ -1,0 +1,225 @@
+// tab button area
+
+// product-details
+.inscription-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+    .inscription-wrapper {
+        grid-template-columns: 0.8fr 2fr;
+        gap: 20px;
+    }
+
+    .inscription-details-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+}
+
+.product-details {
+    position: sticky;
+
+    .rn-pd-thumbnail {
+        // padding: 15px;
+        border-radius: 7px;
+        border: 16px solid var(--background-color-1);
+        min-width: 300px;
+        min-height: 310px;
+    }
+
+    span {
+        &.inscription-id {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--color-primary);
+        }
+    }
+}
+
+.rn-pd-content-area {
+    span {
+        &.bid {
+            font-weight: 500;
+            font-size: 14px;
+
+            span {
+                &.price {
+                    color: var(--color-primary);
+                }
+            }
+        }
+    }
+
+    .catagory-collection {
+        display: flex;
+        margin-bottom: 20px;
+
+        .collection {
+            .collection-info {
+                margin-top: 8px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                justify-content: center;
+
+                h6 {
+                    margin: 0px;
+                }
+
+                img {
+                    max-width: 44px;
+                    border-radius: 50%;
+                    border: 2px solid var(--color-border) !important;
+                    transition: var(--transition);
+                }
+            }
+
+            @media #{$small-mobile} {
+                text-align: center;
+            }
+
+            span {
+                color: var(--color-white);
+
+                span {
+                    font-size: 16px;
+
+                    &.color-body {
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+    }
+
+    .pd-title-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        @media #{$small-mobile} {
+            display: block;
+        }
+        h4 {
+            &.title {
+                font-size: 30px;
+                margin-bottom: 0;
+                @media #{$small-mobile} {
+                    margin-bottom: 15px;
+                }
+            }
+        }
+        .pd-react-area {
+            display: flex;
+            @media #{$small-mobile} {
+                margin-bottom: 15px;
+            }
+            .share {
+                padding: 7px 12px;
+                background: var(--color-primary-alta);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: var(--transition);
+
+                svg,
+                i {
+                    width: 18px;
+                    font-size: 18px;
+                    margin-right: 5px;
+                    transition: var(--transition);
+                }
+
+                span {
+                    color: var(--color-white);
+                    transition: var(--transition);
+                }
+
+                &:hover {
+                    background: var(--color-primary) !important;
+
+                    svg,
+                    i {
+                        color: var(--color-white) !important;
+                    }
+
+                    span {
+                        color: var(--color-white) !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.rn-pd-bd-wrapper {
+    max-width: 450px;
+    .inscription-props {
+        p {
+            margin-bottom: 7px;
+            font-size: 16px;
+        }
+
+        h6 {
+            &.name-title {
+                font-size: 14px;
+                font-weight: 500;
+                margin-bottom: 10px;
+                color: var(--color-body);
+
+                @media #{$small-mobile} {
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+.rn-pd-sm-property-wrapper {
+    margin-top: 30px;
+    h6 {
+        &.pd-property-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-body);
+            margin-bottom: 10px;
+        }
+    }
+
+    .property-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        margin: -7px;
+
+        .pd-property-inner {
+            padding: 10px 15px;
+            background: var(--background-color-1);
+            border-radius: 6px;
+            max-width: 300px;
+            margin: 7px;
+            border: 1px solid var(--color-border);
+            backdrop-filter: blur(15px);
+
+            span {
+                display: block;
+                font-size: 18px;
+                margin-bottom: 7px;
+                &:last-child {
+                    margin: 0;
+                }
+                &.type {
+                    font-size: 14px;
+                }
+                &.value {
+                    font-size: 14px;
+                    letter-spacing: 0.5px;
+                }
+            }
+        }
+    }
+}

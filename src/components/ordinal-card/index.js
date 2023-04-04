@@ -1,6 +1,8 @@
 /* eslint-disable react/forbid-prop-types */
 import { useContext } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+
 import PropTypes from "prop-types";
 import Image from "next/image";
 import clsx from "clsx";
@@ -20,7 +22,7 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
-
+    console.log(utxo);
     return (
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
             <div className="card-thumbnail">
@@ -41,11 +43,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                     ))}
                     <div className="more-author-text">
                         {Boolean(utxo.inscriptionId) && (
-                            <Anchor
-                                className="logo-dark"
-                                path={`${ORDINALS_WALLET}/inscription/${utxo.inscriptionId}`}
-                                target="_blank"
-                            >
+                            <Anchor className="logo-dark" path={`/inscription/${utxo.inscriptionId}`}>
                                 {shortenStr(utxo.inscriptionId)}
                             </Anchor>
                         )}

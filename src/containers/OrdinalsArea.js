@@ -130,9 +130,10 @@ const OrdinalsArea = ({ className, space }) => {
             setUtxosReady(false);
 
             const utxos = await getSortedUtxos(nostrAddress);
-            const inscriptions = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+            const inscriptionsResponse = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
+            const inscriptions = inscriptionsResponse.data;
 
-            const inscriptionsByUtxoKey = {};
+            const inscriptionsByUtxoKey = new Map();
             const batchPromises = [];
             const populateInscriptionsMap = async (ins) => {
                 const outpoint = await getOutpointFromCache(ins.id);
@@ -146,29 +147,29 @@ const OrdinalsArea = ({ className, space }) => {
 
                 const buf = new ArrayBuffer(4);
                 const view = new DataView(buf);
-                rawVout.match(/../g).forEach((b, i) => {
+                for (const b of rawVout.match(/../g)) {
                     view.setUint8(i, parseInt(b, 16));
-                });
+                }
 
                 const vout = view.getInt32(0, 1);
-                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+                inscriptionsByUtxoKey.set(`${txid}:${vout}`, ins);
             };
 
-            for (const ins of inscriptions.data) {
+            for (const ins of inscriptions) {
                 batchPromises.push(populateInscriptionsMap(ins));
                 if (batchPromises.length === 15) {
-                    await Promise.allSettled(batchPromises);
+                    await Promise.all(batchPromises);
                     batchPromises.length = 0;
                 }
             }
-            await Promise.allSettled(batchPromises);
+            await Promise.all(batchPromises);
 
             const utxosWithInscriptionData = utxos.map((utxo) => {
-                const ins = inscriptionsByUtxoKey[utxo.key];
+                const { id, ...rest } = inscriptionsByUtxoKey.get(utxo.key) || {};
                 return {
                     ...utxo,
-                    inscriptionId: ins?.id,
-                    ...ins,
+                    inscriptionId: id,
+                    ...rest,
                 };
             });
 
@@ -176,6 +177,7 @@ const OrdinalsArea = ({ className, space }) => {
             setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);
         };
+
         loadUtxos();
     }, [refreshHack, nostrAddress]);
 

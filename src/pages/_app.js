@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import sal from "sal.js";
 import Script from "next/script";
 import { ThemeProvider } from "next-themes";
-import * as gtag from "../lib/gtag"
+import * as gtag from "../lib/gtag";
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
 
@@ -19,15 +19,13 @@ const MyApp = ({ Component, pageProps }) => {
     }, [router.asPath]);
 
     useEffect(() => {
-        const handleRouteChange = (url) => {
-          gtag.pageview(url);
-        };
-     
-        router.events.on("routeChangeComplete", handleRouteChange);
-     
-        return () => {
-          router.events.off("routeChangeComplete", handleRouteChange);
-        };
+        const handleRouteChange = (url) => {
+            gtag.pageview(url);
+        };
+        router.events.on("routeChangeComplete", handleRouteChange);
+        return () => {
+            router.events.off("routeChangeComplete", handleRouteChange);
+        };
     }, [router.events]);
 
     useEffect(() => {

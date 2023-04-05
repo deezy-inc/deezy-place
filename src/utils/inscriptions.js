@@ -2,7 +2,28 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-restricted-syntax */
 import { getAddressUtxos } from "@utils/utxos";
-import { sortUtxos, getInscriptionsForAddress, parseOutpoint, getOutpointFromCache } from "@utils/crypto";
+import { sortUtxos, parseOutpoint } from "@utils/crypto";
+import axios from "axios";
+import { TURBO_API } from "@lib/constants";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
+
+export const getOutpointFromCache = async (inscriptionId) => {
+    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
+    const cachedOutpoint = await LocalStorage.get(key);
+    if (cachedOutpoint) {
+        return cachedOutpoint;
+    }
+
+    const {
+        data: {
+            inscription: { outpoint },
+        },
+    } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+
+    await LocalStorage.set(key, outpoint);
+
+    return outpoint;
+};
 
 const getInscriptionsByUtxoKey = async (inscriptions) => {
     const inscriptionsByUtxoKey = {};
@@ -35,6 +56,11 @@ const addInscriptionDataToUtxos = (utxos, inscriptionsByUtxoKey) =>
             ...ins,
         };
     });
+
+export const getInscriptionsForAddress = async (address) => {
+    const response = await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`);
+    return response.data;
+};
 
 export const getInscriptions = async (address) => {
     const addressUtxos = await getAddressUtxos(address);

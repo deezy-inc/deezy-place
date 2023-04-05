@@ -5,6 +5,9 @@ import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } 
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
 import { ECPairFactory } from "ecpair";
+import axios from "axios";
+import { TURBO_API } from "@lib/constants";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 bitcoin.initEccLib(ecc);
 const bip32 = BIP32Factory(ecc);
@@ -58,7 +61,7 @@ export const connectWallet = async (metamask) => {
         const taprootAddress = bitcoin.payments.p2tr({
             internalPubkey: toXOnly(taprootChild.publicKey),
         });
-        return taprootAddress.pubkey.toString('hex');
+        return taprootAddress.pubkey.toString("hex");
     }
     if (window.nostr && window.nostr.enable) {
         await window.nostr.enable();
@@ -140,3 +143,49 @@ export function tweakSigner(signer) {
         network: bitcoin.networks.bitcoin,
     });
 }
+
+export const parseOutpoint = (outpoint) => {
+    const rawVout = outpoint.slice(-8);
+    const txid = outpoint
+        .substring(0, outpoint.length - 8)
+        .match(/[a-fA-F0-9]{2}/g)
+        .reverse()
+        .join("");
+
+    const buf = new ArrayBuffer(4);
+    const view = new DataView(buf);
+    rawVout.match(/../g).forEach((b, i) => {
+        view.setUint8(i, parseInt(b, 16));
+    });
+
+    const vout = view.getInt32(0, 1);
+    return [txid, vout];
+};
+
+export function sortUtxos(utxos) {
+    const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
+    return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
+}
+
+export const getInscriptionsForAddress = async (address) => {
+    const response = await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`);
+    return response.data;
+};
+
+export const getOutpointFromCache = async (inscriptionId) => {
+    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
+    const cachedOutpoint = await LocalStorage.get(key);
+    if (cachedOutpoint) {
+        return cachedOutpoint;
+    }
+
+    const {
+        data: {
+            inscription: { outpoint },
+        },
+    } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+
+    await LocalStorage.set(key, outpoint);
+
+    return outpoint;
+};

@@ -6,7 +6,7 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import HeroArea from "@containers/HeroArea";
 import OrdinalsArea from "@containers/OrdinalsArea";
-import { normalizedData, getQueryStringParam } from "@utils/methods";
+import { normalizedData } from "@utils/methods";
 import { getAddressInfo } from "@utils/crypto";
 import homepageData from "@data/general/home.json";
 import { useConnectWallet } from "@hooks";
@@ -17,7 +17,6 @@ export async function getStaticProps() {
 }
 
 const App = () => {
-    const [isExperimental, setIsExperimental] = useState(false);
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
 
@@ -26,27 +25,21 @@ const App = () => {
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
 
     useEffect(() => {
-        const exp = getQueryStringParam("__mode");
-        if (exp === "astral") {
-            setIsExperimental(true);
-        }
-        if (elementRef.current) {
-            setHeaderHeight(elementRef.current.clientHeight);
-        }
-    }, []);
-
-    useEffect(() => {
         if (!nostrPublicKey) return;
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
     }, [nostrPublicKey]);
 
     useEffect(() => {
+        if (elementRef.current) {
+            setHeaderHeight(elementRef.current.clientHeight);
+        }
+
         if (typeof window === "undefined") return;
         if (!window.ethereum) return;
         const provider = window.ethereum;
         setEthProvider(provider);
-    });
+    }, []);
 
     const content = normalizedData(homepageData?.content || []);
 
@@ -54,10 +47,9 @@ const App = () => {
         () => ({
             nostrPublicKey,
             nostrAddress,
-            isExperimental,
             ethProvider,
         }),
-        [nostrPublicKey, nostrAddress, isExperimental, ethProvider]
+        [nostrPublicKey, nostrAddress, ethProvider]
     );
 
     return (

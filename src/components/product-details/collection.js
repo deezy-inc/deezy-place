@@ -6,7 +6,7 @@ const InscriptionCollection = ({ className, collection }) => (
     <div className={clsx("collection", className)}>
         <span>Collection</span>
         <div className="collection-info">
-            <img src={collection.icon} loading="lazy" />
+            <img src={collection.icon} loading="lazy" alt={`collection-${collection.slug}`} />
             <h6 className="name">{collection.name}</h6>
         </div>
     </div>
@@ -17,7 +17,7 @@ InscriptionCollection.propTypes = {
     collection: PropTypes.shape({
         name: PropTypes.string,
         slug: PropTypes.string,
-        image: ImageType,
+        icon: ImageType,
     }),
 };
 

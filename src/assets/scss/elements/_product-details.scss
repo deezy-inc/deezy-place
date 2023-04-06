@@ -112,46 +112,50 @@
                 }
             }
         }
-        .pd-react-area {
-            display: flex;
-            @media #{$small-mobile} {
-                margin-bottom: 15px;
+    }
+}
+.inscription-actions {
+    display: flex;
+    gap: 16px;
+}
+.pd-react-area {
+    display: flex;
+    @media #{$small-mobile} {
+        margin-bottom: 15px;
+    }
+    .action {
+        padding: 7px 12px;
+        background: var(--color-primary-alta);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: var(--transition);
+
+        svg,
+        i {
+            width: 18px;
+            font-size: 18px;
+            margin-right: 5px;
+            transition: var(--transition);
+        }
+
+        span {
+            color: var(--color-white);
+            transition: var(--transition);
+        }
+
+        &:hover {
+            background: var(--color-primary) !important;
+
+            svg,
+            i {
+                color: var(--color-white) !important;
             }
-            .share {
-                padding: 7px 12px;
-                background: var(--color-primary-alta);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                border-radius: 6px;
-                transition: var(--transition);
 
-                svg,
-                i {
-                    width: 18px;
-                    font-size: 18px;
-                    margin-right: 5px;
-                    transition: var(--transition);
-                }
-
-                span {
-                    color: var(--color-white);
-                    transition: var(--transition);
-                }
-
-                &:hover {
-                    background: var(--color-primary) !important;
-
-                    svg,
-                    i {
-                        color: var(--color-white) !important;
-                    }
-
-                    span {
-                        color: var(--color-white) !important;
-                    }
-                }
+            span {
+                color: var(--color-white) !important;
             }
         }
     }

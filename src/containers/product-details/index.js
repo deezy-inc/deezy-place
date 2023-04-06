@@ -1,17 +1,24 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import InscriptionCollection from "@components/product-details/collection";
+import WalletContext from "@context/wallet-context";
 
 const ProductDetailsArea = ({ space, className, inscription, collection }) => {
+    const { nostrAddress } = useContext(WalletContext);
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
     };
+    const [isOwner, setIsOwner] = useState(false);
+
+    useEffect(() => {
+        setIsOwner(nostrAddress && nostrAddress === inscription.owner);
+    }, [nostrAddress, inscription]);
 
     console.log("inscription", inscription);
     console.log("collection", collection);
@@ -86,14 +93,56 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                                 </div>
                             </div>
 
-                            <button
-                                type="button"
-                                className="btn btn-primary  btn-small mt--50"
-                                onClick={handleSendModal}
-                                disabled={!inscription.status.confirmed}
-                            >
-                                Send Inscription
-                            </button>
+                            <div className="rn-pd-sm-property-wrapper">
+                                <h6 className="pd-property-title">Actions</h6>
+
+                                <div className="inscription-actions">
+                                    {isOwner && (
+                                        <button
+                                            className="pd-react-area btn-transparent"
+                                            type="button"
+                                            onClick={handleSendModal}
+                                        >
+                                            <div className="action">
+                                                <i className="feather-send" />
+                                                <span>Send</span>
+                                            </div>
+                                        </button>
+                                    )}
+
+                                    {/* <div className="pd-react-area">
+                                        <div className="action">
+                                            <i className="feather-shopping-cart" />
+                                            <span>Buy</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="pd-react-area">
+                                        <div className="action">
+                                            <i className="feather-tag" />
+                                            <span>Sell</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="pd-react-area">
+                                        <div className="action">
+                                            <i className="feather-battery-charging" />
+                                            <span>Boost</span>
+                                        </div>
+                                    </div> */}
+                                </div>
+
+                                {/* {isOwner && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary  btn-small mt--50"
+                                        onClick={handleSendModal}
+                                        disabled={!inscription.status.confirmed}
+                                    >
+                                        Send Inscription
+                                    </button>
+                                )} */}
+                            </div>
                         </div>
                     </div>
                 </div>

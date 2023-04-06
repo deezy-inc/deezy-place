@@ -7,7 +7,7 @@ const ProductTitle = ({ className, title }) => (
         <h4 className="title">{title}</h4>
         {/* TODO: IMPLEMENT SHARE, NOW THAT WE HAVE SPECIFIC INSCRIPTION PAGES */}
         {/* <div className="pd-react-area">
-            <div className="share">
+            <div className="action">
                 <i className="feather-share" />
                 <span>Share</span>
             </div>

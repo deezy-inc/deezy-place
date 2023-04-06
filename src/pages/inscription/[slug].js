@@ -1,42 +1,20 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import PropTypes from "prop-types";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import HeroArea from "@containers/HeroArea";
-import OrdinalsArea from "@containers/OrdinalsArea";
-import { normalizedData, getQueryStringParam } from "@utils/methods";
+import { getQueryStringParam } from "@utils/methods";
 import { getAddressInfo } from "@utils/crypto";
-import homepageData from "@data/general/home.json";
+import { getOutpointFromCache } from "@utils/inscriptions";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import axios from "axios";
-import { TURBO_API, MEMPOOL_URL } from "@lib/constants";
+import { TURBO_API, MEMPOOL_API_URL } from "@lib/constants";
 import ProductDetailsArea from "@containers/product-details";
-import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
-// Move nosft-core
-const getOutpointFromCache = async (inscriptionId) => {
-    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
-    const cachedOutpoint = await LocalStorage.get(key);
-    if (cachedOutpoint) {
-        return cachedOutpoint;
-    }
-
-    const {
-        data: {
-            inscription: { outpoint },
-        },
-    } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
-
-    await LocalStorage.set(key, outpoint);
-
-    return outpoint;
-};
-
-const App = ({ inscription, collection }) => {
-    console.warn(inscription);
+const Inscription = ({ inscription, collection }) => {
     const [isExperimental, setIsExperimental] = useState(false);
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
@@ -66,7 +44,7 @@ const App = ({ inscription, collection }) => {
         if (!window.ethereum) return;
         const provider = window.ethereum;
         setEthProvider(provider);
-    });
+    }, []);
 
     const obj = useMemo(
         () => ({
@@ -120,7 +98,7 @@ export async function getServerSideProps({ params }) {
 
     const vout = view.getInt32(0, 1);
 
-    const { data: utxo } = await axios.get(`${MEMPOOL_URL}/api/tx/${txid}`);
+    const { data: utxo } = await axios.get(`${MEMPOOL_API_URL}/api/tx/${txid}`);
 
     if (inscription?.collection?.name) {
         try {
@@ -131,9 +109,16 @@ export async function getServerSideProps({ params }) {
         }
     }
 
-    props.inscription = { ...inscription, inscriptionId: inscription.id, ...utxo, vout, value: 1000 }; // TODO: @HABIBI - remove hardcoded value
+    // TODO: @HABIBI - remove hardcoded value
+    props.inscription = { ...inscription, inscriptionId: inscription.id, ...utxo, vout, value: 1000 };
     props.className = "template-color-1";
 
     return { props };
 }
-export default App;
+
+Inscription.propTypes = {
+    inscription: PropTypes.any,
+    collection: PropTypes.any,
+};
+
+export default Inscription;

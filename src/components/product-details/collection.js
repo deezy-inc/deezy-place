@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { ImageType } from "@utils/types";
 
-const InscriptionCollection = ({ className, collection, client }) => (
+const InscriptionCollection = ({ className, collection }) => (
     <div className={clsx("collection", className)}>
         <span>Collection</span>
         <div className="collection-info">

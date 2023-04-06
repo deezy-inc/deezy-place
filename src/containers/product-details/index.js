@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
 import { useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
@@ -5,7 +6,7 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import InscriptionCollection from "@components/product-details/collection";
-import { shortenStr } from "@utils/crypto";
+
 const ProductDetailsArea = ({ space, className, inscription, collection }) => {
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 // import ShareDropdown from "../share-dropdown";
 
-const ProductTitle = ({ className, title, likeCount }) => (
+const ProductTitle = ({ className, title }) => (
     <div className={clsx("pd-title-area", className)}>
         <h4 className="title">{title}</h4>
         {/* TODO: IMPLEMENT SHARE, NOW THAT WE HAVE SPECIFIC INSCRIPTION PAGES */}

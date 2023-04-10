@@ -5,9 +5,11 @@ import LocalStorage from "@services/local-storage";
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
+    const [utxosReady, setUtxosReady] = useState(false);
 
-    const onConnectHandler = async () => {
-        const pubKey = await connectWallet();
+    const onConnectHandler = async (metamask) => {
+        const pubKey = await connectWallet(metamask);
+        SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
         setNostrPublicKey(pubKey);
     };
 
@@ -15,6 +17,7 @@ function useConnectWallet() {
         setNostrPublicKey(undefined);
         SessionStorage.clear();
         LocalStorage.clear();
+        setUtxosReady(false);
     };
 
     useEffect(() => {

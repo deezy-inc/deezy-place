@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { ORDINALS_EXPLORER_URL } from "@lib/constants";
+import { ORDINALS_EXPLORER_URL } from "@lib/constants.config";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 export const InscriptionPreview = ({ utxo }) => {

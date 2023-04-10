@@ -3,7 +3,7 @@
 // we would use the original package if we can make it a library.
 /* eslint-disable */
 import { TESTNET, NOSTR_RELAY_URL, NOSTR_KIND_INSCRIPTION } from "@lib/constants.config";
-import { getAddressInfo, toXOnly } from "@utils/crypto";
+import { getAddressInfo, toXOnly, connectWallet } from "@utils/crypto";
 import { getAddressUtxos } from "@utils/utxos";
 import { relayInit, getEventHash } from "nostr-tools";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
@@ -290,7 +290,7 @@ class OpenOrdexFactory {
     async generatePSBTListingInscriptionForSale(ordinalOutput, price, paymentAddress) {
         const psbt = new bitcoin.Psbt({ network });
 
-        const pk = await window.nostr.getPublicKey();
+        const pk = await connectWallet(metamaskDomain);
         const publicKey = Buffer.from(pk, "hex");
         const inputAddressInfo = getAddressInfo(pk);
 
@@ -461,7 +461,6 @@ class OpenOrdexFactory {
         const tx = psbt.extractTransaction();
         const hex = tx.toBuffer().toString("hex");
         const fullTx = bitcoin.Transaction.fromHex(hex);
-
         await axios.post(`https://mempool.space/api/tx`, hex);
 
         return fullTx.getId();

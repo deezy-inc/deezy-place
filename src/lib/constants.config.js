@@ -17,20 +17,9 @@ export const RELAYS = [NOSTR_RELAY_URL];
 export const MAX_ONSALE = 15;
 
 export const ORDINALS_WALLET = "https://ordinalswallet.com/";
-export const ORDINALS_EXPLORER_URL = !TESTNET ? "https://ordinals.com" : "https://explorer-signet.openordex.org";
+export const ORDINALS_EXPLORER_URL = "https://turbo.ordinalswallet.com/inscription";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
-
-const config = {
-    NOSTR_RELAY_URL,
-    NOSTR_KIND_INSCRIPTION,
-    NOSTR_SELL_KIND_INSCRIPTION,
-    INSCRIPTION_SEARCH_DEPTH,
-    GITHUB_URL,
-    DEFAULT_FEE_RATE,
-    SENDS_ENABLED,
-    TESTNET,
-    ASSUMED_TX_BYTES,
-    RELAYS,
-    ORDINALS_EXPLORER_URL,
-    BITCOIN_PRICE_API_URL,
-};
+export const TURBO_API = "https://turbo.ordinalswallet.com";
+export const BLOCKSTREAM_API = "https://blockstream.info/api";
+export const MEMPOOL_API_URL = TESTNET ? "https://mempool.space/signet" : "https://blockstream.info";
+export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";

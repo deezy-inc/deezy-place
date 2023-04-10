@@ -24,6 +24,7 @@ const App = () => {
     const elementRef = useRef(null);
 
     const [nostrAddress, setNostrAddress] = useState();
+    const [ethProvider, setEthProvider] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
 
     useEffect(() => {
@@ -42,6 +43,13 @@ const App = () => {
         setNostrAddress(address);
     }, [nostrPublicKey]);
 
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (!window.ethereum) return;
+        const provider = window.ethereum;
+        setEthProvider(provider);
+    });
+
     const content = normalizedData(homepageData?.content || []);
 
     const obj = useMemo(
@@ -49,8 +57,9 @@ const App = () => {
             nostrPublicKey,
             nostrAddress,
             isExperimental,
+            ethProvider,
         }),
-        [nostrPublicKey, nostrAddress, isExperimental]
+        [nostrPublicKey, nostrAddress, isExperimental, ethProvider]
     );
 
     return (
@@ -60,6 +69,7 @@ const App = () => {
                 <Header
                     ref={elementRef}
                     nostrPublicKey={nostrPublicKey}
+                    ethProvider={ethProvider}
                     onConnectHandler={onConnectHandler}
                     onDisconnectHandler={onDisconnectHandler}
                     address={nostrAddress}

@@ -18,7 +18,7 @@ const getOutpointFromCache = async (inscriptionId) => {
 
     await LocalStorage.set(key, result.data);
 
-    return result;
+    return result.data;
 };
 
 const getInscriptionsByUtxoKey = async (inscriptions) => {

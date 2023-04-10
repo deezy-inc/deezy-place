@@ -17,6 +17,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
+        console.log("EXEC EFFECT", inscription, nostrAddress);
         setIsOwner(nostrAddress && nostrAddress === inscription.owner);
     }, [nostrAddress, inscription]);
 
@@ -92,12 +93,13 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                                     </div>
                                 </div>
                             </div>
+                            {/* TODO: Remove this as soon as we have an available */}
+                            {isOwner && (
+                                <div className="rn-pd-sm-property-wrapper">
+                                    <h6 className="pd-property-title">Actions</h6>
 
-                            <div className="rn-pd-sm-property-wrapper">
-                                <h6 className="pd-property-title">Actions</h6>
-
-                                <div className="inscription-actions">
-                                    {isOwner && (
+                                    <div className="inscription-actions">
+                                        {/* {isOwner && ( */}
                                         <button
                                             className="pd-react-area btn-transparent"
                                             type="button"
@@ -108,9 +110,9 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                                                 <span>Send</span>
                                             </div>
                                         </button>
-                                    )}
+                                        {/* )} */}
 
-                                    {/* <div className="pd-react-area">
+                                        {/* <div className="pd-react-area">
                                         <div className="action">
                                             <i className="feather-shopping-cart" />
                                             <span>Buy</span>
@@ -130,9 +132,9 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                                             <span>Boost</span>
                                         </div>
                                     </div> */}
-                                </div>
+                                    </div>
 
-                                {/* {isOwner && (
+                                    {/* {isOwner && (
                                     <button
                                         type="button"
                                         className="btn btn-primary  btn-small mt--50"
@@ -142,7 +144,8 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                                         Send Inscription
                                     </button>
                                 )} */}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -10,16 +10,17 @@ import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";
 import ProductDetailsArea from "@containers/product-details";
+import { useRouter } from "next/router";
 
-const Inscription = ({ inscriptionId }) => {
+const Inscription = ({ inscription, collection }) => {
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
 
     const [nostrAddress, setNostrAddress] = useState();
     const [ethProvider, setEthProvider] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
-    const [inscription, setInscription] = useState();
-    const [collection, setCollection] = useState();
+    // const [inscription, setInscription] = useState();
+    // const [collection, setCollection] = useState();
 
     useEffect(() => {
         if (!nostrPublicKey) return;
@@ -29,10 +30,9 @@ const Inscription = ({ inscriptionId }) => {
 
     useEffect(() => {
         const fetchInscription = async () => {
-            const { inscription: _inscription, collection: _collection } = await getInscription(inscriptionId);
-
-            setInscription(_inscription);
-            setCollection(_collection);
+            // const { inscription: _inscription, collection: _collection } = await getInscription(inscriptionId);
+            // setInscription(_inscription);
+            // setCollection(_collection);
         };
 
         if (elementRef.current) {
@@ -79,11 +79,16 @@ const Inscription = ({ inscriptionId }) => {
 };
 
 export async function getServerSideProps({ params }) {
-    return { props: { inscriptionId: params.slug, className: "template-color-1" } };
+    const { inscription, collection } = await getInscription(params.slug);
+
+    return { props: { inscription, collection, className: "template-color-1" } };
+    // return { props: { inscriptionId: params.slug, className: "template-color-1" } };
 }
 
 Inscription.propTypes = {
-    inscriptionId: PropTypes.string,
+    // inscriptionId: PropTypes.string,
+    inscription: PropTypes.object,
+    collection: PropTypes.object,
 };
 
 export default Inscription;

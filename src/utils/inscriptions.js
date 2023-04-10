@@ -7,6 +7,7 @@ import axios from "axios";
 import { TURBO_API, MEMPOOL_API_URL } from "@lib/constants";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
+// TODO: Implement also some type of server side caching.
 const getOutpointFromCache = async (inscriptionId) => {
     const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
     const cachedOutpoint = await LocalStorage.get(key);

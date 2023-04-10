@@ -10,9 +10,8 @@ import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";
 import ProductDetailsArea from "@containers/product-details";
-import { useRouter } from "next/router";
 
-const Inscription = ({ inscription, collection }) => {
+const Inscription = ({ inscription, collection, e }) => {
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
 
@@ -56,6 +55,10 @@ const Inscription = ({ inscription, collection }) => {
         [nostrPublicKey, nostrAddress, ethProvider]
     );
 
+    if (e) {
+        return <h1>{e}</h1>;
+    }
+
     return (
         <WalletContext.Provider value={obj}>
             <Wrapper>
@@ -79,16 +82,20 @@ const Inscription = ({ inscription, collection }) => {
 };
 
 export async function getServerSideProps({ params }) {
-    const { inscription, collection } = await getInscription(params.slug);
-
-    return { props: { inscription, collection, className: "template-color-1" } };
-    // return { props: { inscriptionId: params.slug, className: "template-color-1" } };
+    try {
+        const { inscription, collection } = await getInscription(params.slug);
+        return { props: { inscription, collection, className: "template-color-1" } };
+    } catch (e) {
+        console.log(e);
+        return { props: { inscription: null, collection: null, className: "template-color-1", e: e.message } };
+    }
 }
 
 Inscription.propTypes = {
     // inscriptionId: PropTypes.string,
     inscription: PropTypes.object,
     collection: PropTypes.object,
+    e: PropTypes.object,
 };
 
 export default Inscription;

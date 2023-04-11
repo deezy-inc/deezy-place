@@ -12,3 +12,4 @@ export const TURBO_API = "https://turbo.ordinalswallet.com";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 export const BLOCKSTREAM_API = "https://blockstream.info/api";
 export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";
+export const MEMPOOL_API_URL = TESTNET ? "https://mempool.space/signet" : "https://blockstream.info";

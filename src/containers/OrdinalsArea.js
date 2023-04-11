@@ -1,59 +1,18 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-continue */
 import { useContext, useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
-import { useDebounce } from "react-use";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
-import { getAddressUtxos } from "@utils/utxos";
-import axios from "axios";
-import { matchSorter } from "match-sorter";
-import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
-import { TURBO_API } from "@lib/constants";
-import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
-
-const collectionAuthor = [
-    {
-        name: "Danny Deezy",
-        slug: "/deezy",
-        image: {
-            src: "/images/logo/nos-ft-logo.png",
-        },
-    },
-];
-
-const getSortedUtxos = async (nostrAddress) => {
-    const utxos = await getAddressUtxos(nostrAddress);
-    const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
-    return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
-};
-
-const filterAscDate = (arr) => arr.sort((a, b) => a.status.block_time - b.status.block_time);
-const filterDescDate = (arr) => arr.sort((a, b) => b.status.block_time - a.status.block_time);
-const filterAscValue = (arr) => arr.sort((a, b) => a.value - b.value);
-const filterDescValue = (arr) => arr.sort((a, b) => b.value - a.value);
-const filterAscNum = (arr) => arr.sort((a, b) => a.num - b.num);
-const filterDescNum = (arr) => arr.sort((a, b) => b.num - a.num);
-
-const applyFilters = ({ utxos, activeSort, sortAsc }) => {
-    let filtered = utxos;
-    if (activeSort === "value") {
-        filtered = sortAsc ? filterAscValue(filtered) : filterDescValue(filtered);
-    } else if (activeSort === "num") {
-        filtered = sortAsc ? filterAscNum(filtered) : filterDescNum(filtered);
-    } else {
-        filtered = sortAsc ? filterAscDate(filtered) : filterDescDate(filtered);
-    }
-    return filtered;
-};
+import { getInscriptions } from "@utils/inscriptions";
+import OrdinalFilter from "@components/ordinal-filter";
+import { collectionAuthor, applyFilters } from "@containers/helpers";
 
 const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useContext(WalletContext);
@@ -62,53 +21,12 @@ const OrdinalsArea = ({ className, space }) => {
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
     const [refreshHack, setRefreshHack] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
 
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
-    };
-
-    const getOutpointFromCache = async (inscriptionId) => {
-        const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
-        const cachedOutpoint = await LocalStorage.get(key);
-        if (cachedOutpoint) {
-            return cachedOutpoint;
-        }
-
-        const {
-            data: {
-                inscription: { outpoint },
-            },
-        } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
-
-        await LocalStorage.set(key, outpoint);
-
-        return outpoint;
-    };
-
-    const onFilterByValue = () => {
-        if (activeSort === "value") {
-            setSortAsc(!sortAsc);
-            return;
-        }
-        setActiveSort("value");
-    };
-    const onFilterByNum = () => {
-        if (activeSort === "num") {
-            setSortAsc(!sortAsc);
-            return;
-        }
-        setActiveSort("num");
-    };
-    const onFilterByDate = () => {
-        if (activeSort === "date") {
-            setSortAsc(!sortAsc);
-            return;
-        }
-        setActiveSort("date");
     };
 
     const onCopyAddress = () => {
@@ -129,53 +47,13 @@ const OrdinalsArea = ({ className, space }) => {
         const loadUtxos = async () => {
             setUtxosReady(false);
 
-            const utxos = await getSortedUtxos(nostrAddress);
-            const inscriptions = await axios.get(`${TURBO_API}/wallet/${nostrAddress}/inscriptions`);
-
-            const inscriptionsByUtxoKey = {};
-            const batchPromises = [];
-            const populateInscriptionsMap = async (ins) => {
-                const outpoint = await getOutpointFromCache(ins.id);
-
-                const rawVout = outpoint.slice(-8);
-                const txid = outpoint
-                    .substring(0, outpoint.length - 8)
-                    .match(/[a-fA-F0-9]{2}/g)
-                    .reverse()
-                    .join("");
-
-                const buf = new ArrayBuffer(4);
-                const view = new DataView(buf);
-                rawVout.match(/../g).forEach((b, i) => {
-                    view.setUint8(i, parseInt(b, 16));
-                });
-
-                const vout = view.getInt32(0, 1);
-                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
-            };
-
-            for (const ins of inscriptions.data) {
-                batchPromises.push(populateInscriptionsMap(ins));
-                if (batchPromises.length === 15) {
-                    await Promise.allSettled(batchPromises);
-                    batchPromises.length = 0;
-                }
-            }
-            await Promise.allSettled(batchPromises);
-
-            const utxosWithInscriptionData = utxos.map((utxo) => {
-                const ins = inscriptionsByUtxoKey[utxo.key];
-                return {
-                    ...utxo,
-                    inscriptionId: ins?.id,
-                    ...ins,
-                };
-            });
+            const utxosWithInscriptionData = await getInscriptions(nostrAddress);
 
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);
             setUtxosReady(true);
         };
+
         loadUtxos();
     }, [refreshHack, nostrAddress]);
 
@@ -201,71 +79,15 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
-                    <div className="col-lg-3 col-md-4 col-sm-4 col-6">
-                        <input
-                            placeholder="Search"
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                const filteredUtxos = matchSorter(ownedUtxos, e.target.value, {
-                                    keys: [
-                                        "inscriptionId",
-                                        "key",
-                                        "txid",
-                                        "vout",
-                                        "value",
-                                        "num",
-                                        "status.block_time",
-                                        "status.block_height",
-                                        "status.confirmed",
-                                    ],
-                                });
-                                setFilteredOwnedUtxos(filteredUtxos);
-                            }}
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                        <OrdinalFilter
+                            ownedUtxos={ownedUtxos}
+                            setFilteredOwnedUtxos={setFilteredOwnedUtxos}
+                            setActiveSort={setActiveSort}
+                            setSortAsc={setSortAsc}
+                            activeSort={activeSort}
+                            sortAsc={sortAsc}
                         />
-                    </div>
-                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
-                        <button
-                            type="button"
-                            className={clsx(
-                                "sort-button d-flex flex-row justify-content-center",
-                                activeSort === "date" && "active"
-                            )}
-                            onClick={onFilterByDate}
-                        >
-                            <div>Date</div>
-                            {activeSort === "date" && (
-                                <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
-                            )}
-                        </button>
-                    </div>
-                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
-                        <button
-                            type="button"
-                            className={clsx(
-                                "sort-button d-flex flex-row justify-content-center",
-                                activeSort === "value" && "active"
-                            )}
-                            onClick={onFilterByValue}
-                        >
-                            <div>Value</div>
-                            {activeSort === "value" && (
-                                <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>
-                            )}
-                        </button>
-                    </div>
-                    <div className="col-lg-1 col-md-1 col-sm-1 col-2">
-                        <button
-                            type="button"
-                            className={clsx(
-                                "sort-button d-flex flex-row justify-content-center",
-                                activeSort === "num" && "active"
-                            )}
-                            onClick={onFilterByNum}
-                        >
-                            <div>#</div>
-                            {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
-                        </button>
                     </div>
                 </div>
 

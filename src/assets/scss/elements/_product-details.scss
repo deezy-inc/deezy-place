@@ -28,6 +28,10 @@
         border: 16px solid var(--background-color-1);
         min-width: 300px;
         min-height: 310px;
+
+        img {
+            min-width: 100%;
+        }
     }
 
     span {
@@ -40,7 +44,7 @@
 }
 
 .rn-pd-content-area {
-    span {
+    div {
         &.bid {
             font-weight: 500;
             font-size: 14px;

@@ -10,6 +10,7 @@ import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";
 import ProductDetailsArea from "@containers/product-details";
+import { getInscription as getNostrInscription } from "@utils/nostr";
 
 const Inscription = ({ inscription, collection, e }) => {
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
@@ -18,6 +19,7 @@ const Inscription = ({ inscription, collection, e }) => {
     const [nostrAddress, setNostrAddress] = useState();
     const [ethProvider, setEthProvider] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
+    const [nostrData, setNostrData] = useState();
     // const [inscription, setInscription] = useState();
     // const [collection, setCollection] = useState();
 
@@ -26,6 +28,20 @@ const Inscription = ({ inscription, collection, e }) => {
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
     }, [nostrPublicKey]);
+
+    useEffect(() => {
+        getNostrInscription(inscription.inscriptionId, (error, data) => {
+            // object exists in nostr
+            if (data) {
+                console.log("sccess getting data", data);
+                setNostrData(data);
+            }
+
+            if (error) {
+                console.error("failed to get inscription from nostr", error);
+            }
+        });
+    }, [inscription?.inscriptionId]);
 
     useEffect(() => {
         const fetchInscription = async () => {
@@ -72,7 +88,9 @@ const Inscription = ({ inscription, collection, e }) => {
                     address={nostrAddress}
                 />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {inscription && <ProductDetailsArea inscription={inscription} collection={collection} />}
+                    {inscription && (
+                        <ProductDetailsArea inscription={inscription} collection={collection} nostr={nostrData} />
+                    )}
                 </main>
 
                 <Footer />

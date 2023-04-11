@@ -55,7 +55,6 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                     inscriptionTags: inscriptionData,
                     ...inscription,
                 });
-                // console.log(i);
 
                 forSaleInscriptions.push(i);
             }

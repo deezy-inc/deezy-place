@@ -8,20 +8,21 @@ import SendModal from "@components/modals/send-modal";
 import InscriptionCollection from "@components/product-details/collection";
 import WalletContext from "@context/wallet-context";
 
-const ProductDetailsArea = ({ space, className, inscription, collection }) => {
+const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
     };
+
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
-        setIsOwner(nostrAddress && nostrAddress === inscription.owner);
+        setIsOwner(nostrAddress && inscription.owner && nostrAddress === inscription.owner);
     }, [nostrAddress, inscription]);
 
     const minted = new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
-    // TODO: HABIBI ADD SATS VALUE HERE
+
     const properties = [
         {
             id: 1,
@@ -70,6 +71,12 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
                     <div className=" mt_md--50 mt_sm--60">
                         <div className="rn-pd-content-area">
                             <ProductTitle title={`Inscription #${inscription.num}`} likeCount={30} />
+
+                            {nostr && nostr.value && (
+                                <div className="bid mb--10">
+                                    Listed for <span className="price">{nostr.value} Sats</span>
+                                </div>
+                            )}
 
                             {/* <h6 className="title-name">{inscription.id}</h6> */}
                             {collection && (
@@ -157,6 +164,16 @@ ProductDetailsArea.propTypes = {
     className: PropTypes.string,
     inscription: PropTypes.any,
     collection: PropTypes.any,
+    nostr: PropTypes.shape({
+        id: PropTypes.string,
+        kind: PropTypes.number,
+        pubkey: PropTypes.string,
+        created_at: PropTypes.number,
+        content: PropTypes.string,
+        tags: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
+        sig: PropTypes.string,
+        value: PropTypes.number,
+    }),
 };
 
 ProductDetailsArea.defaultProps = {

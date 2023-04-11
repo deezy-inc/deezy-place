@@ -40,6 +40,9 @@ export const TAPROOT_MESSAGE = (domain) =>
     // will switch to nosft.xyz once sends are implemented
     `Sign this message to generate your Bitcoin Taproot key. This key will be used for your ${domain} transactions.`;
 
+// Used to prove ownership of address and associated ordinals
+// https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
+
 export const connectWallet = async (metamask) => {
     const { ethereum } = window;
 

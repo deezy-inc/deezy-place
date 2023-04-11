@@ -86,34 +86,3 @@ export async function getOrderInformation(order) {
         value,
     };
 }
-
-// export async function getProcessedOrder(order, orders = []) {
-//     if (!isSaleOrder(order)) return;
-//     const inscriptionId = getInscriptionId(order);
-//     if (isProcessed(orders, inscriptionId)) return;
-
-//     const inscriptionData = await fetch(`https://turbo.ordinalswallet.com/inscription/${inscriptionId}`).then(
-//         (response) => response.json()
-//     );
-
-//     // TODO: Remove this call, not needed.
-
-//     const inscriptionRawData = await getInscriptionDataById(inscriptionId);
-//     const validatedPrice = validateSellerPSBTAndExtractPrice(order.content, inscriptionRawData.output);
-//     if (!validatedPrice) return;
-
-//     if (!this.bitcoinPrice) await this.init();
-
-//     const btcPrice = await this.bitcoinPrice;
-//     const newOrder = {
-//         title: `$${satsToFormattedDollarString(validatedPrice, btcPrice)}`,
-//         txid: order.id,
-//         inscriptionId,
-//         value: validatedPrice,
-//         usdPrice: `$${satsToFormattedDollarString(validatedPrice, btcPrice)}`,
-//         ...order,
-//         ...inscriptionData,
-//     };
-
-//     return newOrder;
-// }

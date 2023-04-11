@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
 import PropTypes from "prop-types";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import SendModal from "@components/modals/send-modal";
 // import SellModal from "@components/modals/sell-modal";
 // import BuyModal from "@components/modals/buy-modal";
@@ -50,11 +50,13 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
         }
     }
     const minted = !confirmed ? "Unconfirmed" : new Date(date * 1000).toLocaleString();
+    const sats = `${price.amount} ${price.currency}`;
+    const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
 
     return (
         <div className="bid-react-area">
             <div className="last-bid">
-                {`${price.amount} ${price.currency}`}
+                {textPrice}
                 <span className="minted">{` ${minted}`}</span>
             </div>
 

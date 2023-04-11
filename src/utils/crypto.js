@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants";
+import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants.config";
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
 import { ECPairFactory } from "ecpair";
@@ -39,6 +39,9 @@ export const getAddressInfo = (publicKey) => {
 export const TAPROOT_MESSAGE = (domain) =>
     // will switch to nosft.xyz once sends are implemented
     `Sign this message to generate your Bitcoin Taproot key. This key will be used for your ${domain} transactions.`;
+
+// Used to prove ownership of address and associated ordinals
+// https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 
 export const connectWallet = async (metamask) => {
     const { ethereum } = window;

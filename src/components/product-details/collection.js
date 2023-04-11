@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { ImageType } from "@utils/types";
 
 const InscriptionCollection = ({ className, collection }) => (
     <div className={clsx("collection", className)}>
@@ -17,7 +16,7 @@ InscriptionCollection.propTypes = {
     collection: PropTypes.shape({
         name: PropTypes.string,
         slug: PropTypes.string,
-        icon: ImageType,
+        icon: PropTypes.string,
     }),
 };
 

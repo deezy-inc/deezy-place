@@ -1,4 +1,4 @@
-import { MEMPOOL_API_URL } from "@lib/constants";
+import { MEMPOOL_API_URL } from "@lib/constants.config";
 
 import axios from "axios";
 

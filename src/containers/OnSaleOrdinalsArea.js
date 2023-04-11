@@ -7,7 +7,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { deepClone } from "@utils/methods";
-import OpenOrdex from "@utils/openOrdexV3";
+import OpenOrdex from "@utils/openOrdex";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import WalletContext from "@context/wallet-context";
 

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
-const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
+const UserDropdown = ({ onDisconnect, receiveAddress }) => {
     const getLogoUrl = () => {
         const domain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
         switch (domain) {
@@ -96,7 +96,6 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
 
 UserDropdown.propTypes = {
     onDisconnect: PropTypes.func.isRequired,
-    pubKey: PropTypes.string,
     receiveAddress: PropTypes.string,
 };
 

@@ -17,12 +17,9 @@ const ProductDetailsArea = ({ space, className, inscription, collection }) => {
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
-        console.log("EXEC EFFECT", inscription, nostrAddress);
         setIsOwner(nostrAddress && nostrAddress === inscription.owner);
     }, [nostrAddress, inscription]);
 
-    console.log("inscription", inscription);
-    console.log("collection", collection);
     const minted = new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
     // TODO: HABIBI ADD SATS VALUE HERE
     const properties = [

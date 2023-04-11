@@ -1,7 +1,7 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
 import { DEFAULT_DERIV_PATH, TESTNET } from "@lib/constants";
-import { tweakSigner, TAPROOT_MESSAGE, toXOnly, outputValue, getAddressInfo } from "@utils/crypto";
+import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
 import * as bitcoin from "bitcoinjs-lib";
@@ -39,14 +39,7 @@ async function signNostr(sigHash) {
     return window.nostr.signSchnorr(sigHash.toString("hex"));
 }
 
-async function getSignHash({ psbt, inputAddressInfo, utxo }) {
-    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
-        0,
-        [inputAddressInfo.output],
-        [utxo.value],
-        bitcoin.Transaction.SIGHASH_DEFAULT
-    );
-
+export async function signSigHash({ sigHash }) {
     const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
 
     if (metamaskDomain) {
@@ -98,14 +91,47 @@ async function broadcastPsbt(psbt) {
 export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress, sendFeeRate }) {
     const inputAddressInfo = await getAddressInfo(pubKey);
     const psbt = createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate });
-    const sigHash = await getSignHash({ psbt, inputAddressInfo, utxo });
+
+    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [inputAddressInfo.output],
+        [utxo.value],
+        bitcoin.Transaction.SIGHASH_DEFAULT
+    );
+
+    const signed = await signSigHash({ sigHash, inputAddressInfo, utxo });
 
     psbt.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(sigHash, "hex")),
+        tapKeySig: serializeTaprootSignature(Buffer.from(signed, "hex")),
     });
 
     // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
     psbt.finalizeAllInputs();
     // Send it!
     return broadcastPsbt(psbt);
+}
+
+export async function signPsbt(message) {
+    const virtualToSign = bitcoin.Psbt.fromBase64(message);
+    const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [virtualToSign.data.inputs[0].witnessUtxo.script],
+        [virtualToSign.data.inputs[0].witnessUtxo.value],
+        // eslint-disable-next-line no-bitwise
+        bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
+    );
+    const sign = await signSigHash(sigHash);
+    virtualToSign.updateInput(0, {
+        tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex")),
+    });
+
+    virtualToSign.finalizeAllInputs();
+
+    const toSignTx = virtualToSign.toHex();
+
+    const sig = `Your PSBT is: ${toSignTx}`;
+    alert(sig);
+    console.log(toSignTx);
+
+    return toSignTx;
 }

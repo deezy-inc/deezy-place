@@ -4,9 +4,8 @@ import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-import { signBip322MessageSimple, signPsbt } from "@utils/crypto";
 
-const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
+const UserDropdown = ({ onDisconnect, receiveAddress }) => {
     const getLogoUrl = () => {
         const domain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
         switch (domain) {
@@ -85,16 +84,6 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
 
                 <ul className="list-inner">
                     <li>
-                        <button type="button" onClick={signPsbt}>
-                            Sign PSBT for Ordinal Listing
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" onClick={signBip322MessageSimple}>
-                            Sign BIP322 Message
-                        </button>
-                    </li>
-                    <li>
                         <button type="button" onClick={onDisconnect}>
                             Disconnect Wallet
                         </button>
@@ -107,7 +96,6 @@ const UserDropdown = ({ onDisconnect, pubKey, receiveAddress }) => {
 
 UserDropdown.propTypes = {
     onDisconnect: PropTypes.func.isRequired,
-    pubKey: PropTypes.string,
     receiveAddress: PropTypes.string,
 };
 

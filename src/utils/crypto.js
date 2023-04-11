@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants";
+import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants.config";
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
 import { ECPairFactory } from "ecpair";

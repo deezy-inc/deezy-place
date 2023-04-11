@@ -1,30 +1,25 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
-
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import PropTypes from "prop-types";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import HeroArea from "@containers/HeroArea";
-import OrdinalsArea from "@containers/OrdinalsArea";
-import { normalizedData } from "@utils/methods";
 import { getAddressInfo } from "@utils/crypto";
-import homepageData from "@data/general/home.json";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
-import NostrLive from "@containers/NostrLive";
+import { getInscription } from "@utils/inscriptions";
+import ProductDetailsArea from "@containers/product-details";
 
-export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
-}
-
-const App = () => {
+const Inscription = ({ inscription, collection, e }) => {
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
 
     const [nostrAddress, setNostrAddress] = useState();
     const [ethProvider, setEthProvider] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
+    // const [inscription, setInscription] = useState();
+    // const [collection, setCollection] = useState();
 
     useEffect(() => {
         if (!nostrPublicKey) return;
@@ -33,6 +28,12 @@ const App = () => {
     }, [nostrPublicKey]);
 
     useEffect(() => {
+        const fetchInscription = async () => {
+            // const { inscription: _inscription, collection: _collection } = await getInscription(inscriptionId);
+            // setInscription(_inscription);
+            // setCollection(_collection);
+        };
+
         if (elementRef.current) {
             setHeaderHeight(elementRef.current.clientHeight);
         }
@@ -41,9 +42,9 @@ const App = () => {
         if (!window.ethereum) return;
         const provider = window.ethereum;
         setEthProvider(provider);
-    }, []);
 
-    const content = normalizedData(homepageData?.content || []);
+        fetchInscription();
+    }, []);
 
     const obj = useMemo(
         () => ({
@@ -54,10 +55,14 @@ const App = () => {
         [nostrPublicKey, nostrAddress, ethProvider]
     );
 
+    if (e) {
+        return <h1>{e}</h1>;
+    }
+
     return (
         <WalletContext.Provider value={obj}>
             <Wrapper>
-                <SEO pageTitle="Deezy" />
+                <SEO pageTitle="Inscription details" />
                 <Header
                     ref={elementRef}
                     nostrPublicKey={nostrPublicKey}
@@ -67,10 +72,7 @@ const App = () => {
                     address={nostrAddress}
                 />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} onConnectHandler={onConnectHandler} />}
-
-                    {nostrPublicKey && nostrAddress && <NostrLive />}
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
+                    {inscription && <ProductDetailsArea inscription={inscription} collection={collection} />}
                 </main>
 
                 <Footer />
@@ -79,4 +81,21 @@ const App = () => {
     );
 };
 
-export default App;
+export async function getServerSideProps({ params }) {
+    try {
+        const { inscription, collection } = await getInscription(params.slug);
+        return { props: { inscription, collection, className: "template-color-1" } };
+    } catch (e) {
+        console.log(e);
+        return { props: { inscription: null, collection: null, className: "template-color-1", e: e.message } };
+    }
+}
+
+Inscription.propTypes = {
+    // inscriptionId: PropTypes.string,
+    inscription: PropTypes.object,
+    collection: PropTypes.object,
+    e: PropTypes.object,
+};
+
+export default Inscription;

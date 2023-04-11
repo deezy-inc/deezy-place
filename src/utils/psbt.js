@@ -1,7 +1,7 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
-import { DEFAULT_DERIV_PATH, TESTNET } from "@lib/constants";
 import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
+import { DEFAULT_DERIV_PATH, TESTNET } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
 import * as bitcoin from "bitcoinjs-lib";

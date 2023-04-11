@@ -6,7 +6,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-
+import { getInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_ONSALE } from "@lib/constants.config";
@@ -77,19 +77,14 @@ const NostrLive = ({ className, space }) => {
         addOpenOrder$.current.next(order);
     };
 
-    const formatOrder = useCallback((inscription) => {
-        const inscriptionData = Object.assign(
-            {},
-            ...inscription.tags
-                .map(([tagId, value]) => ({
-                    [tagId]: value,
-                }))
-                .map((o) => o)
-        );
+    const getInscriptionData = useCallback(async (event) => {
+        const { inscription } = await getInscription(event.inscriptionId);
+
         const forSaleInscription = deepClone({
-            inscriptionTags: inscriptionData,
             ...inscription,
+            ...event,
         });
+
         return forSaleInscription;
     }, []);
 
@@ -97,18 +92,14 @@ const NostrLive = ({ className, space }) => {
         addSubscriptionRef.current = addOpenOrder$.current
             .pipe(
                 scan((acc, curr) => {
-                    // We can add only unique ordinals by id or inscriptionId
-                    // I keep if for test purposes
-                    if (acc.find((order) => order.id === curr.id)) {
-                        return acc;
-                    }
                     // We sort by created_at DESC and limit list
                     return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
                 }, openOrders)
             )
             .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe((order) => {
-            addNewOpenOrder(formatOrder(order));
+        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
+            const inscription = await getInscriptionData(event);
+            addNewOpenOrder(inscription);
         });
 
         return () => {

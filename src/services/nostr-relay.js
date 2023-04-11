@@ -2,7 +2,7 @@ import { SimplePool, getEventHash } from "nostr-tools";
 import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
-import { OpenOrdex } from "@utils/openOrdex";
+import { getOrderInformation } from "@utils/openOrdex";
 
 class NostrRelay {
     constructor() {
@@ -28,7 +28,7 @@ class NostrRelay {
                 this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
-                        const order = await OpenOrdex.getProcessedOrder(event);
+                        const order = await getOrderInformation(event);
 
                         if (order) observer.next(order);
                     },

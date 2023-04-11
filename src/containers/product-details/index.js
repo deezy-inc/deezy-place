@@ -172,6 +172,7 @@ ProductDetailsArea.propTypes = {
         content: PropTypes.string,
         tags: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
         sig: PropTypes.string,
+        value: PropTypes.number,
     }),
 };
 

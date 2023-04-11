@@ -85,6 +85,7 @@ export const getInscription = async (inscriptionId) => {
     const [txid, vout] = parseOutpoint(outpoint);
     // Get related transaction
     const { data: utxo } = await axios.get(`${MEMPOOL_API_URL}/api/tx/${txid}`);
+
     // get value of the utxo
     const { value } = utxo.vout[vout];
 

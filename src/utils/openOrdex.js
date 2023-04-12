@@ -21,6 +21,7 @@ async function getInscriptionDataById(inscriptionId, verifyIsInscriptionNumber) 
     // Refactor the map to not reassign x[2]
     const data = [...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm)]
         .map((x) => {
+            // eslint-disable-next-line no-param-reassign
             x[2] = x[2].replace(/<.*?>/gm, "");
             return x;
         })

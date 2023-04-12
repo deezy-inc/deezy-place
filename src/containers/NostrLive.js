@@ -91,10 +91,10 @@ const NostrLive = ({ className, space }) => {
     useEffect(() => {
         addSubscriptionRef.current = addOpenOrder$.current
             .pipe(
-                scan((acc, curr) => {
-                    // We sort by created_at DESC and limit list
-                    return [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
-                }, openOrders)
+                scan(
+                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
+                    openOrders
+                )
             )
             .subscribe(setOpenOrders);
         orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {

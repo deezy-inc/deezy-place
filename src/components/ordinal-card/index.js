@@ -46,7 +46,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                             {utxo && Boolean(utxo.inscriptionId) && (
                                 <Anchor
                                     className="logo-dark"
-                                    path={`${ORDINALS_WALLET}/inscription/${utxo.inscriptionId}`}
+                                    path={`/inscription/${utxo.inscriptionId}`}
                                     target="_blank"
                                 >
                                     {shortenStr(utxo.inscriptionId)}

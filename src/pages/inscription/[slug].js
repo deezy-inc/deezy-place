@@ -101,7 +101,7 @@ const Inscription = ({ inscription, collection, e }) => {
 
 export async function getServerSideProps({ params }) {
     try {
-        const { inscription, collection } = await getInscription(params.slug);
+        const { inscription, collection = null } = await getInscription(params.slug);
         return { props: { inscription, collection, className: "template-color-1" } };
     } catch (e) {
         console.log(e);

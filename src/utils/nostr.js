@@ -1,8 +1,8 @@
-import NostrRelay from "@services/nostr-relay";
+import { nostrPool } from "@services/nostr-relay";
 import { getOrderInformation } from "@utils/openOrdex";
 
 export function getInscription(inscriptionId, callback) {
-    return NostrRelay.subscribe(
+    return nostrPool.subscribe(
         [
             {
                 "#i": [inscriptionId],

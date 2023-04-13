@@ -44,11 +44,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                         {!authors && <Skeleton circle height={40} width={40} />}
                         <div className="more-author-text">
                             {utxo && Boolean(utxo.inscriptionId) && (
-                                <Anchor
-                                    className="logo-dark"
-                                    path={`/inscription/${utxo.inscriptionId}`}
-                                    target="_blank"
-                                >
+                                <Anchor className="logo-dark" path={`/inscription/${utxo.inscriptionId}`}>
                                     {shortenStr(utxo.inscriptionId)}
                                 </Anchor>
                             )}

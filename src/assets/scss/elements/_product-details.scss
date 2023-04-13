@@ -124,6 +124,7 @@
 }
 .pd-react-area {
     display: flex;
+    width: 80px;
     @media #{$small-mobile} {
         margin-bottom: 15px;
     }

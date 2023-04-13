@@ -5,16 +5,22 @@ import clsx from "clsx";
 import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
+import SellModal from "@components/modals/sell-modal";
 import InscriptionCollection from "@components/product-details/collection";
 import WalletContext from "@context/wallet-context";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [showSendModal, setShowSendModal] = useState(false);
+    const [showSellModal, setShowSellModal] = useState(false);
+
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
     };
 
+    const handleSellModal = () => {
+        setShowSellModal((prev) => !prev);
+    };
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
@@ -103,30 +109,36 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                     <h6 className="pd-property-title">Actions</h6>
 
                                     <div className="inscription-actions">
-                                        {/* {isOwner && ( */}
-                                        <button
-                                            className="pd-react-area btn-transparent"
-                                            type="button"
-                                            onClick={handleSendModal}
-                                        >
-                                            <div className="action">
-                                                <i className="feather-send" />
-                                                <span>Send</span>
-                                            </div>
-                                        </button>
-                                        {/* )} */}
+                                        {isOwner && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleSendModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-send" />
+                                                    <span>Send</span>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {isOwner && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleSellModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-tag" />
+                                                    <span>Sell</span>
+                                                </div>
+                                            </button>
+                                        )}
 
                                         {/* <div className="pd-react-area">
                                         <div className="action">
                                             <i className="feather-shopping-cart" />
                                             <span>Buy</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="pd-react-area">
-                                        <div className="action">
-                                            <i className="feather-tag" />
-                                            <span>Sell</span>
                                         </div>
                                     </div>
 
@@ -154,7 +166,9 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                     </div>
                 </div>
             </div>
+
             <SendModal show={showSendModal} handleModal={handleSendModal} utxo={inscription} onSale={onSend} />
+            <SellModal show={showSellModal} handleModal={handleSellModal} utxo={inscription} onSale={onSend} />
         </div>
     );
 };

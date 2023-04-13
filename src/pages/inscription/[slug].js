@@ -9,7 +9,7 @@ import { getAddressInfo } from "@utils/crypto";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";
-import ProductDetailsArea from "@containers/product-details";
+// import ProductDetailsArea from "@containers/product-details";
 import { getInscription as getNostrInscription } from "@utils/nostr";
 
 const Inscription = ({ inscription, collection, e }) => {
@@ -89,7 +89,8 @@ const Inscription = ({ inscription, collection, e }) => {
                 />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {inscription && (
-                        <ProductDetailsArea inscription={inscription} collection={collection} nostr={nostrData} />
+                        <div>BUG</div>
+                        // <ProductDetailsArea inscription={inscription} collection={collection} nostr={nostrData} />
                     )}
                 </main>
 

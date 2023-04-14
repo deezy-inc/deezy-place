@@ -22,6 +22,43 @@ async function signMetamask(sigHash, metamaskDomain) {
         await ethereum.request({ method: "eth_requestAccounts" });
         ethAddress = ethereum.selectedAddress;
     }
+    
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamaskDomain)).toString("hex")}`;
+    const signature = await provider.send("personal_sign", [toSign, ethAddress]);
+    const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
+    const root = bip32.fromSeed(Buffer.from(seed));
+    console.log("root");
+    console.log(root)
+    const taprootChild = root.derivePath(DEFAULT_DERIV_PATH);
+    const { privateKey } = taprootChild;
+    console.log("child");
+    console.log(taprootChild)
+    const taprootAddress = bitcoin.payments.p2tr({
+        internalPubkey: toXOnly(taprootChild.publicKey),
+    });
+    console.log(taprootAddress);
+
+    const keyPair = ECPair.fromPrivateKey(privateKey);
+    console.log("Cleanpair")
+    console.log(keyPair)
+    const tweakedSigner = tweakSigner(keyPair);
+    console.log("Tweaked")
+    console.log(tweakedSigner)
+    console.log(sigHash);
+    return tweakedSigner.signSchnorr(sigHash);
+}
+
+async function signMetamask2() {
+    let metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+    const { ethereum } = window;
+    let ethAddress = ethereum.selectedAddress;
+
+    if (!ethAddress) {
+        await ethereum.request({ method: "eth_requestAccounts" });
+        ethAddress = ethereum.selectedAddress;
+    }
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamaskDomain)).toString("hex")}`;
@@ -32,8 +69,9 @@ async function signMetamask(sigHash, metamaskDomain) {
     const { privateKey } = taprootChild;
 
     const keyPair = ECPair.fromPrivateKey(privateKey);
-    const tweakedSigner = tweakSigner(keyPair);
-    return tweakedSigner.signSchnorr(sigHash);
+    console.log("keyapir")
+    console.log(keyPair)
+    return tweakSigner(keyPair);
 }
 
 async function signNostr(sigHash) {
@@ -114,6 +152,14 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
 
 export async function signPsbt(message) {
     message = await prompt("Please enter BIP322 message to sign", "");
+    const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+    const demo = bitcoin.Psbt.fromBase64("cHNidP8BAF4CAAAAAf17fGksrz9eKGx1nSU3RX4vcwr7bfNdQzPZ9dSEkWBcAAAAAAD/////AZBBBgAAAAAAIlEgPLBe/d3922lmXjTIt52b9NG1HFDC9jzPCTn111AG8TQAAAAAAAEBK6BoBgAAAAAAIlEgPLBe/d3922lmXjTIt52b9NG1HFDC9jzPCTn111AG8TQBAwSDAAAAARcgWzC4qnD37J3WaDEbZPRihBXdI0gN68BGutJykDcHR6wBGCDlDrX1cnzwZvmcyLBH8M6NiS9lk7JVwM58wZZVOzmuMwAA")
+    console.log(demo);
+    console.log(ECPair.fromWIF("KypUz2y1jdgzM8HGDUx9DYLmyzd8EWhruvLX2J5iSL7MiAcc7dBG"))
+    const virtualToSignC = bitcoin.Psbt.fromBase64(message);
+    console.log("Initial pbst")
+    console.log(virtualToSignC);
+    console.log(virtualToSignC.toHex())
     const virtualToSign = bitcoin.Psbt.fromBase64(message);
     const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
         0,
@@ -122,12 +168,39 @@ export async function signPsbt(message) {
         // eslint-disable-next-line no-bitwise
         bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
     );
-    const sign = await signSigHash(sigHash);
-    virtualToSign.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex")),
-    });
-
+    console.log("SigHash")
+    console.log(sigHash);
+    let keypair2 = await signMetamask2()
+    console.log("keypair")
+    console.log(keypair2);
+    if (1 ==0){
+        let keypair2 = await signMetamask2()
+        console.log("keypair")
+        console.log(keypair2);
+        virtualToSign.signInput(0,keypair2,[bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY])
+    } else if (1==1) {
+        const sign = await signSigHash({sigHash});
+        console.log("Signed sighash")
+        console.log(sign)
+        const partialSig = bitcoin.Psbt.partialSig
+        let sigArray = []
+        sigArray.push({pubkey:Buffer.from(pubKey, "hex").data,signature: serializeTaprootSignature(Buffer.from(sign, "hex")).data})
+        const serializedTr = serializeTaprootSignature(Buffer.from(sign, "hex"));
+        console.log("SerializedTr")
+        console.log(serializedTr);
+        const serializedTr2 = serializeTaprootSignature(Buffer.from(sign, "hex"),[3|128]);
+        console.log("SerializedTr2")
+        console.log(serializedTr2);
+        virtualToSign.updateInput(0, {
+            tapKeySig: serializedTr2
+        });
+    }
+    console.log("SignedVirtualTx");
+    console.log(virtualToSign.toHex());
     virtualToSign.finalizeAllInputs();
+    console.log("FinalizedVirtualTx");
+    console.log(virtualToSign);
+    console.log(virtualToSign.toHex());
 
     const toSignTx = virtualToSign.toHex();
 

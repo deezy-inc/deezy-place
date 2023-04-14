@@ -12,6 +12,7 @@ import axios from "axios";
 
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
+const toXOnly = (key) => (key.length === 33 ? key.slice(1, 33) : key);
 
 async function signMetamask(sigHash, metamaskDomain) {
     const { ethereum } = window;
@@ -112,6 +113,7 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
 }
 
 export async function signPsbt(message) {
+    message = await prompt("Please enter BIP322 message to sign", "");
     const virtualToSign = bitcoin.Psbt.fromBase64(message);
     const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
         0,

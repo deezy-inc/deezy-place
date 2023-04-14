@@ -32,7 +32,7 @@ function hashBip322Message(message) {
 // Used to prove ownership of address and associated ordinals
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 export async function signBip322MessageSimple(message) {
-    // const message = await prompt("Please enter BIP322 message to sign", "");
+    message = await prompt("Please enter BIP322 message to sign", "");
     const publicKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
 
     const nostrScript = getAddressInfo(toXOnly(publicKey.toString()));

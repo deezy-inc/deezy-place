@@ -71,3 +71,9 @@ export const getInscriptions = async (address) => {
 
     return addInscriptionDataToUtxos(utxos, inscriptionsByUtxoKey);
 };
+
+// This function retrieves first viable dummy UTXO (<1000 sats) for the given address
+export const getAddressDummyUtxo = async (address) => {
+    const utxosWithInscriptionData = await getInscriptions(address);
+    return utxosWithInscriptionData.filter((utxo) => !utxo.inscriptionId).find((utxo) => utxo.value <= 1000);
+};

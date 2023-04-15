@@ -10,7 +10,8 @@ bitcoin.initEccLib(ecc);
 const bip32 = BIP32Factory(ecc);
 const ECPair = ECPairFactory(ecc);
 
-export const outputValue = (currentUtxo, sendFeeRate) => currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
+export const outputValue = (currentUtxo, sendFeeRate, price) =>
+    price || currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 
 export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
 

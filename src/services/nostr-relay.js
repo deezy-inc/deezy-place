@@ -28,9 +28,14 @@ class NostrRelay {
                 this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
-                        const order = await getOrderInformation(event);
+                        console.log("event", event);
+                        try {
+                            const order = await getOrderInformation(event);
 
-                        if (order) observer.next(order);
+                            if (order) observer.next(order);
+                        } catch (e) {
+                            console.error(e);
+                        }
                     },
                     () => {
                         console.log(`eose`);
@@ -58,14 +63,28 @@ class NostrRelay {
 
     publish(_event, onSuccess, onError) {
         const event = cleanEvent(_event);
-        const pub = this.pool.publish(this.relays, event);
-        pub.on("ok", () => {
-            if (onSuccess) onSuccess();
-        });
-        pub.on("failed", (reason) => {
-            console.error(`failed to publish ${reason}`);
-            if (onError) onError(reason);
-        });
+
+        const pubs = this.pool.publish(this.relays, event);
+
+        let notified = false;
+        let totalPubsFailed = 0;
+        // loop over all pubs and wait for all to be done
+        for (const pub of pubs) {
+            pub.on("ok", () => {
+                // Callback success only once
+                if (onSuccess && !notified) {
+                    notified = true;
+                    onSuccess();
+                }
+            });
+            pub.on("failed", (reason) => {
+                console.error(`failed to publish ${reason}`);
+                // Callback error only if all pubs failed
+                if (++totalPubsFailed === pubs.length) {
+                    if (onError) onError(reason);
+                }
+            });
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this

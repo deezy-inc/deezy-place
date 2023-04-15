@@ -95,3 +95,10 @@ export async function getOrderInformation(order) {
         value,
     };
 }
+
+// export async function submitSignedSalePsbt(inscription, price, signedPsbt) {
+//     // Test if the signed PSBT is valid
+//     bitcoin.Psbt.fromBase64(signedPsbt, {
+//         network: NETWORK,
+//     }).extractTransaction(true);
+// }

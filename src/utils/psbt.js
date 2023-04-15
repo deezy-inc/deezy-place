@@ -61,7 +61,7 @@ function getInputParams({ utxo, inputAddressInfo }) {
     };
 }
 
-function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate }) {
+function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate, output }) {
     const network = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
     const psbt = new bitcoin.Psbt({ network });
@@ -69,11 +69,11 @@ function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate
     const inputParams = getInputParams({ utxo, inputAddressInfo });
     psbt.addInput(inputParams);
 
-    // Output
-    const output = outputValue(utxo, sendFeeRate);
+    const psbtOutputValue = output || outputValue(utxo, sendFeeRate, price);
+
     psbt.addOutput({
         address: destinationBtcAddress,
-        value: output,
+        value: psbtOutputValue,
     });
 
     return psbt;
@@ -111,7 +111,36 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
     return broadcastPsbt(psbt);
 }
 
-export async function signPsbt(message) {
+export async function generatePSBTListingInscriptionForSale({
+    pubKey,
+    utxo,
+    destinationBtcAddress,
+    sendFeeRate,
+    price,
+}) {
+    const inputAddressInfo = await getAddressInfo(pubKey);
+    const output = outputValue(null, sendFeeRate, price);
+    const psbt = createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate, output });
+
+    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [inputAddressInfo.output],
+        [output],
+        bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
+    );
+
+    const signed = await signSigHash({ sigHash, inputAddressInfo, utxo });
+
+    psbt.updateInput(0, {
+        tapKeySig: serializeTaprootSignature(Buffer.from(signed, "hex")),
+    });
+
+    // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
+    psbt.finalizeAllInputs();
+    return psbt.toBase64();
+}
+
+export async function signPsbtMessage(message) {
     const virtualToSign = bitcoin.Psbt.fromBase64(message);
     const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
         0,

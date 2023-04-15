@@ -6,16 +6,18 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, NOSTR_SELL_KIND_INSCRIPTION } from "@lib/constants.config";
+import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants.config";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
+import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { OpenOrdex } from "@utils/openOrdex";
+
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { nostrPool } from "@services/nostr-relay";
+
 import { InscriptionPreview } from "@components/inscription-preview";
+import { generatePSBTListingInscriptionForSale } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 
@@ -29,45 +31,35 @@ const SendModal = ({ show, handleModal, utxo }) => {
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [isOnSale, setIsOnSale] = useState(false);
 
-    let openOrderx;
-
     useEffect(() => {
         const getPrice = async () => {
             const btcPrice = await fetchBitcoinPrice();
             setBitcoinPrice(btcPrice);
         };
 
+        setDestinationBtcAddress(nostrAddress);
+
         getPrice();
-    }, []);
+    }, [nostrAddress]);
 
     const sale = async () => {
         setIsOnSale(true);
-        if (!openOrderx) {
-            openOrderx = await OpenOrdex.init();
-        }
 
-        const inscription = await openOrderx.getInscriptionDataById(utxo.inscriptionId);
-        const { inscriptionId } = utxo;
-        const signedPsbt = await openOrderx.generatePSBTListingInscriptionForSale(
-            inscription.output,
-            ordinalValue,
-            destinationBtcAddress
-        );
+        const signedPsbt = await generatePSBTListingInscriptionForSale({
+            pubKey: nostrPublicKey,
+            utxo,
+            destinationBtcAddress,
+            sendFeeRate: DEFAULT_FEE_RATE,
+            price: ordinalValue,
+        });
 
+        // Sign psbt event: we can only sign using Alby so far, in order to publish to nostr.
         try {
-            await openOrderx.submitSignedSalePsbt(utxo, ordinalValue, signedPsbt);
-            toast.info("Ordinal is now on sale");
+            await signAndBroadcastEvent({ utxo, ordinalValue, signedPsbt, pubkey: nostrPublicKey });
+            toast.info(`Order successfully published to Nostr!`);
         } catch (e) {
             toast.error(e.message);
         }
-        const event = {
-            pubkey: nostrPublicKey,
-            kind: NOSTR_SELL_KIND_INSCRIPTION,
-            tags: [["i", inscriptionId, signedPsbt]], // TODO: what is signedContent?
-            content: `sell ${inscriptionId}`,
-        };
-        const signedEvent = await nostrPool.sign(event);
-        nostrPool.publish(signedEvent, console.info, console.error); // TODO: it is falling
 
         setIsOnSale(false);
         handleModal();

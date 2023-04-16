@@ -1,6 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import PropTypes from "prop-types";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
@@ -11,8 +10,12 @@ import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";
 import ProductDetailsArea from "@containers/product-details";
 import { getInscription as getNostrInscription } from "@utils/nostr";
+import { useRouter } from "next/router";
 
-const Inscription = ({ inscription, collection, e }) => {
+const Inscription = () => {
+    const router = useRouter();
+    const { slug } = router.query;
+
     const [headerHeight, setHeaderHeight] = useState(148); // Optimistically
     const elementRef = useRef(null);
 
@@ -20,8 +23,19 @@ const Inscription = ({ inscription, collection, e }) => {
     const [ethProvider, setEthProvider] = useState();
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler } = useConnectWallet();
     const [nostrData, setNostrData] = useState();
-    // const [inscription, setInscription] = useState();
-    // const [collection, setCollection] = useState();
+    const [inscription, setInscription] = useState();
+    const [collection, setCollection] = useState();
+
+    useEffect(() => {
+        if (!slug) return;
+        const fetchInscription = async () => {
+            const { inscription: _inscription, collection: _collection } = await getInscription(slug);
+            setInscription(_inscription);
+            setCollection(_collection);
+        };
+
+        fetchInscription();
+    }, [slug]);
 
     useEffect(() => {
         if (!nostrPublicKey) return;
@@ -30,6 +44,7 @@ const Inscription = ({ inscription, collection, e }) => {
     }, [nostrPublicKey]);
 
     useEffect(() => {
+        if (!inscription?.inscriptionId) return;
         getNostrInscription(inscription.inscriptionId, (error, data) => {
             // object exists in nostr
             if (data) {
@@ -71,10 +86,6 @@ const Inscription = ({ inscription, collection, e }) => {
         [nostrPublicKey, nostrAddress, ethProvider]
     );
 
-    if (e) {
-        return <h1>{e}</h1>;
-    }
-
     return (
         <WalletContext.Provider value={obj}>
             <Wrapper>
@@ -99,21 +110,6 @@ const Inscription = ({ inscription, collection, e }) => {
     );
 };
 
-export async function getServerSideProps({ params }) {
-    try {
-        const { inscription, collection = null } = await getInscription(params.slug);
-        return { props: { inscription, collection, className: "template-color-1" } };
-    } catch (e) {
-        console.log(e);
-        return { props: { inscription: null, collection: null, className: "template-color-1", e: e.message } };
-    }
-}
-
-Inscription.propTypes = {
-    // inscriptionId: PropTypes.string,
-    inscription: PropTypes.object,
-    collection: PropTypes.object,
-    e: PropTypes.object,
-};
+Inscription.propTypes = {};
 
 export default Inscription;

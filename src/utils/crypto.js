@@ -82,6 +82,7 @@ export const connectWallet = async (metamask) => {
         });
         return taprootAddress.pubkey.toString("hex");
     }
+
     if (window.nostr && window.nostr.enable) {
         await window.nostr.enable();
     } else {

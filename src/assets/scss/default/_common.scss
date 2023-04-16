@@ -1,5 +1,6 @@
 body {
     scroll-behavior: auto;
+    background: var(--background-color-2);
 }
 // header sticky
 .rn-header.header--sticky {
@@ -297,8 +298,7 @@ a {
         left: 0;
         transform-origin: 50% 0;
         transform: scale(0.75) translateY(-21px);
-        transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25),
-            opacity 0.15s ease-out;
+        transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25), opacity 0.15s ease-out;
         z-index: 9;
     }
 }

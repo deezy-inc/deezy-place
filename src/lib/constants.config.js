@@ -14,7 +14,7 @@ export const TESTNET = false;
 export const ASSUMED_TX_BYTES = 111;
 export const ORDINALS_EXPLORER_URL = "https://turbo.ordinalswallet.com/inscription";
 export const RELAYS = [NOSTR_RELAY_URL];
-export const MAX_ONSALE = 1;
+export const MAX_ONSALE = 15;
 export const ORDINALS_WALLET = "https://ordinalswallet.com/";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 export const TURBO_API = "https://turbo.ordinalswallet.com";

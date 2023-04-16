@@ -65,11 +65,13 @@ class NostrRelay {
         const event = cleanEvent(_event);
 
         const pubs = this.pool.publish(this.relays, event);
+        let pubList = !Array.isArray(pubs) ? [pubs] : pubs;
 
         let notified = false;
         let totalPubsFailed = 0;
+
         // loop over all pubs and wait for all to be done
-        pubs.forEach((pub) => {
+        pubList.forEach((pub) => {
             pub.on("ok", () => {
                 // Callback success only once
                 if (onSuccess && !notified) {

@@ -192,5 +192,5 @@ export function sortUtxos(utxos) {
 }
 
 export async function getTxHexById(txId) {
-    return fetch(`${MEMPOOL_API_URL}/tx/${txId}/hex`).then((response) => response.text());
+    return fetch(`${MEMPOOL_API_URL}/api/tx/${txId}/hex`).then((response) => response.text());
 }

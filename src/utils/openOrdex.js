@@ -1,7 +1,7 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types, radix, no-empty, guard-for-in */
 import { NETWORK, ORDINALS_EXPLORER_URL_LEGACY, DUMMY_UTXO_VALUE } from "@lib/constants.config";
 import { doesUtxoContainInscription, getAddressUtxos } from "@utils/utxos";
-import { fetchRecommendedFee, satToBtc, calculateFee } from "@utils/crypto";
+import { fetchRecommendedFee, satToBtc, calculateFee, getTxHexById } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 
@@ -172,4 +172,131 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
     });
 
     return { selectedUtxos, dummyUtxo };
+}
+
+export async function generatePSBTListingInscriptionForSale({ utxo, paymentAddress, price }) {
+    const psbt = new bitcoin.Psbt({ network: NETWORK });
+    const ordinalUtxoTxId = utxo.txid;
+    const ordinalUtxoVout = utxo.vout;
+
+    const tx = bitcoin.Transaction.fromHex(await getTxHexById(ordinalUtxoTxId));
+
+    for (const output in tx.outs) {
+        try {
+            tx.setWitness(parseInt(output), []);
+        } catch {}
+    }
+
+    const input = {
+        hash: ordinalUtxoTxId,
+        index: parseInt(ordinalUtxoVout, 10),
+        nonWitnessUtxo: tx.toBuffer(),
+        witnessUtxo: tx.outs[ordinalUtxoVout],
+        // eslint-disable-next-line no-bitwise
+        sighashType: bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+    };
+
+    psbt.addInput(input);
+
+    psbt.addOutput({
+        address: paymentAddress,
+        value: price,
+    });
+
+    return psbt.toBase64();
+}
+
+export async function generatePSBTListingInscriptionForBuy({
+    payerAddress,
+    receiverAddress,
+    price,
+    paymentUtxos,
+    dummyUtxo,
+    sellerSignedPsbt,
+}) {
+    const psbt = new bitcoin.Psbt({ network: NETWORK });
+
+    let totalValue = 0;
+    let totalPaymentValue = 0;
+
+    // Add dummy utxo input
+    const txHex = await getTxHexById(dummyUtxo.txid);
+    const tx = bitcoin.Transaction.fromHex(txHex);
+    for (const output in tx.outs) {
+        try {
+            tx.setWitness(parseInt(output), []);
+        } catch {}
+    }
+    psbt.addInput({
+        hash: dummyUtxo.txid,
+        index: dummyUtxo.vout,
+        nonWitnessUtxo: tx.toBuffer(),
+    });
+
+    // Add inscription output
+    psbt.addOutput({
+        address: receiverAddress,
+        value: dummyUtxo.value + price,
+    });
+
+    // Add payer signed input
+    psbt.addInput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
+        ...sellerSignedPsbt.data.inputs[0],
+    });
+
+    // Add payer output
+    psbt.addOutput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
+    });
+
+    // Add payment utxo inputs
+    for (const utxo of paymentUtxos) {
+        const utxoTx = bitcoin.Transaction.fromHex(await getTxHexById(utxo.txid));
+        for (const output in utxoTx.outs) {
+            try {
+                utxoTx.setWitness(parseInt(output), []);
+            } catch {}
+        }
+
+        psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.vout,
+            nonWitnessUtxo: utxoTx.toBuffer(),
+            // witnessUtxo: tx.outs[utxo.vout],
+        });
+
+        totalValue += utxo.value;
+        totalPaymentValue += utxo.value;
+    }
+
+    // Create a new dummy utxo output for the next purchase
+    psbt.addOutput({
+        address: payerAddress,
+        value: DUMMY_UTXO_VALUE,
+    });
+
+    const recommendedFeeRate = await fetchRecommendedFee();
+
+    const fee = calculateFee({ vins: psbt.txInputs.length, vouts: psbt.txOutputs.length, recommendedFeeRate });
+    const changeValue = totalValue - dummyUtxo.value - price - fee;
+
+    if (changeValue < 0) {
+        throw new Error(`Your wallet address doesn't have enough funds to buy this inscription.
+Price:          ${satToBtc(price)} BTC
+Fees:       ${satToBtc(fee + DUMMY_UTXO_VALUE)} BTC
+You have:   ${satToBtc(totalPaymentValue)} BTC
+Required:   ${satToBtc(totalValue - changeValue)} BTC
+Missing:     ${satToBtc(-changeValue)} BTC`);
+    }
+
+    // Change utxo
+    psbt.addOutput({
+        address: payerAddress,
+        value: changeValue,
+    });
+
+    const psbt64 = psbt.toBase64();
+
+    return psbt64;
 }

@@ -6,17 +6,17 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET } from "@lib/constants.config";
-import { shortenStr } from "@utils/crypto";
+import { TESTNET, NETWORK } from "@lib/constants.config";
+import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { getAvailableUtxosWithoutInscription } from "@utils/openOrdex";
+import { getAvailableUtxosWithoutInscription, generatePSBTListingInscriptionForBuy } from "@utils/openOrdex";
 import { TailSpin } from "react-loading-icons";
-import { generatePSBTListingInscriptionForBuy } from "@utils/psbt";
 import { toast } from "react-toastify";
 import { InscriptionPreview } from "@components/inscription-preview";
 import { NostrEvenType } from "@utils/types";
+import { signPsbtMessage } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 
@@ -29,6 +29,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const [isOnBuy, setIsOnBuy] = useState(false);
     const [selectedUtxos, setSelectedUtxos] = useState([]);
     const [dummyUtxo, setDummyUtxo] = useState(null);
+    const [bitcoinPrice, setBitcoinPrice] = useState();
+
+    useEffect(() => {
+        const getPrice = async () => {
+            const btcPrice = await fetchBitcoinPrice();
+            setBitcoinPrice(btcPrice);
+        };
+
+        getPrice();
+    }, [nostrAddress]);
 
     // let openOrderx;
 
@@ -43,7 +53,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     const updatePayerAddress = async (address) => {
         try {
-            debugger;
             const { selectedUtxos, dummyUtxo } = await getAvailableUtxosWithoutInscription({
                 address,
                 price: utxo.value,
@@ -84,7 +93,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             } catch (e) {
                 setIsBtcInputAddressValid(false);
                 toast.error(e.message);
-                return; 
+                return;
             }
 
             setIsOnBuy(false);
@@ -96,7 +105,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const buy = async () => {
         setIsOnBuy(true);
 
-        debugger;
         try {
             await updatePayerAddress(destinationBtcAddress);
         } catch (e) {
@@ -106,20 +114,27 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         }
 
         try {
-            debugger;
-            const signedSellerPsbt = bitcoin.Psbt.fromBase64(nostr.content);
+            const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, { network: NETWORK });
 
-            await generatePSBTListingInscriptionForBuy({
-                destinationBtcAddress,
+            const psbt = await generatePSBTListingInscriptionForBuy({
+                payerAddress: destinationBtcAddress,
+                receiverAddress: destinationBtcAddress,
                 price: nostr.value,
+                paymentUtxos: selectedUtxos,
                 dummyUtxo,
-                pubKey: nostrPublicKey,
-                signedSellerPsbt,
+                sellerSignedPsbt,
             });
-            // const psbt = nostr.content;
-            // const signedPsbt = await signPsbtMessage(psbt);
-            // const txId = broadcastPsbt(signedPsbt);
-            // toast.info(`Transaction created. Please wait for it to be confirmed. TxId: ${txId}`);
+
+            try {
+                const signedPsbt = await signPsbtMessage(psbt);
+                // TODO: Enable Broadcast transaction!
+                // const txId = await broadcastPsbt(signedPsbt);
+                // toast.info(`Order successfully signed! ${txId}`);
+
+                toast.info(`Order successfully signed! ${signedPsbt.toBase64()}`);
+            } catch (e) {
+                toast.error(e.message);
+            }
 
             // Sign and send
             setIsOnBuy(false);
@@ -184,12 +199,13 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                             <div className="bid-content-left">
                                 {Boolean(destinationBtcAddress) && <span>Payment Receive Address</span>}
 
-                                {Boolean(utxo.usdPrice) && <span>Price</span>}
+                                {Boolean(nostr.value) && <span>Price</span>}
                             </div>
                             <div className="bid-content-right">
                                 {Boolean(destinationBtcAddress) && <span>{shortenStr(destinationBtcAddress)}</span>}
-
-                                {Boolean(utxo.usdPrice) && <span>{utxo.usdPrice}</span>}
+                                {Boolean(nostr.value) && bitcoinPrice && (
+                                    <span>{`$${satsToFormattedDollarString(nostr.value, bitcoinPrice)}`}</span>
+                                )}
                             </div>
                         </div>
                     </div>

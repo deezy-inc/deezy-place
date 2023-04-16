@@ -1,14 +1,15 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
-import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo, getTxHexById } from "@utils/crypto";
-import { DEFAULT_DERIV_PATH, TESTNET, NETWORK } from "@lib/constants.config";
+import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
+import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-
 import axios from "axios";
+
+bitcoin.initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
@@ -62,9 +63,7 @@ function getInputParams({ utxo, inputAddressInfo }) {
 }
 
 function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate, output }) {
-    const network = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
-
-    const psbt = new bitcoin.Psbt({ network });
+    const psbt = new bitcoin.Psbt({ network: NETWORK });
     // Input
     const inputParams = getInputParams({ utxo, inputAddressInfo });
     psbt.addInput(inputParams);
@@ -109,78 +108,6 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
     psbt.finalizeAllInputs();
     // Send it!
     return broadcastPsbt(psbt);
-}
-
-export async function generatePSBTListingInscriptionForSale({
-    pubKey,
-    utxo,
-    destinationBtcAddress,
-    sendFeeRate,
-    price,
-}) {
-    const inputAddressInfo = await getAddressInfo(pubKey);
-    const output = outputValue(null, sendFeeRate, price);
-    const psbt = createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate, output });
-
-    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
-        0,
-        [inputAddressInfo.output],
-        [output],
-        // eslint-disable-next-line no-bitwise
-        bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
-    );
-
-    const signed = await signSigHash({ sigHash, inputAddressInfo, utxo });
-
-    psbt.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(signed, "hex")),
-    });
-
-    // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
-    psbt.finalizeAllInputs();
-    const psbt64 = psbt.toBase64();
-
-    return psbt64;
-}
-
-export async function generatePSBTListingInscriptionForBuy({
-    destinationBtcAddress,
-    price,
-    dummyUtxo,
-    pubKey,
-    sellerSignedPsbt,
-}) {
-    const inputAddressInfo = await getAddressInfo(pubKey);
-
-    const psbt = new bitcoin.Psbt({ NETWORK });
-
-    // Add dummy utxo input
-    const tx = bitcoin.Transaction.fromHex(await getTxHexById(dummyUtxo.txid));
-    for (const output in tx.outs) {
-        try {
-            tx.setWitness(parseInt(output), []);
-        } catch {}
-    }
-
-    const inputParams = getInputParams({ utxo: dummyUtxo, inputAddressInfo });
-    psbt.addInput(inputParams);
-
-    // Add inscription output
-    psbt.addOutput({
-        address: destinationBtcAddress,
-        value: dummyUtxo.value + price,
-    });
-
-    // Add payer signed input
-    psbt.addInput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
-        ...sellerSignedPsbt.data.inputs[0],
-    });
-
-    // Add payer output
-    psbt.addOutput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
-    });
 }
 
 export async function signPsbtMessage(message) {

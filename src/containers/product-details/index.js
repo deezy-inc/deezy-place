@@ -143,8 +143,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
-                                        {/* {!isOwner && nostr && nostr.value && ( */}
-                                        {nostr && nostr.value && (
+                                        {!isOwner && nostr && nostr.value && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"

@@ -12,12 +12,12 @@ import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-
+import { signPsbtMessage } from "@utils/psbt";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 
 import { InscriptionPreview } from "@components/inscription-preview";
-import { generatePSBTListingInscriptionForSale } from "@utils/psbt";
+import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 
 bitcoin.initEccLib(ecc);
 
@@ -45,17 +45,23 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const sale = async () => {
         setIsOnSale(true);
 
-        const signedPsbt = await generatePSBTListingInscriptionForSale({
-            pubKey: nostrPublicKey,
+        const psbt = await generatePSBTListingInscriptionForSale({
             utxo,
-            destinationBtcAddress,
-            sendFeeRate: DEFAULT_FEE_RATE,
+            paymentAddress: destinationBtcAddress,
             price: ordinalValue,
         });
 
         // Sign psbt event: we can only sign using Alby so far, in order to publish to nostr.
         try {
-            await signAndBroadcastEvent({ utxo, ordinalValue, signedPsbt, pubkey: nostrPublicKey });
+            const signedPsbt = await signPsbtMessage(psbt);
+
+            await signAndBroadcastEvent({
+                utxo,
+                ordinalValue,
+                signedPsbt: signedPsbt.toBase64(),
+                pubkey: nostrPublicKey,
+            });
+
             toast.info(`Order successfully published to Nostr!`);
         } catch (e) {
             toast.error(e.message);

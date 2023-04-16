@@ -1,8 +1,8 @@
 import * as bitcoin from "bitcoinjs-lib";
 // import * as env from "env-var"; // TODO: enable env vars
 
-export const NOSTR_RELAY_URL = "ws://localhost:7003";
-// export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
+// export const NOSTR_RELAY_URL = "ws://localhost:7003";
+export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 
 export const NOSTR_KIND_INSCRIPTION = 802;
 

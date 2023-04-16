@@ -194,7 +194,10 @@ export async function signPsbtMessage(message) {
     );
     const sign = await signSigHash({ sigHash });
     virtualToSign.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex")),
+        tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex"), [
+            // eslint-disable-next-line no-bitwise
+            bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+        ]),
     });
 
     virtualToSign.finalizeAllInputs();

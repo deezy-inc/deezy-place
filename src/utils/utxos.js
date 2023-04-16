@@ -1,4 +1,4 @@
-import { MEMPOOL_API_URL } from "@lib/constants.config";
+import { POOL_API_URL, ORDINALS_EXPLORER_URL_LEGACY } from "@lib/constants.config";
 
 import axios from "axios";
 
@@ -8,7 +8,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // This function retrieves the list of UTXOs for the given address from the mempool.space API
 const getAddressUtxosFromApi = async (address) => {
-    const url = `${MEMPOOL_API_URL}/api/address/${address}/utxo`;
+    const url = `${POOL_API_URL}/api/address/${address}/utxo`;
     const resp = await axios.get(url);
     const utxos = resp.data.map((tx) => ({
         txid: tx.txid,
@@ -31,7 +31,7 @@ const getAddressUtxosManually = async (address) => {
         // eslint-disable-next-line no-await-in-loop
         await delay(100);
 
-        const url = `${MEMPOOL_API_URL}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
+        const url = `${POOL_API_URL}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
         // eslint-disable-next-line no-await-in-loop
         const resp = await axios.get(url);
 
@@ -80,3 +80,11 @@ export const getAddressUtxos = async (address) => {
         return utxos;
     }
 };
+
+export async function doesUtxoContainInscription(utxo) {
+    const html = await fetch(`${ORDINALS_EXPLORER_URL_LEGACY}/output/${utxo.txid}:${utxo.vout}`).then((response) =>
+        response.text()
+    );
+
+    return html.match(/class=thumbnails/) !== null;
+}

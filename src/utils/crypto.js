@@ -1,7 +1,14 @@
 /* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants.config";
+import {
+    TESTNET,
+    ASSUMED_TX_BYTES,
+    BITCOIN_PRICE_API_URL,
+    DEFAULT_DERIV_PATH,
+    FEE_LEVEL,
+    MEMPOOL_API_URL,
+} from "@lib/constants.config";
 import BIP32Factory from "bip32";
 import { ethers } from "ethers";
 import { ECPairFactory } from "ecpair";
@@ -12,6 +19,17 @@ const ECPair = ECPairFactory(ecc);
 
 export const outputValue = (currentUtxo, sendFeeRate, price) =>
     price || currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
+
+export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOutput = true }) {
+    const baseTxSize = 10;
+    const inSize = 180;
+    const outSize = 34;
+
+    const txSize = baseTxSize + vins * inSize + vouts * outSize + includeChangeOutput * outSize;
+    const fee = txSize * recommendedFeeRate;
+
+    return fee;
+}
 
 export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
 
@@ -92,6 +110,11 @@ export const fetchBitcoinPrice = async () =>
         .then((response) => response.json())
         .then((data) => data.USD.last);
 
+export const fetchRecommendedFee = async () =>
+    fetch(`${MEMPOOL_API_URL}/api/v1/fees/recommended`)
+        .then((response) => response.json())
+        .then((data) => data[FEE_LEVEL]);
+
 export function tapTweakHash(pubKey, h) {
     return bitcoin.crypto.taggedHash("TapTweak", Buffer.concat(h ? [pubKey, h] : [pubKey]));
 }
@@ -166,4 +189,8 @@ export const parseOutpoint = (outpoint) => {
 export function sortUtxos(utxos) {
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
     return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
+}
+
+export async function getTxHexById(txId) {
+    return fetch(`${MEMPOOL_API_URL}/tx/${txId}/hex`).then((response) => response.text());
 }

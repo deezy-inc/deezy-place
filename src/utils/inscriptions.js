@@ -4,7 +4,7 @@
 import { getAddressUtxos } from "@utils/utxos";
 import { sortUtxos, parseOutpoint } from "@utils/crypto";
 import axios from "axios";
-import { TURBO_API, MEMPOOL_API_URL } from "@lib/constants.config";
+import { TURBO_API, POOL_API_URL } from "@lib/constants.config";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 // TODO: Implement also some type of server side caching.
@@ -84,7 +84,7 @@ export const getInscription = async (inscriptionId) => {
 
     const [txid, vout] = parseOutpoint(outpoint);
     // Get related transaction
-    const { data: utxo } = await axios.get(`${MEMPOOL_API_URL}/api/tx/${txid}`);
+    const { data: utxo } = await axios.get(`${POOL_API_URL}/api/tx/${txid}`);
 
     // get value of the utxo
     const { value } = utxo.vout[vout];

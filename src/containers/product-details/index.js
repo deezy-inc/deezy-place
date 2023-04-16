@@ -6,13 +6,16 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
+import BuyModal from "@components/modals/buy-modal";
 import InscriptionCollection from "@components/product-details/collection";
 import WalletContext from "@context/wallet-context";
+import { NostrEvenType } from "@utils/types";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
     const { nostrAddress } = useContext(WalletContext);
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
+    const [showBuyModal, setShowBuyModal] = useState(false);
 
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -21,6 +24,11 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const handleSellModal = () => {
         setShowSellModal((prev) => !prev);
     };
+
+    const handleBuyModal = () => {
+        setShowBuyModal((prev) => !prev);
+    };
+
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
@@ -103,8 +111,8 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                     </div>
                                 </div>
                             </div>
-                            {/* TODO: Remove this as soon as we have an available */}
-                            {isOwner && (
+
+                            {nostrAddress && (
                                 <div className="rn-pd-sm-property-wrapper">
                                     <h6 className="pd-property-title">Actions</h6>
 
@@ -135,12 +143,21 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
-                                        {/* <div className="pd-react-area">
-                                        <div className="action">
-                                            <i className="feather-shopping-cart" />
-                                            <span>Buy</span>
-                                        </div>
-                                    </div>
+                                        {/* {!isOwner && nostr && nostr.value && ( */}
+                                        {nostr && nostr.value && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleBuyModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-shopping-cart" />
+                                                    <span>Buy</span>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {/*
 
                                     <div className="pd-react-area">
                                         <div className="action">
@@ -167,8 +184,21 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                 </div>
             </div>
 
-            <SendModal show={showSendModal} handleModal={handleSendModal} utxo={inscription} onSale={onSend} />
-            <SellModal show={showSellModal} handleModal={handleSellModal} utxo={inscription} onSale={onSend} />
+            {showSendModal && (
+                <SendModal show={showSendModal} handleModal={handleSendModal} utxo={inscription} onSale={onSend} />
+            )}
+            {showSellModal && (
+                <SellModal show={showSellModal} handleModal={handleSellModal} utxo={inscription} onSale={onSend} />
+            )}
+            {showBuyModal && (
+                <BuyModal
+                    show={showBuyModal}
+                    handleModal={handleBuyModal}
+                    utxo={inscription}
+                    onSale={onSend}
+                    nostr={nostr}
+                />
+            )}
         </div>
     );
 };
@@ -178,16 +208,7 @@ ProductDetailsArea.propTypes = {
     className: PropTypes.string,
     inscription: PropTypes.any,
     collection: PropTypes.any,
-    nostr: PropTypes.shape({
-        id: PropTypes.string,
-        kind: PropTypes.number,
-        pubkey: PropTypes.string,
-        created_at: PropTypes.number,
-        content: PropTypes.string,
-        tags: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
-        sig: PropTypes.string,
-        value: PropTypes.number,
-    }),
+    nostr: NostrEvenType,
 };
 
 ProductDetailsArea.defaultProps = {

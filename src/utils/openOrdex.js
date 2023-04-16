@@ -1,8 +1,13 @@
-import { NETWORK, ORDINALS_EXPLORER_URL_LEGACY } from "@lib/constants.config";
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
+import { NETWORK, ORDINALS_EXPLORER_URL_LEGACY, DUMMY_UTXO_VALUE } from "@lib/constants.config";
+import { doesUtxoContainInscription, getAddressUtxos } from "@utils/utxos";
+import { fetchRecommendedFee, satToBtc, calculateFee } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 
 bitcoin.initEccLib(ecc);
+
+const NUMBER_OF_DUMMY_UTXOS_TO_CREATE = 1;
 
 export function isSaleOrder(order) {
     return order.tags.find((x) => x?.[0] === "s")?.[1];
@@ -96,9 +101,75 @@ export async function getOrderInformation(order) {
     };
 }
 
-// export async function submitSignedSalePsbt(inscription, price, signedPsbt) {
-//     // Test if the signed PSBT is valid
-//     bitcoin.Psbt.fromBase64(signedPsbt, {
-//         network: NETWORK,
-//     }).extractTransaction(true);
-// }
+async function selectUtxos({ utxos, amount, vins, vouts, recommendedFeeRate }) {
+    const selectedUtxos = [];
+    let selectedAmount = 0;
+
+    // Sort descending by value, and filter out dummy utxos
+    const dummyUtxos = utxos.filter((x) => x.value > DUMMY_UTXO_VALUE).sort((a, b) => b.value - a.value);
+
+    for (const utxo of dummyUtxos) {
+        // Never spend a utxo that contains an inscription for cardinal purposes
+        if (await doesUtxoContainInscription(utxo)) {
+            continue;
+        }
+        selectedUtxos.push(utxo);
+        selectedAmount += utxo.value;
+
+        const calculatedFee = calculateFee({ vins: vins + selectedUtxos.length, vouts, recommendedFeeRate });
+        if (selectedAmount >= amount + DUMMY_UTXO_VALUE + calculatedFee) {
+            break;
+        }
+    }
+
+    if (selectedAmount < amount) {
+        throw new Error(`Not enough cardinal spendable funds.
+Address has:  ${satToBtc(selectedAmount)} BTC
+Needed:          ${satToBtc(amount)} BTC`);
+    }
+
+    return selectedUtxos;
+}
+
+export async function getAvailableUtxosWithoutInscription({ address, price }) {
+    let dummyUtxo;
+    const payerUtxos = await getAddressUtxos(address);
+    if (!payerUtxos.length) {
+        throw new Error(`No utxos found for address ${address}`);
+    }
+
+    const potentialDummyUtxos = payerUtxos.filter((utxo) => utxo.value <= DUMMY_UTXO_VALUE);
+    for (const potentialDummyUtxo of potentialDummyUtxos) {
+        if (!(await doesUtxoContainInscription(potentialDummyUtxo))) {
+            // Dummy utxo found
+            dummyUtxo = potentialDummyUtxo;
+            break;
+        }
+    }
+
+    let minimumValueRequired;
+    let vins;
+    let vouts;
+
+    if (!dummyUtxo) {
+        // showDummyUtxoElements();
+        minimumValueRequired = NUMBER_OF_DUMMY_UTXOS_TO_CREATE * DUMMY_UTXO_VALUE;
+        vins = 0;
+        vouts = NUMBER_OF_DUMMY_UTXOS_TO_CREATE;
+    } else {
+        minimumValueRequired = price + NUMBER_OF_DUMMY_UTXOS_TO_CREATE * DUMMY_UTXO_VALUE;
+        vins = 1;
+        vouts = 2 + NUMBER_OF_DUMMY_UTXOS_TO_CREATE;
+    }
+
+    const recommendedFeeRate = await fetchRecommendedFee();
+    const selectedUtxos = await selectUtxos({
+        utxos: payerUtxos,
+        minimumValueRequired,
+        vins,
+        vouts,
+        recommendedFeeRate,
+    });
+
+    return { selectedUtxos, dummyUtxo };
+}

@@ -116,3 +116,14 @@ export const NotifactionType = PropTypes.shape({
     time: PropTypes.string,
     image: ImageType,
 });
+
+export const NostrEvenType = PropTypes.shape({
+    id: PropTypes.string,
+    kind: PropTypes.number,
+    pubkey: PropTypes.string,
+    created_at: PropTypes.number,
+    content: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
+    sig: PropTypes.string,
+    value: PropTypes.number,
+});

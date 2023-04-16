@@ -21,7 +21,7 @@ import { generatePSBTListingInscriptionForSale } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo }) => {
+const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
@@ -62,6 +62,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
         }
 
         setIsOnSale(false);
+        onSale();
         handleModal();
     };
 
@@ -69,8 +70,6 @@ const SendModal = ({ show, handleModal, utxo }) => {
         if (!destinationBtcAddress) return;
         if (!isBtcAmountValid) return;
         if (!isBtcInputAddressValid) return;
-        const msg = `Are you sure you want to sell this ordinal for ${ordinalValue} sats?`;
-        if (!window.confirm(msg)) return;
 
         await sale();
     };

@@ -54,8 +54,8 @@ export function getEvent({
 }
 
 export async function signAndBroadcastEvent({ utxo, ordinalValue, signedPsbt, pubkey }) {
-    const inscriptionId = utxo.inscriptionId;
-    const inscriptionUtxo = utxo.txid + ":" + utxo.vout;
+    const { inscriptionId } = utxo;
+    const inscriptionUtxo = `${utxo.txid}:${utxo.vout}`;
 
     const event = getEvent({ inscriptionId, inscriptionUtxo, priceInSats: ordinalValue, signedPsbt, pubkey });
     const signedEvent = await nostrPool.sign(event);

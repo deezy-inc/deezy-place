@@ -69,7 +69,7 @@ class NostrRelay {
         let notified = false;
         let totalPubsFailed = 0;
         // loop over all pubs and wait for all to be done
-        for (const pub of pubs) {
+        pubs.forEach((pub) => {
             pub.on("ok", () => {
                 // Callback success only once
                 if (onSuccess && !notified) {
@@ -80,11 +80,12 @@ class NostrRelay {
             pub.on("failed", (reason) => {
                 console.error(`failed to publish ${reason}`);
                 // Callback error only if all pubs failed
-                if (++totalPubsFailed === pubs.length) {
+                totalPubsFailed += 1;
+                if (totalPubsFailed === pubs.length - 1) {
                     if (onError) onError(reason);
                 }
             });
-        }
+        });
     }
 
     // eslint-disable-next-line class-methods-use-this

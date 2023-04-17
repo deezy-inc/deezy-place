@@ -4,25 +4,29 @@ import { getEventHash } from "nostr-tools";
 import { getOrderInformation } from "@utils/openOrdex";
 import { NOSTR_KIND_INSCRIPTION } from "@lib/constants.config";
 
-export function getInscription(inscriptionId, callback) {
-    return nostrPool.subscribe(
-        [
+export async function getInscription(utxo) {
+    const orders = (
+        await nostrPool.list([
             {
-                "#i": [inscriptionId],
+                kinds: [NOSTR_KIND_INSCRIPTION],
+                "#u": [utxo],
             },
-        ],
-        async (event) => {
-            // Get inscription data from event
-            try {
-                const order = await getOrderInformation(event);
+        ])
+    )
+        .filter((a) => a.tags.find((x) => x?.[0] == "s")?.[1])
+        .sort((a, b) => Number(a.tags.find((x) => x?.[0] == "s")[1]) - Number(b.tags.find((x) => x?.[0] == "s")[1]));
 
-                callback(undefined, order);
-            } catch (e) {
-                callback(e);
+    for (const order of orders) {
+        try {
+            const orderInformation = await getOrderInformation(order);
+
+            if (orderInformation.value == Number(order.tags.find((x) => x?.[0] == "s")[1])) {
+                return orderInformation;
             }
-        },
-        callback
-    );
+        } catch (e) {
+            return undefined;
+        }
+    }
 }
 
 export function getEvent({

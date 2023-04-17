@@ -90,6 +90,11 @@ class NostrRelay {
         });
     }
 
+    async list(filter) {
+        const events = await this.pool.list([...this.relays], filter);
+        return events;
+    }
+
     // eslint-disable-next-line class-methods-use-this
     async sign(event) {
         const eventBase = { ...event, created_at: Math.floor(Date.now() / 1000) };

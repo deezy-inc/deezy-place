@@ -16,7 +16,7 @@ bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
 
-async function signMetamask(sigHash, metamaskDomain) {
+export async function getMetamaskSigner(metamaskDomain) {
     const { ethereum } = window;
     let ethAddress = ethereum.selectedAddress;
 
@@ -34,7 +34,11 @@ async function signMetamask(sigHash, metamaskDomain) {
     const { privateKey } = taprootChild;
 
     const keyPair = ECPair.fromPrivateKey(privateKey);
-    const tweakedSigner = tweakSigner(keyPair);
+    return tweakSigner(keyPair);
+}
+
+async function signMetamask(sigHash, metamaskDomain) {
+    const tweakedSigner = await getMetamaskSigner(metamaskDomain);
     return tweakedSigner.signSchnorr(sigHash);
 }
 

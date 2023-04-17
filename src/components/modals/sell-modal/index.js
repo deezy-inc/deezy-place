@@ -54,6 +54,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         // Sign psbt event: we can only sign using Alby so far, in order to publish to nostr.
         try {
             const signedPsbt = await signPsbtMessage(psbt);
+            console.log(signedPsbt);
 
             await signAndBroadcastEvent({
                 utxo,

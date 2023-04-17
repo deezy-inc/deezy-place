@@ -215,6 +215,7 @@ export async function generatePSBTListingInscriptionForBuy({
     paymentUtxos,
     dummyUtxo,
     sellerSignedPsbt,
+    inscription,
 }) {
     const psbt = new bitcoin.Psbt({ network: NETWORK });
 
@@ -236,9 +237,10 @@ export async function generatePSBTListingInscriptionForBuy({
     });
 
     // Add inscription output
+
     psbt.addOutput({
         address: receiverAddress,
-        value: dummyUtxo.value + price,
+        value: dummyUtxo.value + inscription.value,
     });
 
     // Add payer signed input

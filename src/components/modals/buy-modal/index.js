@@ -123,6 +123,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 paymentUtxos: selectedUtxos,
                 dummyUtxo,
                 sellerSignedPsbt,
+                inscription: utxo,
             });
 
             try {

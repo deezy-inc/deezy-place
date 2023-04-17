@@ -10,7 +10,6 @@ import * as ecc from "tiny-secp256k1";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";
 
-
 bitcoin.initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);

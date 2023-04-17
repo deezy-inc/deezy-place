@@ -133,7 +133,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 // const txId = await broadcastPsbt(signedPsbt);
                 // toast.info(`Order successfully signed! ${txId}`);
 
-                toast.info(`Order successfully signed! ${signedPsbt.toBase64()}`);
+                toast.info(`Order successfully signed! ${signedPsbt.toHex()}`);
             } catch (e) {
                 toast.error(e.message);
             }

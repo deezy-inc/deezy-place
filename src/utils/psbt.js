@@ -154,7 +154,8 @@ export async function signPsbtMessage(message) {
         }
     });
     // create and update resultant sighashes
-    virtualToSign.data.inputs.forEach(async (input, i) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [i, input] of virtualToSign.data.inputs.entries()) {
         if (!input.finalScriptWitness) {
             const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
                 i,
@@ -162,11 +163,13 @@ export async function signPsbtMessage(message) {
                 witnessValues,
                 bitcoin.Transaction.SIGHASH_DEFAULT
             );
+            // eslint-disable-next-line no-await-in-loop
             const signature = await signSigHash({ sigHash });
             virtualToSign.updateInput(i, {
                 tapKeySig: serializeTaprootSignature(Buffer.from(signature, "hex")),
             });
+            virtualToSign.finalizeInput(i);
         }
-    });
+    }
     return virtualToSign.extractTransaction();
 }

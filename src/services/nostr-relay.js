@@ -65,7 +65,7 @@ class NostrRelay {
         const event = cleanEvent(_event);
 
         const pubs = this.pool.publish(this.relays, event);
-        let pubList = !Array.isArray(pubs) ? [pubs] : pubs;
+        const pubList = !Array.isArray(pubs) ? [pubs] : pubs;
 
         let notified = false;
         let totalPubsFailed = 0;

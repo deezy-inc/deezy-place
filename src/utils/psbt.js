@@ -1,6 +1,7 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
-import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
+import { tweakSigner, outputValue, getAddressInfo } from "@utils/crypto";
+import { TAPROOT_MESSAGE } from "@utils/wallet";
 import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
@@ -112,22 +113,56 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
 
 export async function signPsbtMessage(message) {
     const virtualToSign = bitcoin.Psbt.fromBase64(message);
-    const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
-        0,
-        [virtualToSign.data.inputs[0].witnessUtxo.script],
-        [virtualToSign.data.inputs[0].witnessUtxo.value],
-        // eslint-disable-next-line no-bitwise
-        bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
-    );
-    const sign = await signSigHash({ sigHash });
-    virtualToSign.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex"), [
+    // if only 1 input, then this is a PSBT listing
+    if (virtualToSign.inputCount === 1 && virtualToSign.txOutputs.length === 1) {
+        const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
+            0,
+            [virtualToSign.data.inputs[0].witnessUtxo.script],
+            [virtualToSign.data.inputs[0].witnessUtxo.value],
             // eslint-disable-next-line no-bitwise
-            bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY,
-        ]),
+            bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
+        );
+        const sign = await signSigHash({ sigHash });
+        virtualToSign.updateInput(0, {
+            tapKeySig: serializeTaprootSignature(Buffer.from(sign, "hex"), [
+                // eslint-disable-next-line no-bitwise
+                bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+            ]),
+        });
+        virtualToSign.finalizeAllInputs();
+        return virtualToSign;
+    }
+    const witnessScripts = [];
+    const witnessValues = [];
+    // update all witnesses and values
+    virtualToSign.data.inputs.forEach((input, i) => {
+        if (!input.finalScriptWitness) {
+            const tx = bitcoin.Transaction.fromBuffer(virtualToSign.data.inputs[i].nonWitnessUtxo);
+            const output = tx.outs[virtualToSign.txInputs[i].index];
+            virtualToSign.updateInput(i, {
+                witnessUtxo: output,
+            });
+            witnessScripts.push(output.script);
+            witnessValues.push(output.value);
+        } else {
+            witnessScripts.push(virtualToSign.data.inputs[i].witnessUtxo.script);
+            witnessValues.push(virtualToSign.data.inputs[i].witnessUtxo.value);
+        }
     });
-
-    virtualToSign.finalizeAllInputs();
-
-    return virtualToSign;
+    // create and update resultant sighashes
+    virtualToSign.data.inputs.forEach(async (input, i) => {
+        if (!input.finalScriptWitness) {
+            const sigHash = virtualToSign.__CACHE.__TX.hashForWitnessV1(
+                i,
+                witnessScripts,
+                witnessValues,
+                bitcoin.Transaction.SIGHASH_DEFAULT
+            );
+            const signature = await signSigHash({ sigHash });
+            virtualToSign.updateInput(i, {
+                tapKeySig: serializeTaprootSignature(Buffer.from(signature, "hex")),
+            });
+        }
+    });
+    return virtualToSign.extractTransaction();
 }

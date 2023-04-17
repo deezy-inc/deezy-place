@@ -127,6 +127,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             try {
                 const signedPsbt = await signPsbtMessage(psbt);
+                console.log(signedPsbt);
                 // TODO: Enable Broadcast transaction!
                 // const txId = await broadcastPsbt(signedPsbt);
                 // toast.info(`Order successfully signed! ${txId}`);

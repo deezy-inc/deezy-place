@@ -16,7 +16,7 @@ import { TailSpin } from "react-loading-icons";
 import { toast } from "react-toastify";
 import { InscriptionPreview } from "@components/inscription-preview";
 import { NostrEvenType } from "@utils/types";
-import { signPsbtMessage } from "@utils/psbt";
+import { signPsbtMessage, broadcastTx } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 
@@ -127,13 +127,10 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             });
 
             try {
-                const signedPsbt = await signPsbtMessage(psbt);
-                console.log(signedPsbt);
-                // TODO: Enable Broadcast transaction!
-                // const txId = await broadcastPsbt(signedPsbt);
-                // toast.info(`Order successfully signed! ${txId}`);
-
-                toast.info(`Order successfully signed! ${signedPsbt.toHex()}`);
+                const tx = await signPsbtMessage(psbt);
+                const txId = await broadcastTx(tx);
+                toast.info(`Order successfully signed! ${txId}`);
+                navigator.clipboard.writeText(txId);
             } catch (e) {
                 toast.error(e.message);
             }

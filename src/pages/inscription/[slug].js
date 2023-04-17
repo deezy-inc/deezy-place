@@ -45,17 +45,14 @@ const Inscription = () => {
 
     useEffect(() => {
         if (!inscription?.inscriptionId) return;
-        getNostrInscription(inscription.inscriptionId, (error, data) => {
-            // object exists in nostr
+        const fetchNostrInscription = async () => {
+            const data = await getNostrInscription(`${inscription.txid}:${inscription.vout}`);
             if (data) {
-                console.log("sccess getting data", data);
                 setNostrData(data);
             }
+        };
 
-            if (error) {
-                console.error("failed to get inscription from nostr", error);
-            }
-        });
+        fetchNostrInscription();
     }, [inscription?.inscriptionId]);
 
     useEffect(() => {

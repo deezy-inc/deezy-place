@@ -58,7 +58,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 price: utxo.value,
             });
 
-            if (!dummyUtxo) {
+            if (!_dummyUtxo) {
                 throw new Error("No dummy UTXO found. Please create one first.");
             }
 

@@ -133,6 +133,7 @@ Needed:          ${satToBtc(amount)} BTC`);
 
 export async function getAvailableUtxosWithoutInscription({ address, price }) {
     let dummyUtxo;
+
     const payerUtxos = await getAddressUtxos(address);
     if (!payerUtxos.length) {
         throw new Error(`No utxos found for address ${address}`);
@@ -163,9 +164,10 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
     }
 
     const recommendedFeeRate = await fetchRecommendedFee();
+
     const selectedUtxos = await selectUtxos({
         utxos: payerUtxos,
-        minimumValueRequired,
+        amount: minimumValueRequired,
         vins,
         vouts,
         recommendedFeeRate,

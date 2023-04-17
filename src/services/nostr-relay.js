@@ -3,6 +3,8 @@ import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
 import { getOrderInformation } from "@utils/openOrdex";
+import { getMetamaskSigner } from "@utils/psbt";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 class NostrRelay {
     constructor() {
@@ -97,11 +99,20 @@ class NostrRelay {
 
     // eslint-disable-next-line class-methods-use-this
     async sign(event) {
+        const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
         const eventBase = { ...event, created_at: Math.floor(Date.now() / 1000) };
         const newEvent = {
             ...eventBase,
             id: getEventHash(eventBase),
         };
+        if (metamaskDomain) {
+            const metamaskSigner = await getMetamaskSigner(metamaskDomain);
+            const signature = await metamaskSigner.signSchnorr(Buffer.from(newEvent.id, "hex"));
+            return {
+                ...newEvent,
+                sig: signature.toString("hex"),
+            };
+        }
         return window.nostr.signEvent(newEvent);
     }
 }

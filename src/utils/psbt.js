@@ -1,6 +1,7 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
-import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
+import { tweakSigner, outputValue, getAddressInfo } from "@utils/crypto";
+import { TAPROOT_MESSAGE } from "@utils/wallet";
 import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
@@ -14,7 +15,7 @@ bitcoin.initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
 
-async function signMetamask(sigHash, metamaskDomain) {
+export async function getMetamaskSigner(metamaskDomain) {
     const { ethereum } = window;
     let ethAddress = ethereum.selectedAddress;
 
@@ -32,7 +33,11 @@ async function signMetamask(sigHash, metamaskDomain) {
     const { privateKey } = taprootChild;
 
     const keyPair = ECPair.fromPrivateKey(privateKey);
-    const tweakedSigner = tweakSigner(keyPair);
+    return tweakSigner(keyPair);
+}
+
+async function signMetamask(sigHash, metamaskDomain) {
+    const tweakedSigner = await getMetamaskSigner(metamaskDomain);
     return tweakedSigner.signSchnorr(sigHash);
 }
 

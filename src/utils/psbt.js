@@ -1,6 +1,6 @@
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
-import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";
+import { tweakSigner, outputValue, getAddressInfo } from "@utils/crypto";
 import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
@@ -8,6 +8,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";
+import { TAPROOT_MESSAGE } from "./wallet";
 
 bitcoin.initEccLib(ecc);
 

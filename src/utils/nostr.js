@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax, no-await-in-loop */
 import { nostrPool } from "@services/nostr-relay";
 import { getEventHash } from "nostr-tools";
 
@@ -13,20 +14,21 @@ export async function getInscription(utxo) {
             },
         ])
     )
-        .filter((a) => a.tags.find((x) => x?.[0] == "s")?.[1])
-        .sort((a, b) => Number(a.tags.find((x) => x?.[0] == "s")[1]) - Number(b.tags.find((x) => x?.[0] == "s")[1]));
+        .filter((a) => a.tags.find((x) => x?.[0] === "s")?.[1])
+        .sort((a, b) => Number(a.tags.find((x) => x?.[0] === "s")[1]) - Number(b.tags.find((x) => x?.[0] === "s")[1]));
 
     for (const order of orders) {
         try {
             const orderInformation = await getOrderInformation(order);
 
-            if (orderInformation.value == Number(order.tags.find((x) => x?.[0] == "s")[1])) {
+            if (Number(orderInformation.value) === Number(order.tags.find((x) => x?.[0] === "s")[1])) {
                 return orderInformation;
             }
         } catch (e) {
             return undefined;
         }
     }
+    return undefined;
 }
 
 export function getEvent({

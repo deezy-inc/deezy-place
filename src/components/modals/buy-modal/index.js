@@ -28,7 +28,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [isOnBuy, setIsOnBuy] = useState(false);
     const [selectedUtxos, setSelectedUtxos] = useState([]);
-    const [dummyUtxo, setDummyUtxo] = useState(null);
+    const [dummyUtxos, setDummyUtxos] = useState([]);
     const [bitcoinPrice, setBitcoinPrice] = useState();
 
     useEffect(() => {
@@ -53,17 +53,18 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     const updatePayerAddress = async (address) => {
         try {
-            const { selectedUtxos: _selectedUtxos, dummyUtxo: _dummyUtxo } = await getAvailableUtxosWithoutInscription({
-                address,
-                price: utxo.value,
-            });
+            const { selectedUtxos: _selectedUtxos, dummyUtxos: _dummyUtxos } =
+                await getAvailableUtxosWithoutInscription({
+                    address,
+                    price: utxo.value,
+                });
 
-            if (!_dummyUtxo) {
-                throw new Error("No dummy UTXO found. Please create one first.");
+            if (_dummyUtxos.length < 2) {
+                throw new Error("No dummy UTXOs found. Please create them before continuing.");
             }
 
             setSelectedUtxos(_selectedUtxos);
-            setDummyUtxo(_dummyUtxo);
+            setDummyUtxos(_dummyUtxos);
         } catch (e) {
             setSelectedUtxos([]);
             throw e;
@@ -121,16 +122,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 receiverAddress: destinationBtcAddress,
                 price: nostr.value,
                 paymentUtxos: selectedUtxos,
-                dummyUtxo,
+                dummyUtxos,
                 sellerSignedPsbt,
                 inscription: utxo,
             });
 
             try {
                 const tx = await signPsbtMessage(psbt);
-                const txId = await broadcastTx(tx);
-                toast.info(`Order successfully signed! ${txId}`);
-                navigator.clipboard.writeText(txId);
+                // const txId = await broadcastTx(tx);
+                // toast.info(`Order successfully signed! ${txId}`);
+                // navigator.clipboard.writeText(txId);
             } catch (e) {
                 toast.error(e.message);
             }

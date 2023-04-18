@@ -7,7 +7,7 @@ import * as ecc from "tiny-secp256k1";
 
 bitcoin.initEccLib(ecc);
 
-const NUMBER_OF_DUMMY_UTXOS_TO_CREATE = 1;
+const NUMBER_OF_DUMMY_UTXOS_TO_CREATE = 2;
 
 export function isSaleOrder(order) {
     return order.tags.find((x) => x?.[0] === "s")?.[1];
@@ -132,19 +132,21 @@ Needed:          ${satToBtc(amount)} BTC`);
 }
 
 export async function getAvailableUtxosWithoutInscription({ address, price }) {
-    let dummyUtxo;
-
     const payerUtxos = await getAddressUtxos(address);
     if (!payerUtxos.length) {
         throw new Error(`No utxos found for address ${address}`);
     }
 
+    // We require at least 2 dummy utxos for taker
+    const dummyUtxos = [];
     const potentialDummyUtxos = payerUtxos.filter((utxo) => utxo.value <= DUMMY_UTXO_VALUE);
     for (const potentialDummyUtxo of potentialDummyUtxos) {
         if (!(await doesUtxoContainInscription(potentialDummyUtxo))) {
             // Dummy utxo found
-            dummyUtxo = potentialDummyUtxo;
-            break;
+            dummyUtxos.push(potentialDummyUtxo);
+            if (dummyUtxos.length === NUMBER_OF_DUMMY_UTXOS_TO_CREATE) {
+                break;
+            }
         }
     }
 
@@ -152,7 +154,7 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
     let vins;
     let vouts;
 
-    if (!dummyUtxo) {
+    if (dummyUtxos.length < 2) {
         // showDummyUtxoElements();
         minimumValueRequired = NUMBER_OF_DUMMY_UTXOS_TO_CREATE * DUMMY_UTXO_VALUE;
         vins = 0;
@@ -173,7 +175,7 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
         recommendedFeeRate,
     });
 
-    return { selectedUtxos, dummyUtxo };
+    return { selectedUtxos, dummyUtxos };
 }
 
 export async function generatePSBTListingInscriptionForSale({ utxo, paymentAddress, price }) {
@@ -213,7 +215,7 @@ export async function generatePSBTListingInscriptionForBuy({
     receiverAddress,
     price,
     paymentUtxos,
-    dummyUtxo,
+    dummyUtxos,
     sellerSignedPsbt,
     inscription,
 }) {
@@ -221,35 +223,45 @@ export async function generatePSBTListingInscriptionForBuy({
 
     let totalValue = 0;
     let totalPaymentValue = 0;
+    let totalDummysValue = 0;
 
-    // Add dummy utxo input
-    const txHex = await getTxHexById(dummyUtxo.txid);
-    const tx = bitcoin.Transaction.fromHex(txHex);
-    for (const output in tx.outs) {
-        try {
-            tx.setWitness(parseInt(output), []);
-        } catch {}
+    // Inputs:
+    // (# 0) - 600 sat dummy output, provided by taker
+    // (# 1) - 600 sat dummy output, provided by taker
+    for (let i = 0; i < 2; i++) {
+        const dummyUtxo = dummyUtxos[i];
+        const txHex = await getTxHexById(dummyUtxo.txid);
+        const tx = bitcoin.Transaction.fromHex(txHex);
+        for (const output in tx.outs) {
+            try {
+                tx.setWitness(parseInt(output), []);
+            } catch {}
+        }
+        psbt.addInput({
+            hash: dummyUtxo.txid,
+            index: dummyUtxo.vout,
+            nonWitnessUtxo: tx.toBuffer(),
+        });
+
+        totalDummysValue += dummyUtxo.value;
     }
-    psbt.addInput({
-        hash: dummyUtxo.txid,
-        index: dummyUtxo.vout,
-        nonWitnessUtxo: tx.toBuffer(),
-    });
 
-    // Add inscription output
-
+    // Outputs
+    // (# 0) - Value 1200 sat dummy output to taker's address, provided by taker
     psbt.addOutput({
         address: receiverAddress,
-        value: dummyUtxo.value + inscription.value,
+        value: totalDummysValue + inscription.value,
     });
 
-    // Add payer signed input
+    // Inputs
+    // (# 2) - Value M output containing ordinal to be sold, provided by maker
     psbt.addInput({
         ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
         ...sellerSignedPsbt.data.inputs[0],
     });
 
-    // Add payer output
+    // Outputs
+    // (# 1) - Value M output with taker's address, provided by taker
     psbt.addOutput({
         ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
     });
@@ -274,7 +286,12 @@ export async function generatePSBTListingInscriptionForBuy({
         totalPaymentValue += utxo.value;
     }
 
-    // Create a new dummy utxo output for the next purchase
+    // Create a new 2 dummy utxo output for the next purchase
+    psbt.addOutput({
+        address: payerAddress,
+        value: DUMMY_UTXO_VALUE,
+    });
+    //
     psbt.addOutput({
         address: payerAddress,
         value: DUMMY_UTXO_VALUE,
@@ -283,18 +300,19 @@ export async function generatePSBTListingInscriptionForBuy({
     const recommendedFeeRate = await fetchRecommendedFee();
 
     const fee = calculateFee({ vins: psbt.txInputs.length, vouts: psbt.txOutputs.length, recommendedFeeRate });
-    const changeValue = totalValue - dummyUtxo.value - price - fee;
+    const changeValue = totalValue - totalDummysValue - price - fee;
 
     if (changeValue < 0) {
-        throw new Error(`Your wallet address doesn't have enough funds to buy this inscription.
-Price:          ${satToBtc(price)} BTC
-Fees:       ${satToBtc(fee + DUMMY_UTXO_VALUE)} BTC
-You have:   ${satToBtc(totalPaymentValue)} BTC
-Required:   ${satToBtc(totalValue - changeValue)} BTC
-Missing:     ${satToBtc(-changeValue)} BTC`);
+        const msg = `Your wallet address doesn't have enough funds to buy this inscription.
+        Price:      ${satToBtc(price)} BTC
+        Fees:       ${satToBtc(fee + DUMMY_UTXO_VALUE)} BTC
+        You have:   ${satToBtc(totalPaymentValue)} BTC
+        Required:   ${satToBtc(totalValue - changeValue)} BTC
+        Missing:    ${satToBtc(-changeValue)} BTC`;
+        throw new Error(msg);
     }
 
-    // Change utxo
+    // (# 3) - Value C output with takers address (change), provided by taker
     psbt.addOutput({
         address: payerAddress,
         value: changeValue,

@@ -1,7 +1,7 @@
 import * as bitcoin from "bitcoinjs-lib";
 // import * as env from "env-var"; // TODO: enable env vars
 
-// export const NOSTR_RELAY_URL = "ws://localhost:7003";
+// export const NOSTR_RELAY_URL = "ws://localhost:7006";
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 
 export const NOSTR_KIND_INSCRIPTION = 802;
@@ -24,5 +24,5 @@ export const MEMPOOL_API_URL = TESTNET ? "https://mempool.space/signet" : "https
 export const NETWORK = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 export const ORDINALS_EXPLORER_URL_LEGACY = !TESTNET ? "https://ordinals.com" : "https://explorer-signet.openordex.org";
 export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";
-export const DUMMY_UTXO_VALUE = 1_000;
+export const DUMMY_UTXO_VALUE = 600;
 export const FEE_LEVEL = "hourFee"; // "fastestFee" || "halfHourFee" || "hourFee" || "economyFee" || "minimumFee"

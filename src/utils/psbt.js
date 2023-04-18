@@ -83,17 +83,17 @@ function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate
     return psbt;
 }
 
-export async function broadcastPsbt(psbt) {
-    const tx = psbt.extractTransaction();
-    return broadcastTx(tx);
-}
-
 export async function broadcastTx(tx) {
     const hex = tx.toBuffer().toString("hex");
     const fullTx = bitcoin.Transaction.fromHex(hex);
     await axios.post(`https://mempool.space/api/tx`, hex);
 
     return fullTx.getId();
+}
+
+export async function broadcastPsbt(psbt) {
+    const tx = psbt.extractTransaction();
+    return broadcastTx(tx);
 }
 
 export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress, sendFeeRate }) {

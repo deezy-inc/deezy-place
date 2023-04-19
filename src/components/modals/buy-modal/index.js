@@ -129,9 +129,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             try {
                 const tx = await signPsbtMessage(psbt);
-                // const txId = await broadcastTx(tx);
-                // toast.info(`Order successfully signed! ${txId}`);
-                // navigator.clipboard.writeText(txId);
+                const txId = await broadcastTx(tx);
+                toast.info(`Order successfully signed! ${txId}`);
+                navigator.clipboard.writeText(txId);
             } catch (e) {
                 toast.error(e.message);
             }

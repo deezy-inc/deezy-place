@@ -1,13 +1,13 @@
 import * as bitcoin from "bitcoinjs-lib";
 // import * as env from "env-var"; // TODO: enable env vars
 
-// export const NOSTR_RELAY_URL = "ws://localhost:7006";
-export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
+export const NOSTR_RELAY_URL = "ws://localhost:7006";
+// export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 
 export const NOSTR_KIND_INSCRIPTION = 802;
 
 export const INSCRIPTION_SEARCH_DEPTH = 5;
-export const GITHUB_URL = "https://github.com/dannydeezy/nosft";
+export const GITHUB_URL = "https://github.cosm/dannydeezy/nosft";
 export const DEFAULT_FEE_RATE = 7;
 export const SENDS_ENABLED = true;
 export const TESTNET = false;

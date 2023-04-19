@@ -243,10 +243,20 @@ export async function generatePSBTListingInscriptionForBuy({
         totalDummyValue += dummyUtxo.value;
     }
 
+    psbt.addOutput({
+        address: receiverAddress,
+        value: totalDummyValue,
+    });
+
     // Add input for the ordinal to be sold
     psbt.addInput({
         ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
         ...sellerSignedPsbt.data.inputs[0],
+    });
+
+    // Add output for the payment to the seller
+    psbt.addOutput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
     });
 
     // Add payment utxo inputs
@@ -272,11 +282,6 @@ export async function generatePSBTListingInscriptionForBuy({
     psbt.addOutput({
         address: receiverAddress,
         value: inscription.value,
-    });
-
-    // Add output for the payment to the seller
-    psbt.addOutput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
     });
 
     // Calculate change value and add output for change

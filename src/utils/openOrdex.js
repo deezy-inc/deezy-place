@@ -223,13 +223,9 @@ export async function generatePSBTListingInscriptionForBuy({
 
     let totalValue = 0;
     let totalPaymentValue = 0;
-    let totalDummysValue = 0;
 
-    // Inputs:
-    // (# 0) - 600 sat dummy output, provided by taker
-    // (# 1) - 600 sat dummy output, provided by taker
-    for (let i = 0; i < 2; i++) {
-        const dummyUtxo = dummyUtxos[i];
+    // Add dummy utxo inputs
+    for (const dummyUtxo of dummyUtxos) {
         const txHex = await getTxHexById(dummyUtxo.txid);
         const tx = bitcoin.Transaction.fromHex(txHex);
         for (const output in tx.outs) {
@@ -242,29 +238,7 @@ export async function generatePSBTListingInscriptionForBuy({
             index: dummyUtxo.vout,
             nonWitnessUtxo: tx.toBuffer(),
         });
-
-        totalDummysValue += dummyUtxo.value;
     }
-
-    // Outputs
-    // (# 0) - Value 1200 sat dummy output to taker's address, provided by taker
-    psbt.addOutput({
-        address: receiverAddress,
-        value: totalDummysValue + inscription.value,
-    });
-
-    // Inputs
-    // (# 2) - Value M output containing ordinal to be sold, provided by maker
-    psbt.addInput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
-        ...sellerSignedPsbt.data.inputs[0],
-    });
-
-    // Outputs
-    // (# 1) - Value M output with taker's address, provided by taker
-    psbt.addOutput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
-    });
 
     // Add payment utxo inputs
     for (const utxo of paymentUtxos) {
@@ -279,43 +253,57 @@ export async function generatePSBTListingInscriptionForBuy({
             hash: utxo.txid,
             index: utxo.vout,
             nonWitnessUtxo: utxoTx.toBuffer(),
-            // witnessUtxo: tx.outs[utxo.vout],
         });
 
         totalValue += utxo.value;
         totalPaymentValue += utxo.value;
     }
 
-    // Create a new 2 dummy utxo output for the next purchase
-    psbt.addOutput({
-        address: payerAddress,
-        value: DUMMY_UTXO_VALUE,
-    });
-    //
-    psbt.addOutput({
-        address: payerAddress,
-        value: DUMMY_UTXO_VALUE,
+    // Add input for the ordinal to be sold
+    psbt.addInput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
+        ...sellerSignedPsbt.data.inputs[0],
     });
 
+    // Add output for the inscription
+    psbt.addOutput({
+        address: receiverAddress,
+        value: inscription.value,
+    });
+
+    // Add output for the payment to the seller
+    psbt.addOutput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.outs[0],
+    });
+
+    // Calculate change value and add output for change
     const recommendedFeeRate = await fetchRecommendedFee();
-
     const fee = calculateFee({ vins: psbt.txInputs.length, vouts: psbt.txOutputs.length, recommendedFeeRate });
-    const changeValue = totalValue - totalDummysValue - price - fee;
+    const changeValue = totalPaymentValue - price - fee;
 
     if (changeValue < 0) {
         const msg = `Your wallet address doesn't have enough funds to buy this inscription.
         Price:      ${satToBtc(price)} BTC
-        Fees:       ${satToBtc(fee + DUMMY_UTXO_VALUE)} BTC
+        Fees:       ${satToBtc(fee)} BTC
         You have:   ${satToBtc(totalPaymentValue)} BTC
-        Required:   ${satToBtc(totalValue - changeValue)} BTC
+        Required:   ${satToBtc(price + fee)} BTC
         Missing:    ${satToBtc(-changeValue)} BTC`;
         throw new Error(msg);
     }
 
-    // (# 3) - Value C output with takers address (change), provided by taker
     psbt.addOutput({
         address: payerAddress,
         value: changeValue,
+    });
+
+    // Add dummy utxo outputs for the next purchase
+    psbt.addOutput({
+        address: payerAddress,
+        value: DUMMY_UTXO_VALUE,
+    });
+    psbt.addOutput({
+        address: payerAddress,
+        value: DUMMY_UTXO_VALUE,
     });
 
     const psbt64 = psbt.toBase64();

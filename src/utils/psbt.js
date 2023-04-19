@@ -175,5 +175,6 @@ export async function signPsbtMessage(message) {
             virtualToSign.finalizeInput(i);
         }
     }
+    console.log(virtualToSign.toBase64());
     return virtualToSign.extractTransaction();
 }

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@lib/constants.config";
@@ -58,6 +57,7 @@ export function tapTweakHash(pubKey, h) {
     return bitcoin.crypto.taggedHash("TapTweak", Buffer.concat(h ? [pubKey, h] : [pubKey]));
 }
 
+/* eslint-disable */
 export function tweakSigner(signer) {
     function _interopNamespace(e) {
         const n = Object.create(null);
@@ -107,6 +107,7 @@ export function tweakSigner(signer) {
         network: bitcoin.networks.bitcoin,
     });
 }
+/* eslint-enable */
 
 export const parseOutpoint = (outpoint) => {
     const rawVout = outpoint.slice(-8);

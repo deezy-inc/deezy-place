@@ -8,7 +8,7 @@ import SEO from "@components/seo";
 import HeroArea from "@containers/HeroArea";
 import OrdinalsArea from "@containers/OrdinalsArea";
 import { normalizedData } from "@utils/methods";
-import { getAddressInfo } from "@utils/crypto";
+import { getAddressInfo } from "@utils/address";
 import homepageData from "@data/general/home.json";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";

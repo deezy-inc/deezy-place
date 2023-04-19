@@ -1,6 +1,7 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { getAddressInfo, toXOnly } from "@utils/crypto";
+import { toXOnly } from "@utils/crypto";
+import { getAddressInfo } from "@utils/address";
 import { hexToBytes, utf8ToBytes } from "@stacks/common";
 import { signSigHash } from "@utils/psbt";
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";

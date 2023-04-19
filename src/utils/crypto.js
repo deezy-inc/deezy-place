@@ -39,16 +39,6 @@ export const shortenStr = (str) => {
 
 export const toXOnly = (key) => (key.length === 33 ? key.slice(1, 33) : key);
 
-export const getAddressInfo = (publicKey) => {
-    console.log(`Pubkey: ${publicKey.toString()}`);
-    const pubkeyBuffer = Buffer.from(publicKey, "hex");
-    const addrInfo = bitcoin.payments.p2tr({
-        pubkey: pubkeyBuffer,
-        network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
-    });
-    return addrInfo;
-};
-
 export function satToBtc(sat) {
     return Number(sat) / 10 ** 8;
 }

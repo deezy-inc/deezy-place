@@ -101,16 +101,19 @@ export async function getOrderInformation(order) {
     };
 }
 
-async function selectUtxos({ utxos, amount, vins, vouts, recommendedFeeRate }) {
+async function selectUtxos({ utxos, dummyUtxos, amount, vins, vouts, recommendedFeeRate }) {
     const selectedUtxos = [];
     let selectedAmount = 0;
 
     // Sort ascending by value, and filter out unconfirmed utxos
-    const dummyUtxos = utxos.filter((x) => x.status.confirmed).sort((a, b) => a.value - b.value);
+    const spendableUtxos = utxos.filter((x) => x.status.confirmed).sort((a, b) => a.value - b.value);
 
-    for (const utxo of dummyUtxos) {
+    for (const utxo of spendableUtxos) {
         // Never spend a utxo that contains an inscription for cardinal purposes
         if (await doesUtxoContainInscription(utxo)) {
+            continue;
+        }
+        if (dummyUtxos.includes(utxo)) {
             continue;
         }
         selectedUtxos.push(utxo);
@@ -170,6 +173,7 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
 
     const selectedUtxos = await selectUtxos({
         utxos: payerUtxos,
+        dummyUtxos,
         amount: minimumValueRequired,
         vins,
         vouts,
@@ -244,6 +248,7 @@ export async function generatePSBTListingInscriptionForBuy({
         totalDummyValue += dummyUtxo.value;
     }
 
+    // Add value A+B dummy output
     psbt.addOutput({
         address: receiverAddress,
         value: totalDummyValue,
@@ -253,6 +258,12 @@ export async function generatePSBTListingInscriptionForBuy({
     psbt.addInput({
         ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
         ...sellerSignedPsbt.data.inputs[0],
+    });
+
+    // Add output for the inscription
+    psbt.addOutput({
+        address: receiverAddress,
+        value: inscription.value,
     });
 
     // Add output for the payment to the seller
@@ -278,18 +289,6 @@ export async function generatePSBTListingInscriptionForBuy({
         totalValue += utxo.value;
         totalPaymentValue += utxo.value;
     }
-
-    // Add value A+B dummy output
-    psbt.addOutput({
-        address: receiverAddress,
-        value: totalDummyValue,
-    });
-
-    // Add output for the inscription
-    psbt.addOutput({
-        address: receiverAddress,
-        value: inscription.value,
-    });
 
     // Calculate change value and add output for change
     const recommendedFeeRate = await fetchRecommendedFee();

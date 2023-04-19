@@ -15,7 +15,7 @@ export const outputValue = (currentUtxo, sendFeeRate, price) =>
 // P2TR (Pay-to-Taproot):
 // Input size: ~57.5 vB (single key spend), variable for more complex scripts using Tapscript
 // Output size: ~43 vB
-export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOutput = true }) {
+export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOutput = 1 }) {
     const baseTxSize = 10;
     const inSize = 57.5;
     const outSize = 43;
@@ -85,7 +85,7 @@ export function tweakSigner(signer) {
                     Object.defineProperty(
                         n,
                         k,
-                        d.get
+                        d?.get
                             ? d
                             : {
                                   enumerable: true,
@@ -113,6 +113,7 @@ export function tweakSigner(signer) {
     }
     const tweakedPrivateKey = ecc__namespace.privateAdd(
         privateKey,
+        // @ts-ignore
         tapTweakHash(toXOnly(signer.publicKey), bitcoin.networks.bitcoin.tweakHash)
     );
     if (!tweakedPrivateKey) {
@@ -137,7 +138,7 @@ export const parseOutpoint = (outpoint) => {
         view.setUint8(i, parseInt(b, 16));
     });
 
-    const vout = view.getInt32(0, 1);
+    const vout = view.getInt32(0, true);
     return [txid, vout];
 };
 

@@ -11,15 +11,19 @@ const ECPair = ECPairFactory(ecc);
 export const outputValue = (currentUtxo, sendFeeRate, price) =>
     price || currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 
+// Assume taproot for everything
+// P2TR (Pay-to-Taproot):
+// Input size: ~57.5 vB (single key spend), variable for more complex scripts using Tapscript
+// Output size: ~43 vB
 export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOutput = true }) {
     const baseTxSize = 10;
-    const inSize = 180;
-    const outSize = 34;
+    const inSize = 57.5;
+    const outSize = 43;
 
     const txSize = baseTxSize + vins * inSize + vouts * outSize + includeChangeOutput * outSize;
     const fee = txSize * recommendedFeeRate;
 
-    return fee;
+    return Math.round(fee);
 }
 
 export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;

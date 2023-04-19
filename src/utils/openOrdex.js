@@ -105,8 +105,8 @@ async function selectUtxos({ utxos, amount, vins, vouts, recommendedFeeRate }) {
     const selectedUtxos = [];
     let selectedAmount = 0;
 
-    // Sort descending by value, and filter out dummy utxos
-    const dummyUtxos = utxos.filter((x) => x.value > DUMMY_UTXO_VALUE).sort((a, b) => b.value - a.value);
+    // Sort ascending by value, and filter out unconfirmed utxos
+    const dummyUtxos = utxos.filter((x) => x.status.confirmed).sort((a, b) => a.value - b.value);
 
     for (const utxo of dummyUtxos) {
         // Never spend a utxo that contains an inscription for cardinal purposes
@@ -117,7 +117,7 @@ async function selectUtxos({ utxos, amount, vins, vouts, recommendedFeeRate }) {
         selectedAmount += utxo.value;
 
         const calculatedFee = calculateFee({ vins: vins + selectedUtxos.length, vouts, recommendedFeeRate });
-        if (selectedAmount >= amount + DUMMY_UTXO_VALUE + calculatedFee) {
+        if (selectedAmount >= amount + calculatedFee) {
             break;
         }
     }
@@ -139,7 +139,8 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
 
     // We require at least 2 dummy utxos for taker
     const dummyUtxos = [];
-    const potentialDummyUtxos = payerUtxos.filter((utxo) => utxo.value <= DUMMY_UTXO_VALUE);
+    // Sort ascending by value, and filter out unconfirmed utxos
+    const potentialDummyUtxos = payerUtxos.filter((x) => x.status.confirmed).sort((a, b) => a.value - b.value);
     for (const potentialDummyUtxo of potentialDummyUtxos) {
         if (!(await doesUtxoContainInscription(potentialDummyUtxo))) {
             // Dummy utxo found
@@ -268,6 +269,12 @@ export async function generatePSBTListingInscriptionForBuy({
         totalPaymentValue += utxo.value;
     }
 
+    // Add value A+B dummy output
+    psbt.addOutput({
+        address: receiverAddress,
+        value: totalDummyValue,
+    });
+
     // Add output for the inscription
     psbt.addOutput({
         address: receiverAddress,
@@ -298,16 +305,6 @@ export async function generatePSBTListingInscriptionForBuy({
     psbt.addOutput({
         address: payerAddress,
         value: changeValue,
-    });
-
-    // Add dummy utxo outputs for the next purchase
-    psbt.addOutput({
-        address: payerAddress,
-        value: DUMMY_UTXO_VALUE,
-    });
-    psbt.addOutput({
-        address: payerAddress,
-        value: DUMMY_UTXO_VALUE,
     });
 
     const psbt64 = psbt.toBase64();

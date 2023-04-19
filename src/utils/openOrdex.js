@@ -223,6 +223,7 @@ export async function generatePSBTListingInscriptionForBuy({
 
     let totalValue = 0;
     let totalPaymentValue = 0;
+    let totalDummyValue = 0;
 
     // Add dummy utxo inputs
     for (const dummyUtxo of dummyUtxos) {
@@ -238,7 +239,15 @@ export async function generatePSBTListingInscriptionForBuy({
             index: dummyUtxo.vout,
             nonWitnessUtxo: tx.toBuffer(),
         });
+
+        totalDummyValue += dummyUtxo.value;
     }
+
+    // Add input for the ordinal to be sold
+    psbt.addInput({
+        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
+        ...sellerSignedPsbt.data.inputs[0],
+    });
 
     // Add payment utxo inputs
     for (const utxo of paymentUtxos) {
@@ -259,12 +268,6 @@ export async function generatePSBTListingInscriptionForBuy({
         totalPaymentValue += utxo.value;
     }
 
-    // Add input for the ordinal to be sold
-    psbt.addInput({
-        ...sellerSignedPsbt.data.globalMap.unsignedTx.tx.ins[0],
-        ...sellerSignedPsbt.data.inputs[0],
-    });
-
     // Add output for the inscription
     psbt.addOutput({
         address: receiverAddress,
@@ -279,7 +282,8 @@ export async function generatePSBTListingInscriptionForBuy({
     // Calculate change value and add output for change
     const recommendedFeeRate = await fetchRecommendedFee();
     const fee = calculateFee({ vins: psbt.txInputs.length, vouts: psbt.txOutputs.length, recommendedFeeRate });
-    const changeValue = totalPaymentValue - price - fee;
+
+    const changeValue = totalPaymentValue - totalDummyValue - price - fee;
 
     if (changeValue < 0) {
         const msg = `Your wallet address doesn't have enough funds to buy this inscription.

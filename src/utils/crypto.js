@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@lib/constants.config";
+import { ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@lib/constants.config";
 
 import { ECPairFactory } from "ecpair";
 
@@ -25,12 +25,6 @@ export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOut
 
     return Math.round(fee);
 }
-
-export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
-
-export const ordinalsImageUrl = (utxo) => `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`;
-
-export const cloudfrontUrl = (utxo) => `https://d2v3k2do8kym1f.cloudfront.net/minted-items/${utxo.txid}:${utxo.vout}`;
 
 export const shortenStr = (str) => {
     if (!str) return "";

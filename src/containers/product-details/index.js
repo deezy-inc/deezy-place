@@ -12,7 +12,7 @@ import WalletContext from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
-    const { nostrAddress } = useContext(WalletContext);
+    const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
@@ -112,7 +112,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                 </div>
                             </div>
 
-                            {nostrAddress && (
+                            {nostrPublicKey && nostrAddress && (
                                 <div className="rn-pd-sm-property-wrapper">
                                     <h6 className="pd-property-title">Actions</h6>
 

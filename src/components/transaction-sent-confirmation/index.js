@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import Lottie from "lottie-react";
-import checkAnimation from "./check.json";
 import Button from "@ui/button";
 import { shortenStr } from "@utils/crypto";
 import { MEMPOOL_API_URL } from "@lib/constants.config";
 import { toast } from "react-toastify";
+import checkAnimation from "./check.json";
 
 const TransactionSent = ({ txId, onClose, title = "Transaction Sent" }) => {
     const submit = () => {
@@ -13,7 +13,7 @@ const TransactionSent = ({ txId, onClose, title = "Transaction Sent" }) => {
     return (
         <div className="tx-success-container">
             <div className="action mb-xxl-5">
-                <Lottie animationData={checkAnimation} loop={true} style={{ height: 150 }} autoplay={true} />
+                <Lottie animationData={checkAnimation} loop style={{ height: 150 }} autoplay />
                 <h5>{title}</h5>
                 <div className="txid mb-xxl-5">
                     <button

@@ -7,7 +7,7 @@ function useDelayUnmount(isMounted, delayTime) {
         if (isMounted && !showDiv) {
             setShowDiv(true);
         } else if (!isMounted && showDiv) {
-            timeoutId = setTimeout(() => setShowDiv(false), delayTime); //delay our unmount
+            timeoutId = setTimeout(() => setShowDiv(false), delayTime); // delay our unmount
         }
         return () => clearTimeout(timeoutId); // cleanup mechanism for effects , the use of setTimeout generate a sideEffect
     }, [isMounted, delayTime, showDiv]);

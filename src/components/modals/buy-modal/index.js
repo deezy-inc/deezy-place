@@ -53,17 +53,17 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     const updatePayerAddress = async (address) => {
         try {
-            const { selectedUtxos, dummyUtxo } = await getAvailableUtxosWithoutInscription({
+            const { selectedUtxos: su, dummyUtxo: _dm } = await getAvailableUtxosWithoutInscription({
                 address,
                 price: utxo.value,
             });
 
-            if (!dummyUtxo) {
+            if (!_dm) {
                 throw new Error("No dummy UTXO found. Please create one first.");
             }
 
-            setSelectedUtxos(selectedUtxos);
-            setDummyUtxo(dummyUtxo);
+            setSelectedUtxos(su);
+            setDummyUtxo(_dm);
         } catch (e) {
             setSelectedUtxos([]);
             throw e;
@@ -143,7 +143,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             handleModal();
         } catch (e) {
             toast.error(e.message);
-            return;
         }
     };
 

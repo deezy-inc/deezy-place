@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
 import { useRouter } from "next/router";
+import { Analytics } from "@vercel/analytics/react";
 import sal from "sal.js";
 import { ThemeProvider } from "next-themes";
 import "../assets/css/bootstrap.min.css";
@@ -24,6 +25,7 @@ const MyApp = ({ Component, pageProps }) => {
     return (
         <ThemeProvider defaultTheme="dark">
             <Component {...pageProps} />
+            <Analytics />
         </ThemeProvider>
     );
 };

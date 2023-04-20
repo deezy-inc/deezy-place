@@ -15,6 +15,9 @@ import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 import { InscriptionPreview } from "@components/inscription-preview";
+import TransactionSent from "@components/transaction-sent-confirmation";
+import { useDelayUnmount } from "@hooks";
+import clsx from "clsx";
 
 bitcoin.initEccLib(ecc);
 
@@ -22,9 +25,12 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-    const [sentTxid, setSentTxid] = useState(null);
+    const [sentTxId, setSentTxId] = useState(null);
     const [nostrPublicKey, setNostrPublicKey] = useState();
     const [isSending, setIsSending] = useState(false);
+
+    const [isMounted, setIsMounted] = useState(true);
+    const showDiv = useDelayUnmount(isMounted, 500);
 
     useEffect(() => {
         const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
@@ -32,28 +38,6 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             setNostrPublicKey(pubKey);
         }
     }, []);
-
-    async function sendUtxo() {
-        try {
-            const txId = await signAndBroadcastUtxo({
-                pubKey: nostrPublicKey,
-                utxo,
-                destinationBtcAddress,
-                sendFeeRate,
-            });
-
-            setSentTxid(txId);
-
-            toast.success(`Transaction sent: ${txId}, copied to clipboard`);
-            navigator.clipboard.writeText(txId);
-            handleModal();
-            return true;
-        } catch (err) {
-            console.error(err);
-            toast.error(err);
-            return null;
-        }
-    }
 
     const addressOnChange = (evt) => {
         const newaddr = evt.target.value;
@@ -75,32 +59,44 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
     const submit = async () => {
         setIsSending(true);
-        await sendUtxo().catch((err) => {
-            console.error(err);
-            alert(err);
-            return false;
-        });
 
-        // sleep for 1 second to let the tx propagate
-        await new Promise((r) => {
-            setTimeout(r, 1000);
-        });
-        onSale();
+        try {
+            const txId = await signAndBroadcastUtxo({
+                pubKey: nostrPublicKey,
+                utxo,
+                destinationBtcAddress,
+                sendFeeRate,
+            });
 
-        setIsSending(false);
+            setSentTxId(txId);
+            toast.success(`Transaction sent: ${txId}, copied to clipboard`);
+            navigator.clipboard.writeText(txId);
+
+            // Display confirmation component
+            setIsMounted(!isMounted);
+        } catch (e) {
+            toast.error(e.message);
+        } finally {
+            setIsSending(false);
+        }
     };
 
-    return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
-            {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
-                    <i className="feather-x" />
-                </button>
-            )}
-            <Modal.Header>
-                <h3 className="modal-title">Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}</h3>
-            </Modal.Header>
-            <Modal.Body>
+    const closeModal = () => {
+        onSale();
+        handleModal();
+    };
+
+    const renderBody = () => {
+        if (!showDiv) {
+            return (
+                <div className="show-animated">
+                    <TransactionSent txId={sentTxId} onClose={closeModal} title="Transaction Sent" />
+                </div>
+            );
+        }
+
+        return (
+            <div className={clsx(!isMounted && "hide-animated")}>
                 <p>You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}</p>
                 <div className="inscription-preview">
                     <InscriptionPreview utxo={utxo} />
@@ -163,7 +159,25 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                         </Button>
                     </div>
                 </div>
-            </Modal.Body>
+            </div>
+        );
+    };
+
+    return (
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
+            {show && (
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
+                    <i className="feather-x" />
+                </button>
+            )}
+            {showDiv && (
+                <Modal.Header>
+                    <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
+                        Send {shortenStr(utxo && `${utxo.inscriptionId}`)}
+                    </h3>
+                </Modal.Header>
+            )}
+            <Modal.Body>{renderBody()}</Modal.Body>
         </Modal>
     );
 };

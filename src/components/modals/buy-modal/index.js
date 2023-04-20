@@ -20,6 +20,7 @@ import { signPsbtMessage, broadcastTx } from "@utils/psbt";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
+
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
@@ -32,6 +33,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const [selectedUtxos, setSelectedUtxos] = useState([]);
     const [dummyUtxos, setDummyUtxos] = useState([]);
     const [bitcoinPrice, setBitcoinPrice] = useState();
+    const [buyTxId, setBuyTxId] = useState(null);
 
     const [isMounted, setIsMounted] = useState(true);
     const showDiv = useDelayUnmount(isMounted, 500);
@@ -121,22 +123,18 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 inscription: utxo,
             });
 
-            try {
-                const tx = await signPsbtMessage(psbt);
-                const txId = await broadcastTx(tx);
-                toast.info(`Order successfully signed! ${txId}`);
-                navigator.clipboard.writeText(txId);
-            } catch (e) {
-                toast.error(e.message);
-            }
+            const tx = await signPsbtMessage(psbt);
+            const txId = await broadcastTx(tx);
+            setBuyTxId(txId);
+            toast.info(`Order successfully signed! ${txId}`);
+            navigator.clipboard.writeText(txId);
 
             // Display confirmation component
             setIsMounted(!isMounted);
-
-            // Sign and send
-            setIsOnBuy(false);
         } catch (e) {
             toast.error(e.message);
+        } finally {
+            setIsOnBuy(false);
         }
     };
 
@@ -157,11 +155,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         if (!showDiv) {
             return (
                 <div className="show-animated">
-                    <TransactionSent
-                        txId={"febb080eac277cf1c8f50593293118fa35e46c9f572684bdaa6bff026c296e9d"}
-                        onClose={closeModal}
-                        title="Transaction Sent"
-                    />
+                    <TransactionSent txId={buyTxId} onClose={closeModal} title="Transaction Sent" />
                 </div>
             );
         }

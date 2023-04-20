@@ -218,6 +218,7 @@ body.modal-open {
                     margin-bottom: 15px;
                 }
             }
+
             .bid-content {
                 .bid-content-top {
                     display: block;
@@ -251,4 +252,14 @@ body.modal-open {
             }
         }
     }
+}
+
+.hide-animated {
+    animation: fadeOut 500ms ease-out;
+    animation-fill-mode: forwards;
+}
+
+.show-animated {
+    animation: fadeIn 500ms ease-in;
+    animation-fill-mode: forwards;
 }

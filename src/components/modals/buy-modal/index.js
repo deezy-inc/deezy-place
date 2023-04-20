@@ -17,7 +17,9 @@ import { toast } from "react-toastify";
 import { InscriptionPreview } from "@components/inscription-preview";
 import { NostrEvenType } from "@utils/types";
 import { signPsbtMessage, broadcastTx } from "@utils/psbt";
-
+import TransactionSent from "@components/transaction-sent-confirmation";
+import { useDelayUnmount } from "@hooks";
+import clsx from "clsx";
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
@@ -31,6 +33,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const [dummyUtxos, setDummyUtxos] = useState([]);
     const [bitcoinPrice, setBitcoinPrice] = useState();
 
+    const [isMounted, setIsMounted] = useState(true);
+    const showDiv = useDelayUnmount(isMounted, 500);
+
     useEffect(() => {
         const getPrice = async () => {
             const btcPrice = await fetchBitcoinPrice();
@@ -39,17 +44,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
         getPrice();
     }, [nostrAddress]);
-
-    // let openOrderx;
-
-    // const createDummyUtxo = async () => {
-    //     try {
-    //         const txId = await openOrderx.generatePSBTGeneratingDummyUtxos(destinationBtcAddress);
-    //         toast.info(`Transaction created. Please wait for it to be confirmed. TxId: ${txId}`);
-    //     } catch (e) {
-    //         toast.error(e.message);
-    //     }
-    // };
 
     const updatePayerAddress = async (address) => {
         try {
@@ -136,14 +130,19 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 toast.error(e.message);
             }
 
+            // Display confirmation component
+            setIsMounted(!isMounted);
+
             // Sign and send
             setIsOnBuy(false);
-            onSale();
-
-            handleModal();
         } catch (e) {
             toast.error(e.message);
         }
+    };
+
+    const closeModal = () => {
+        onSale();
+        handleModal();
     };
 
     const submit = async () => {
@@ -154,17 +153,21 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         await buy();
     };
 
-    return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
-            {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
-                    <i className="feather-x" />
-                </button>
-            )}
-            <Modal.Header>
-                <h3 className="modal-title">Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
-            </Modal.Header>
-            <Modal.Body>
+    const renderBody = () => {
+        if (!showDiv) {
+            return (
+                <div className="show-animated">
+                    <TransactionSent
+                        txId={"febb080eac277cf1c8f50593293118fa35e46c9f572684bdaa6bff026c296e9d"}
+                        onClose={closeModal}
+                        title="Transaction Sent"
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div className={clsx(!isMounted && "hide-animated")}>
                 <p>You are about to buy this Ordinal</p>
                 <div className="inscription-preview">
                     <InscriptionPreview utxo={utxo} />
@@ -222,7 +225,25 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                         </Button>
                     </div>
                 </div>
-            </Modal.Body>
+            </div>
+        );
+    };
+
+    return (
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
+            {show && (
+                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
+                    <i className="feather-x" />
+                </button>
+            )}
+            {showDiv && (
+                <Modal.Header>
+                    <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
+                        Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}
+                    </h3>
+                </Modal.Header>
+            )}
+            <Modal.Body>{renderBody()}</Modal.Body>
         </Modal>
     );
 };

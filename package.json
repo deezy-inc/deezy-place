@@ -15,6 +15,7 @@
         "clsx": "^1.2.1",
         "ecpair": "^2.1.0",
         "ethers": "^5.7.2",
+        "lottie-react": "^2.4.0",
         "match-sorter": "^6.3.1",
         "next": "^13.1.6",
         "next-themes": "^0.1.1",

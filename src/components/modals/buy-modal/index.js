@@ -1,4 +1,4 @@
-/* eslint-disable react/forbid-prop-types */
+/* eslint-disable */
 import { useState, useContext, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";

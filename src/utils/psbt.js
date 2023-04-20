@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { serializeTaprootSignature } from "bitcoinjs-lib/src/psbt/bip371";
 import { ethers } from "ethers";
 import { tweakSigner, TAPROOT_MESSAGE, outputValue, getAddressInfo } from "@utils/crypto";

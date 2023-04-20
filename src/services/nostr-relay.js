@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { SimplePool, getEventHash } from "nostr-tools";
 import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
 import { cleanEvent } from "@utils/nostr/event";

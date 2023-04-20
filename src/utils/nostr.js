@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { nostrPool } from "@services/nostr-relay";
 import { getEventHash } from "nostr-tools";
 

@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import { useRouter } from "next/router";
 import sal from "sal.js";
 import { ThemeProvider } from "next-themes";
+import { GoogleAnalytics } from "nextjs-google-analytics";
+
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
-
 import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
 
@@ -23,6 +24,7 @@ const MyApp = ({ Component, pageProps }) => {
     });
     return (
         <ThemeProvider defaultTheme="dark">
+            <GoogleAnalytics trackPageViews />
             <Component {...pageProps} />
         </ThemeProvider>
     );

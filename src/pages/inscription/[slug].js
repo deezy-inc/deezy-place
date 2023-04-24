@@ -4,7 +4,7 @@ import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import { getAddressInfo } from "@utils/address";
+import { getAddressInfo } from "@services/nosft";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import { getInscription } from "@utils/inscriptions";

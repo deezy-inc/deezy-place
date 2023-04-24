@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { connectWallet } from "@utils/wallet";
+import { connectWallet } from "@services/nosft";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import LocalStorage from "@services/local-storage";
 

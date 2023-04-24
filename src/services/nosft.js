@@ -5,6 +5,22 @@ const nosft = Nosft({ ...localConfig });
 
 const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
+const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
+const { getInscription, getInscriptions } = nosft.inscriptions;
+const {
+    shortenStr,
+    satsToFormattedDollarString,
+    fetchBitcoinPrice,
+    outputValue,
+    toXOnly,
+    sortUtxos,
+    parseOutpoint,
+    fetchRecommendedFee,
+    satToBtc,
+    calculateFee,
+    getTxHexById,
+    tweakSigner,
+} = nosft.crypto;
 
 const { config } = nosft;
 
@@ -38,6 +54,28 @@ export default nosft;
 export {
     getAddressInfo,
     connectWallet,
+
+    // Crypto
+    shortenStr,
+    satsToFormattedDollarString,
+    fetchBitcoinPrice,
+    outputValue,
+    toXOnly,
+    sortUtxos,
+    parseOutpoint,
+    fetchRecommendedFee,
+    satToBtc,
+    calculateFee,
+    getTxHexById,
+    tweakSigner,
+
+    // utxo
+    doesUtxoContainInscription,
+    getAddressUtxos,
+
+    // inscriptions
+    getInscription,
+    getInscriptions,
 
     // Config variables
     TAPROOT_MESSAGE,

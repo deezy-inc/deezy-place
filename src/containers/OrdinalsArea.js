@@ -9,8 +9,7 @@ import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import WalletContext from "@context/wallet-context";
 import Image from "next/image";
-import { shortenStr } from "@utils/crypto";
-import { getInscriptions } from "@utils/inscriptions";
+import { shortenStr, getInscriptions } from "@services/nosft";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 

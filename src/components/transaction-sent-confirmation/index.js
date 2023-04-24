@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import Lottie from "lottie-react";
 import Button from "@ui/button";
 import { shortenStr } from "@utils/crypto";
-import { MEMPOOL_API_URL } from "@lib/constants.config";
+import { MEMPOOL_API_URL } from "@services/nosft";
 import { toast } from "react-toastify";
 import checkAnimation from "./check.json";
 

@@ -1,4 +1,4 @@
-import { POOL_API_URL, ORDINALS_EXPLORER_URL_LEGACY } from "@lib/constants.config";
+import { POOL_API_URL, ORDINALS_EXPLORER_URL_LEGACY } from "@services/nosft";
 
 import axios from "axios";
 

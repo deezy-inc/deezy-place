@@ -6,7 +6,7 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, NETWORK } from "@lib/constants.config";
+import { TESTNET, NETWORK } from "@services/nosft";
 import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -155,7 +155,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         if (!showDiv) {
             return (
                 <div className="show-animated">
-                    <TransactionSent txId={buyTxId} onClose={closeModal} title="Transaction Sent" />
+                    {buyTxId && <TransactionSent txId={buyTxId} onClose={closeModal} title="Transaction Sent" />}
                 </div>
             );
         }

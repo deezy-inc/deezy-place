@@ -9,7 +9,7 @@ import Slider, { SliderItem } from "@ui/slider";
 import { getInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
-import { MAX_ONSALE } from "@lib/constants.config";
+import { MAX_ONSALE } from "@services/nosft";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";

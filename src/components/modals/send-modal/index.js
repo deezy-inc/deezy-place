@@ -6,7 +6,7 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants.config";
+import { TESTNET, DEFAULT_FEE_RATE } from "@services/nosft";
 import { shortenStr, outputValue } from "@utils/crypto";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { signAndBroadcastUtxo } from "@utils/psbt";
@@ -90,7 +90,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         if (!showDiv) {
             return (
                 <div className="show-animated">
-                    <TransactionSent txId={sentTxId} onClose={closeModal} title="Transaction Sent" />
+                    {sentTxId && <TransactionSent txId={sentTxId} onClose={closeModal} title="Transaction Sent" />}
                 </div>
             );
         }

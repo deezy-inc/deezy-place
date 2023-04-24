@@ -6,7 +6,7 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants.config";
+import { TESTNET, DEFAULT_FEE_RATE } from "@services/nosft";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
 import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";

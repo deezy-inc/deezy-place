@@ -6,13 +6,12 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@services/nosft";
+import { TESTNET, signPsbtMessage } from "@services/nosft";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@services/nosft";
 import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { signPsbtMessage } from "@utils/psbt";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 

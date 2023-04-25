@@ -7,6 +7,7 @@ const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
 const { getInscription, getInscriptions } = nosft.inscriptions;
+const { signPsbtMessage, broadcastTx, signAndBroadcastUtxo, getMetamaskSigner, signSigHash } = nosft.psbt;
 const {
     shortenStr,
     satsToFormattedDollarString,
@@ -76,6 +77,13 @@ export {
     // inscriptions
     getInscription,
     getInscriptions,
+
+    // psbt
+    signPsbtMessage,
+    broadcastTx,
+    signAndBroadcastUtxo,
+    getMetamaskSigner,
+    signSigHash,
 
     // Config variables
     TAPROOT_MESSAGE,

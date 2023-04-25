@@ -9,6 +9,13 @@ const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
 const { getInscription, getInscriptions } = nosft.inscriptions;
 const { signPsbtMessage, broadcastTx, signAndBroadcastUtxo, getMetamaskSigner, signSigHash } = nosft.psbt;
 const {
+    getAvailableUtxosWithoutInscription,
+    generatePSBTListingInscriptionForBuy,
+    generatePSBTListingInscriptionForSale,
+    getOrderInformation,
+} = nosft.openOrdex;
+
+const {
     shortenStr,
     satsToFormattedDollarString,
     fetchBitcoinPrice,
@@ -84,6 +91,12 @@ export {
     signAndBroadcastUtxo,
     getMetamaskSigner,
     signSigHash,
+
+    // open ordex
+    getAvailableUtxosWithoutInscription,
+    generatePSBTListingInscriptionForBuy,
+    generatePSBTListingInscriptionForSale,
+    getOrderInformation,
 
     // Config variables
     TAPROOT_MESSAGE,

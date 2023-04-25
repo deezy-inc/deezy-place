@@ -1,8 +1,7 @@
 import { SimplePool, getEventHash } from "nostr-tools";
-import { NOSTR_KIND_INSCRIPTION, RELAYS, getMetamaskSigner } from "@services/nosft";
+import { NOSTR_KIND_INSCRIPTION, RELAYS, getMetamaskSigner, getOrderInformation } from "@services/nosft";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
-import { getOrderInformation } from "@utils/openOrdex";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 class NostrRelay {

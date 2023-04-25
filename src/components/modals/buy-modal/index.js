@@ -14,11 +14,13 @@ import {
     fetchBitcoinPrice,
     signPsbtMessage,
     broadcastTx,
+    getAvailableUtxosWithoutInscription,
+    generatePSBTListingInscriptionForBuy,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";
-import { getAvailableUtxosWithoutInscription, generatePSBTListingInscriptionForBuy } from "@utils/openOrdex";
+
 import { TailSpin } from "react-loading-icons";
 import { toast } from "react-toastify";
 import { InscriptionPreview } from "@components/inscription-preview";

@@ -7,7 +7,7 @@ import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
 import "react-loading-skeleton/dist/skeleton.css";
-import { nostrPool } from "@services/nostr-relay";
+import { nostrPool } from "@utils/nostr-relay";
 import { MAX_ONSALE, getInscription } from "@services/nosft";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";

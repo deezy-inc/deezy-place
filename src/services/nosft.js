@@ -8,6 +8,8 @@ const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
 const { getInscription, getInscriptions } = nosft.inscriptions;
 const { signPsbtMessage, broadcastTx, signAndBroadcastUtxo, getMetamaskSigner, signSigHash } = nosft.psbt;
+const { signAndBroadcastEvent, getNostrInscription, subscribeOrders, unsubscribeOrders } = nosft.nostr;
+
 const {
     getAvailableUtxosWithoutInscription,
     generatePSBTListingInscriptionForBuy,
@@ -97,6 +99,12 @@ export {
     generatePSBTListingInscriptionForBuy,
     generatePSBTListingInscriptionForSale,
     getOrderInformation,
+
+    // nostr
+    signAndBroadcastEvent,
+    getNostrInscription,
+    subscribeOrders,
+    unsubscribeOrders,
 
     // Config variables
     TAPROOT_MESSAGE,

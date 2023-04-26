@@ -4,11 +4,10 @@ import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import { getAddressInfo, getInscription } from "@services/nosft";
+import { getAddressInfo, getInscription, getNostrInscription } from "@services/nosft";
 import { useConnectWallet } from "@hooks";
 import WalletContext from "@context/wallet-context";
 import ProductDetailsArea from "@containers/product-details";
-import { getInscription as getNostrInscription } from "@utils/nostr";
 import { useRouter } from "next/router";
 
 const Inscription = () => {

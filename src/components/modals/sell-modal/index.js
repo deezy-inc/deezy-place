@@ -12,8 +12,9 @@ import {
     fetchBitcoinPrice,
     satsToFormattedDollarString,
     generatePSBTListingInscriptionForSale,
+    signAndBroadcastEvent,
 } from "@services/nosft";
-import { signAndBroadcastEvent } from "@utils/nostr";
+
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import WalletContext from "@context/wallet-context";

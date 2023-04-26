@@ -112,7 +112,7 @@ function createPsbtForBoost({ utxo, inputAddressInfo, destinationBtcAddress }) {
     const network = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
     const psbt = new bitcoin.Psbt({ network });
-    const sighashType = 131 // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
+    const sighashType = 131; // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
     const inputParams = getInputParams({ utxo, inputAddressInfo, sighashType });
     const output = 10000; // TODO: make this a constant.
     psbt.addOutput({
@@ -145,7 +145,7 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
 export async function createAndSignPsbtForBoost({ pubKey, utxo, destinationBtcAddress }) {
     const inputAddressInfo = getAddressInfo(pubKey);
     const { psbt, inputParams } = createPsbtForBoost({ utxo, inputAddressInfo, destinationBtcAddress });
-    const sighashType = 131 // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
+    const sighashType = 131; // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
     const signed = await getSignedPsbt({ psbt, inputParams, inputAddressInfo, utxo, sighashType });
     // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
     signed.finalizeAllInputs();

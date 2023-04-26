@@ -41,7 +41,8 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             try {
                 if (!window.webln) {
                     alert(
-                        "Oops looks like you don't have a WebLN compatible browser-extension wallet to make the lightning payment. Try getting Alby from getalby.com"
+                        "Oops looks like you don't have a WebLN compatible browser-extension " +
+                            "wallet to make the lightning payment. Try getting Alby from getalby.com"
                     );
                     return;
                 }
@@ -82,11 +83,10 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             toast.success(`Transaction sent: ${txId}, copied to clipboard`);
             navigator.clipboard.writeText(txId);
             handleModal();
-            return true;
+            return;
         } catch (err) {
             console.error(err);
             toast.error(err);
-            return null;
         }
     }
 
@@ -115,7 +115,6 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         await sendUtxo(boostRequired).catch((err) => {
             console.error(err);
             alert(err);
-            return false;
         });
 
         // sleep for 1 second to let the tx propagate
@@ -188,14 +187,12 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                 </span>
                             </div>
                         </div>
-                        {boostRequired ? (
+                        {boostRequired && (
                             <span>
                                 Sending will require a small lightning payment to boost the utxo value
                                 <br />
                                 <br />
                             </span>
-                        ) : (
-                            <></>
                         )}
                     </div>
 

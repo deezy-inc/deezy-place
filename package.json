@@ -7,7 +7,7 @@
         "axios": "^1.2.6",
         "bip32": "^3.1.0",
         "bitcoin-address-validation": "^2.2.1",
-        "bitcoinjs-lib": "^6.1.0",
+        "bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib",
         "clsx": "^1.2.1",
         "ecpair": "^2.1.0",
         "ethers": "^5.7.2",

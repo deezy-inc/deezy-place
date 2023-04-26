@@ -19,7 +19,7 @@ import { TailSpin } from "react-loading-icons";
 import { InscriptionPreview } from "@components/inscription-preview";
 
 bitcoin.initEccLib(ecc);
-const MIN_OUTPUT_VALUE = 600
+const MIN_OUTPUT_VALUE = 600;
 
 const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
@@ -40,27 +40,29 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         if (boost) {
             try {
                 if (!window.webln) {
-                    alert('Oops looks like you don\'t have a WebLN compatible browser-extension wallet to make the lightning payment. Try getting Alby from getalby.com')
-                    return
+                    alert(
+                        "Oops looks like you don't have a WebLN compatible browser-extension wallet to make the lightning payment. Try getting Alby from getalby.com"
+                    );
+                    return;
                 }
-                if (!window.webln.enabled) await window.webln.enable()
+                if (!window.webln.enabled) await window.webln.enable();
 
                 const signedTxHex = await createAndSignPsbtForBoost({
                     pubKey: nostrPublicKey,
                     utxo,
-                    destinationBtcAddress
-                })
-                const { data } = await axios.post(`https://api${TESTNET ? '-testnet': ''}.deezy.io/v1/boost`, {
+                    destinationBtcAddress,
+                });
+                const { data } = await axios.post(`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost`, {
                     psbt: signedTxHex,
-                    fee_rate: sendFeeRate
-                })
-                console.log(data)
-                const result = await window.webln.sendPayment(data.bolt11_invoice)
-                console.log(result)
+                    fee_rate: sendFeeRate,
+                });
+                console.log(data);
+                const result = await window.webln.sendPayment(data.bolt11_invoice);
+                console.log(result);
             } catch (err) {
-                console.error(err)
-                alert('something went wrong')
-                return
+                console.error(err);
+                alert("something went wrong");
+                return;
             }
 
             toast.success(`Payment sent!`);
@@ -106,7 +108,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
     const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
-    const boostRequired = !!utxo && !!sendFeeRate && outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE
+    const boostRequired = !!utxo && !!sendFeeRate && outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
 
     const submit = async () => {
         setIsSending(true);
@@ -181,17 +183,20 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                             <div className="bid-content-right">
                                 {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
                                 <span>{sendFeeRate} sat/vbyte</span>
-                                <span>{boostRequired ? 10000 : utxo && sendFeeRate && outputValue(utxo, sendFeeRate)} sats</span>
+                                <span>
+                                    {boostRequired ? 10000 : utxo && sendFeeRate && outputValue(utxo, sendFeeRate)} sats
+                                </span>
                             </div>
                         </div>
-                            {
-                                boostRequired ?
-                                    <span>
-                                        Sending will require a small lightning payment to boost the utxo value<br /><br />
-                                    </span>
-                                    :
-                                    <></>
-                            }
+                        {boostRequired ? (
+                            <span>
+                                Sending will require a small lightning payment to boost the utxo value
+                                <br />
+                                <br />
+                            </span>
+                        ) : (
+                            <></>
+                        )}
                     </div>
 
                     <div className="bit-continue-button">

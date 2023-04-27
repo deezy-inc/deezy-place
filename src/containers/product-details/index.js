@@ -7,6 +7,7 @@ import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import BuyModal from "@components/modals/buy-modal";
+import BuyWithLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import WalletContext from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
@@ -16,6 +17,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
+    const [showBuyWithLightningModal, setShowBuyWithLightningModal] = useState(false);
 
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -27,6 +29,11 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
 
     const handleBuyModal = () => {
         setShowBuyModal((prev) => !prev);
+    };
+
+    const handleBuyWithLightningModal = () => {
+        console.log("okay");
+        setShowBuyWithLightningModal(!showBuyWithLightningModal);
     };
 
     const [isOwner, setIsOwner] = useState(false);
@@ -156,6 +163,19 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
+                                        {!isOwner && nostr && nostr.value && (
+                                            <button
+                                                className="pd-react-area btn-transparent buy-with-lightning"
+                                                type="button"
+                                                onClick={handleBuyWithLightningModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-zap" />
+                                                    <span>Buy with Lightning</span>
+                                                </div>
+                                            </button>
+                                        )}
+
                                         {/*
 
                                     <div className="pd-react-area">
@@ -193,6 +213,15 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                 <BuyModal
                     show={showBuyModal}
                     handleModal={handleBuyModal}
+                    utxo={inscription}
+                    onSale={onSend}
+                    nostr={nostr}
+                />
+            )}
+            {showBuyWithLightningModal && (
+                <BuyWithLightningModal
+                    show={showBuyWithLightningModal}
+                    handleModal={handleBuyWithLightningModal}
                     utxo={inscription}
                     onSale={onSend}
                     nostr={nostr}

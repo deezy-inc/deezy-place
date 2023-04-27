@@ -42,42 +42,44 @@ async function signTaproot(psbt, inputParams) {
     return psbt;
 }
 
-async function signNostr(psbt, inputParams, inputAddressInfo, utxo) {
+async function signNostr(psbt, inputParams, inputAddressInfo, utxo, sighashType = bitcoin.Transaction.SIGHASH_DEFAULT) {
     const publicKey = Buffer.from(await window.nostr.getPublicKey(), "hex");
     const input = {
         ...inputParams,
         tapInternalKey: toXOnly(publicKey),
+        // assuming sighashType is already on the inputParams
     };
 
     psbt.addInput(input);
 
-    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
-        0,
-        [inputAddressInfo.output],
-        [utxo.value],
-        bitcoin.Transaction.SIGHASH_DEFAULT
-    );
+    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(0, [inputAddressInfo.output], [utxo.value], sighashType);
     const sig = await window.nostr.signSchnorr(sigHash.toString("hex"));
 
     psbt.updateInput(0, {
-        tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex")),
+        tapKeySig: serializeTaprootSignature(Buffer.from(sig, "hex"), sighashType),
     });
 
     return psbt;
 }
 
-async function getSignedPsbt({ psbt, inputParams, inputAddressInfo, utxo }) {
+async function getSignedPsbt({
+    psbt,
+    inputParams,
+    inputAddressInfo,
+    utxo,
+    sighashType = bitcoin.Transaction.SIGHASH_DEFAULT,
+}) {
     const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
 
     if (metamaskDomain) {
         return signTaproot(psbt, inputParams);
     }
 
-    return signNostr(psbt, inputParams, inputAddressInfo, utxo);
+    return signNostr(psbt, inputParams, inputAddressInfo, utxo, sighashType);
 }
 
-function getInputParams({ utxo, inputAddressInfo }) {
-    return {
+function getInputParams({ utxo, inputAddressInfo, sighashType }) {
+    const params = {
         hash: utxo.txid,
         index: utxo.vout,
         witnessUtxo: {
@@ -86,6 +88,10 @@ function getInputParams({ utxo, inputAddressInfo }) {
         },
         tapInternalKey: "",
     };
+    if (sighashType) {
+        params.sighashType = sighashType;
+    }
+    return params;
 }
 
 function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate }) {
@@ -94,6 +100,21 @@ function createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate
     const psbt = new bitcoin.Psbt({ network });
     const inputParams = getInputParams({ utxo, inputAddressInfo });
     const output = outputValue(utxo, sendFeeRate);
+    psbt.addOutput({
+        address: destinationBtcAddress,
+        value: output,
+    });
+
+    return { psbt, inputParams };
+}
+
+function createPsbtForBoost({ utxo, inputAddressInfo, destinationBtcAddress }) {
+    const network = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+
+    const psbt = new bitcoin.Psbt({ network });
+    const sighashType = 131; // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
+    const inputParams = getInputParams({ utxo, inputAddressInfo, sighashType });
+    const output = 10000; // TODO: make this a constant.
     psbt.addOutput({
         address: destinationBtcAddress,
         value: output,
@@ -112,11 +133,21 @@ async function broadcastPsbt(psbt) {
 }
 
 export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress, sendFeeRate }) {
-    const inputAddressInfo = await getAddressInfo(pubKey);
+    const inputAddressInfo = getAddressInfo(pubKey);
     const { psbt, inputParams } = createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, sendFeeRate });
     const signed = await getSignedPsbt({ psbt, inputParams, inputAddressInfo, utxo });
     // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
     signed.finalizeAllInputs();
     // Send it!
     return broadcastPsbt(signed);
+}
+
+export async function createAndSignPsbtForBoost({ pubKey, utxo, destinationBtcAddress }) {
+    const inputAddressInfo = getAddressInfo(pubKey);
+    const { psbt, inputParams } = createPsbtForBoost({ utxo, inputAddressInfo, destinationBtcAddress });
+    const sighashType = 131; // bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY;
+    const signed = await getSignedPsbt({ psbt, inputParams, inputAddressInfo, utxo, sighashType });
+    // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
+    signed.finalizeAllInputs();
+    return signed.toHex();
 }

@@ -1,5 +1,7 @@
 // import { Nosft } from "nosft-core-ajs";
-// const XX = require("nosft-core");
+const nosftt = require("nosft-core-ajs");
+
+console.log(nosftt);
 // consol
 const Nosft = () => ({
     wallet: {

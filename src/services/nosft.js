@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-const { Nosft } = require("nosft-core");
+const { Nosft } = require("nosft-core-ajs");
 // Pass local config
 const nosft = Nosft();
 

@@ -20,6 +20,7 @@ import { signPsbtMessage, broadcastTx } from "@utils/psbt";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
+import { buyOrdinalWithLightning } from "@services/lightning";
 
 bitcoin.initEccLib(ecc);
 
@@ -86,6 +87,7 @@ const BuyWithLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
         try {
             await updatePayerAddress(destinationBtcAddress);
+            await buyOrdinalWithLightning({});
         } catch (e) {
             setIsBtcInputAddressValid(false);
             toast.error(e.message);
@@ -154,7 +156,7 @@ const BuyWithLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                         <div className="bid-content-top">
                             <div className="bid-content-left">
                                 <InputGroup className="mb-lg-5 notDummy">
-                                    <Form.Label>Address to receive payment</Form.Label>
+                                    <Form.Label>Address to receive inscription</Form.Label>
                                     <Form.Control
                                         defaultValue={nostrAddress}
                                         onChange={onChangeAddress}
@@ -164,23 +166,37 @@ const BuyWithLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                                         isInvalid={!isBtcInputAddressValid}
                                         autoFocus
                                     />
-
-                                    <Form.Control.Feedback type="invalid">
-                                        <br />
-                                        No dummy UTXOs found for your address
-                                    </Form.Control.Feedback>
                                 </InputGroup>
                             </div>
                         </div>
-
-                        <div className="bid-content-mid">
+                        <div className="bid-content-top">
                             <div className="bid-content-left">
-                                {Boolean(destinationBtcAddress) && <span>Payment Receive Address</span>}
-
-                                {Boolean(nostr.value) && <span>Price</span>}
+                                <InputGroup className="mb-lg-5 notDummy">
+                                    <Form.Label>Onchain fee rate</Form.Label>
+                                    <Form.Control
+                                        defaultValue={2.5}
+                                        aria-label="Onchain fee"
+                                        aria-describedby="basic-addon2"
+                                        autoFocus
+                                    />
+                                </InputGroup>
                             </div>
+                        </div>
+                        <div className="bid-content-top">
+                            <div className="bid-content-left">
+                                <InputGroup className="mb-lg-5 notDummy">
+                                    <Form.Label>Refund lightning address</Form.Label>
+                                    <Form.Control
+                                        aria-label="Refund lightning address"
+                                        aria-describedby="basic-addon2"
+                                        autoFocus
+                                    />
+                                </InputGroup>
+                            </div>
+                        </div>
+                        <div className="bid-content-mid">
+                            <div className="bid-content-left">{Boolean(nostr.value) && <span>Price</span>}</div>
                             <div className="bid-content-right">
-                                {Boolean(destinationBtcAddress) && <span>{shortenStr(destinationBtcAddress)}</span>}
                                 {Boolean(nostr.value) && bitcoinPrice && (
                                     <span>{`$${satsToFormattedDollarString(nostr.value, bitcoinPrice)}`}</span>
                                 )}

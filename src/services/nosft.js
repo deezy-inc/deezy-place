@@ -1,4 +1,5 @@
-import { Nosft } from "nosft-core";
+// eslint-disable-next-line
+const { Nosft } = require("nosft-core");
 // Pass local config
 const nosft = Nosft();
 

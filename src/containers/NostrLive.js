@@ -13,6 +13,7 @@ import { MAX_ONSALE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
+import Anchor from "@ui/anchor";
 
 const collectionAuthor = [
     {
@@ -146,16 +147,16 @@ const NostrLive = ({ className, space }) => {
                 <div className="row mb--20">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt_mobile--15">
                         <SectionTitle className="mb--0 live-title" {...{ title: "On Sale" }} />
-                        <span>Buy and sell coming soon</span>
                     </div>
-                    {/* TODO: LET USER GO TO VIEW ALL OF THEM! */}
-                    {/* <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
+
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
                         <div className="view-more-btn text-start text-sm-end ">
-                            <Anchor className="btn-transparent" path="/nostr-inscriptions">
+                            <Anchor className="btn-transparent" path="/inscriptions">
                                 VIEW ALL
+                                <i className="feather-arrow-right mb-md-5" />
                             </Anchor>
                         </div>
-                    </div> */}
+                    </div>
                 </div>
 
                 <div className="row">

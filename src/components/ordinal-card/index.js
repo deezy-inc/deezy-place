@@ -20,8 +20,6 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
 
-    console.log(utxo);
-
     return (
         <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
             <Anchor className="logo-dark" path={utxo?.content ? `/inscription/${utxo?.inscriptionId}` : "#"}>

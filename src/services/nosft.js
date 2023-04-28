@@ -1,23 +1,5 @@
-// import { Nosft } from "nosft-core-ajs";
-const nosftt = require("nosft-core-ajs");
+import { Nosft } from "nosft-core";
 
-console.log(nosftt);
-// consol
-const Nosft = () => ({
-    wallet: {
-        connectWallet: () => {
-            console.log("connectWallet");
-        },
-    },
-    address: {
-        getAddressInfo: () => {
-            console.log("getAddressInfo");
-        },
-        getAddressInscriptions: () => {
-            console.log("getAddressInscriptions");
-        },
-    },
-});
 // Pass local config
 const nosft = Nosft();
 

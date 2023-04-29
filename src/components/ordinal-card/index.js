@@ -22,7 +22,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
 
     return (
         <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-            <Anchor className="logo-dark" path={utxo?.content ? `/inscription/${utxo?.inscriptionId}` : "#"}>
+            <Anchor className="logo-dark" path={utxo?.content ? `/inscription/${utxo?.inscriptionId}` : null}>
                 <div className={clsx("product-style-one", !overlay && "no-overlay")}>
                     <div className="card-thumbnail">
                         <InscriptionPreview utxo={utxo} />

@@ -2,7 +2,7 @@ import Link from "next/link";
 import PropTypes from "prop-types";
 
 const Anchor = ({ path, children, className, rel, label, target, onClick, ...rest }) => {
-    if (!path) return null;
+    if (!path) return <div>{children}</div>;
     const internal = /^\/(?!\/)/.test(path);
     if (!internal) {
         const isHash = path.startsWith("#");

@@ -10,6 +10,7 @@ import ProductBid from "@components/product-bid";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr } from "@utils/crypto";
+import { MEMPOOL_API_URL } from "@lib/constants.config";
 import { InscriptionPreview } from "@components/inscription-preview";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
@@ -19,10 +20,13 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
+    const path = utxo?.inscriptionId ? `/inscription/${utxo?.inscriptionId}` : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`
+
+    console.log(utxo);
 
     return (
         <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-            <Anchor className="logo-dark" path={utxo?.content ? `/inscription/${utxo?.inscriptionId}` : null}>
+            <Anchor className="logo-dark" path={utxo?.content ? path : null}>
                 <div className={clsx("product-style-one", !overlay && "no-overlay")}>
                     <div className="card-thumbnail">
                         <InscriptionPreview utxo={utxo} />
@@ -45,12 +49,12 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                             ))}
                             {!authors && <Skeleton circle height={40} width={40} />}
                             <div className="more-author-text">
-                                {utxo && Boolean(utxo.inscriptionId) && (
-                                    <Anchor className="logo-dark" path={`/inscription/${utxo.inscriptionId}`}>
-                                        {shortenStr(utxo.inscriptionId)}
+                                {utxo && Boolean(utxo.inscriptionId || utxo.txid) && (
+                                    <Anchor className="logo-dark" path={path}>
+                                        {shortenStr(utxo.inscriptionId || utxo.key)}
                                     </Anchor>
                                 )}
-                                {(!utxo || !utxo.inscriptionId) && <Skeleton width={140} />}
+                                {(!utxo || (!utxo.inscriptionId && !utxo.txid)) && <Skeleton width={140} />}
                             </div>
                         </div>
                         {nostrAddress && utxo && type !== "send" && type !== "buy" && (

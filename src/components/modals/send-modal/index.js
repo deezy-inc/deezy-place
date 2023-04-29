@@ -6,10 +6,12 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants.config";
+import { TESTNET, DEFAULT_FEE_RATE, MIN_OUTPUT_VALUE, BOOST_UTXO_VALUE } from "@lib/constants.config";
 import { shortenStr, outputValue } from "@utils/crypto";
+import { createAndSignPsbtForBoost, signAndBroadcastUtxo } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-import { signAndBroadcastUtxo } from "@utils/psbt";
+import axios from "axios";
+
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
@@ -57,8 +59,46 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
     const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
+    const boostRequired = !!utxo && !!sendFeeRate && outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
+
     const submit = async () => {
         setIsSending(true);
+
+        if (boostRequired) {
+            try {
+                let result;
+                const signedTxHex = await createAndSignPsbtForBoost({
+                    pubKey: nostrPublicKey,
+                    utxo,
+                    destinationBtcAddress,
+                });
+                const { data } = await axios.post(`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost`, {
+                    psbt: signedTxHex,
+                    fee_rate: sendFeeRate,
+                });
+
+                if (window.webln) {
+                    if (!window.webln.enabled) await window.webln.enable();
+                    result = await window.webln.sendPayment(data.bolt11_invoice);
+                    toast.success(`Transaction sent: ${result}, copied to clipboard`);
+                } else {
+                    result = data.bolt11_invoice;
+                    toast.success(
+                        `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
+                    );
+                }
+                console.log(result);
+                setSentTxId(result);
+                navigator.clipboard.writeText(result);
+                // Display confirmation component
+                setIsMounted(!isMounted);
+            } catch (e) {
+                toast.error(e.message);
+            } finally {
+                setIsSending(false);
+            }
+            return;
+        }
 
         try {
             const txId = await signAndBroadcastUtxo({
@@ -142,9 +182,21 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                             <div className="bid-content-right">
                                 {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
                                 <span>{sendFeeRate} sat/vbyte</span>
-                                <span>{utxo && sendFeeRate && outputValue(utxo, sendFeeRate)} sats</span>
+                                <span>
+                                    {boostRequired
+                                        ? BOOST_UTXO_VALUE
+                                        : utxo && sendFeeRate && outputValue(utxo, sendFeeRate)}{" "}
+                                    sats
+                                </span>
                             </div>
                         </div>
+                        {boostRequired && (
+                            <span>
+                                Sending will require a small lightning payment to boost the utxo value
+                                <br />
+                                <br />
+                            </span>
+                        )}
                     </div>
 
                     <div className="bit-continue-button">
@@ -173,7 +225,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             {showDiv && (
                 <Modal.Header>
                     <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
-                        Send {shortenStr(utxo && `${utxo.inscriptionId}`)}
+                        Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
                     </h3>
                 </Modal.Header>
             )}

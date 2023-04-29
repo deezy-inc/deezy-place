@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { tweakSigner, outputValue } from "@utils/crypto";
 import { getAddressInfo } from "@utils/address";
 import { TAPROOT_MESSAGE } from "@utils/wallet";
-import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
+import { DEFAULT_DERIV_PATH, NETWORK, BOOST_UTXO_VALUE } from "@lib/constants.config";
 import { ECPairFactory } from "ecpair";
 import BIP32Factory from "bip32";
 import * as bitcoin from "bitcoinjs-lib";
@@ -118,6 +118,32 @@ export async function signAndBroadcastUtxo({ pubKey, utxo, destinationBtcAddress
     psbt.finalizeAllInputs();
     // Send it!
     return broadcastPsbt(psbt);
+}
+
+export async function createAndSignPsbtForBoost({ pubKey, utxo, destinationBtcAddress }) {
+    const inputAddressInfo = getAddressInfo(pubKey);
+    const psbt = createPsbt({ utxo, inputAddressInfo, destinationBtcAddress, output: BOOST_UTXO_VALUE });
+
+    const sigHash = psbt.__CACHE.__TX.hashForWitnessV1(
+        0,
+        [inputAddressInfo.output],
+        [utxo.value],
+        // eslint-disable-next-line no-bitwise
+        bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY
+    );
+
+    const signed = await signSigHash({ sigHash, inputAddressInfo, utxo });
+
+    psbt.updateInput(0, {
+        tapKeySig: serializeTaprootSignature(Buffer.from(signed, "hex"), [
+            // eslint-disable-next-line no-bitwise
+            bitcoin.Transaction.SIGHASH_SINGLE | bitcoin.Transaction.SIGHASH_ANYONECANPAY,
+        ]),
+    });
+
+    // Finalize the PSBT. Note that the transaction will not be broadcast to the Bitcoin network yet.
+    psbt.finalizeAllInputs();
+    return psbt.toHex();
 }
 
 export async function signPsbtMessage(message) {

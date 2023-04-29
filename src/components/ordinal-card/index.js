@@ -20,9 +20,7 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
-    const path = utxo?.inscriptionId ? `/inscription/${utxo?.inscriptionId}` : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`
-
-    console.log(utxo);
+    const path = utxo?.inscriptionId ? `/inscription/${utxo?.inscriptionId}` : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
 
     return (
         <SkeletonTheme baseColor="#13131d" highlightColor="#242435">

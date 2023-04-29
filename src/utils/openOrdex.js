@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types, radix, no-empty, guard-for-in */
 import { NETWORK, ORDINALS_EXPLORER_URL_LEGACY, DUMMY_UTXO_VALUE } from "@lib/constants.config";
+import { getInscriptions } from "@utils/inscriptions";
 import { doesUtxoContainInscription, getAddressUtxos } from "@utils/utxos";
 import { fetchRecommendedFee, satToBtc, calculateFee, getTxHexById } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
@@ -139,6 +140,8 @@ export async function getAvailableUtxosWithoutInscription({ address, price }) {
     if (!payerUtxos.length) {
         throw new Error(`No utxos found for address ${address}`);
     }
+    // ensure owned inscriptions data is up to date
+    await getInscriptions(address);
 
     // We require at least 2 dummy utxos for taker
     const dummyUtxos = [];

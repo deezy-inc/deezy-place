@@ -1,4 +1,5 @@
 import { POOL_API_URL, ORDINALS_EXPLORER_URL_LEGACY } from "@lib/constants.config";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 import axios from "axios";
 
@@ -82,9 +83,7 @@ export const getAddressUtxos = async (address) => {
 };
 
 export async function doesUtxoContainInscription(utxo) {
-    const html = await fetch(`${ORDINALS_EXPLORER_URL_LEGACY}/output/${utxo.txid}:${utxo.vout}`).then((response) =>
-        response.text()
-    );
-
-    return html.match(/class=thumbnails/) !== null;
+    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${utxo.txid}:${utxo.vout}`;
+    const cachedOutpoint = await LocalStorage.get(key);
+    return Boolean(cachedOutpoint);
 }

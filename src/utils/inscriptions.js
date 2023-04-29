@@ -16,8 +16,11 @@ const getOutpointFromCache = async (inscriptionId) => {
     }
 
     const result = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+    const [txid, vout] = parseOutpoint(result.data.inscription.outpoint);
+    const utxoKey = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${txid}:${vout}`;
 
     await LocalStorage.set(key, result.data);
+    await LocalStorage.set(utxoKey, result.data);
 
     return result.data;
 };

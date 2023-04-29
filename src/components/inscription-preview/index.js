@@ -46,7 +46,7 @@ export const InscriptionPreview = ({ utxo }) => {
 
 InscriptionPreview.propTypes = {
     utxo: PropTypes.shape({
-        content_type: PropTypes.string.isRequired,
+        content_type: PropTypes.string,
         inscriptionId: PropTypes.string,
         txId: PropTypes.string,
     }),

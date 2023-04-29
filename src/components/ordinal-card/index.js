@@ -7,7 +7,6 @@ import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
-import { ORDINALS_WALLET } from "@lib/constants.config";
 import WalletContext from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr } from "@utils/crypto";
@@ -21,9 +20,11 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useContext(WalletContext);
 
+    console.log(utxo);
+
     return (
         <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-            <Anchor className="logo-dark" path={utxo?.inscriptionId ? `/inscription/${utxo?.inscriptionId}` : "#"}>
+            <Anchor className="logo-dark" path={utxo?.content ? `/inscription/${utxo?.inscriptionId}` : "#"}>
                 <div className={clsx("product-style-one", !overlay && "no-overlay")}>
                     <div className="card-thumbnail">
                         <InscriptionPreview utxo={utxo} />

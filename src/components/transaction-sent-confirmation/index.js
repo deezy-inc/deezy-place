@@ -50,7 +50,7 @@ const TransactionSent = ({ txId, onClose, title = "Transaction Sent" }) => {
 
 TransactionSent.propTypes = {
     title: PropTypes.string,
-    txId: PropTypes.string.isRequired,
+    txId: PropTypes.string,
     onClose: PropTypes.func.isRequired,
 };
 

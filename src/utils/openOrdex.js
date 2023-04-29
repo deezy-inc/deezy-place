@@ -296,8 +296,7 @@ export async function generatePSBTListingInscriptionForBuy({
     // Calculate change value and add output for change
     const recommendedFeeRate = await fetchRecommendedFee();
     const fee = calculateFee({ vins: psbt.txInputs.length, vouts: psbt.txOutputs.length, recommendedFeeRate });
-
-    const changeValue = totalPaymentValue - totalDummyValue - price - fee;
+    const changeValue = totalPaymentValue - price - fee;
 
     if (changeValue < 0) {
         const msg = `Your wallet address doesn't have enough funds to buy this inscription.

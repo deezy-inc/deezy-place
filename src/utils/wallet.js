@@ -18,17 +18,20 @@ export const TAPROOT_MESSAGE = (domain) =>
 // Used to prove ownership of address and associated ordinals
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 
-export const connectWallet = async (metamask) => {
+export const connectWallet = async (provider) => {
     const { ethereum } = window;
 
-    if (ethereum && metamask) {
+    if (provider == "unisat.io") {
+        await window.unisat.requestAccounts();
+        return window.unisat.getPublicKey();
+    } else if (ethereum && provider) {
         let ethAddress = ethereum.selectedAddress;
         if (!ethAddress) {
             await ethereum.request({ method: "eth_requestAccounts" });
             ethAddress = ethereum.selectedAddress;
         }
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamask)).toString("hex")}`;
+        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(provider)).toString("hex")}`;
         const signature = await provider.send("personal_sign", [toSign, ethAddress]);
         const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
         const root = bip32.fromSeed(Buffer.from(seed));
@@ -43,7 +46,7 @@ export const connectWallet = async (metamask) => {
         await window.nostr.enable();
     } else {
         alert(
-            "Oops, it looks like you haven't set up your Nostr key yet or installed Metamask." +
+            "Oops, it looks like you haven't set up your Nostr key yet or installed Unisat or Metamask." +
                 "Go to your Alby Account Settings and create or import a Nostr key."
         );
         return undefined;

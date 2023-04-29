@@ -7,9 +7,9 @@ function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
     const [utxosReady, setUtxosReady] = useState(false);
 
-    const onConnectHandler = async (metamask) => {
-        const pubKey = await connectWallet(metamask);
-        SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
+    const onConnectHandler = async (provider) => {
+        const pubKey = await connectWallet(provider);
+        SessionStorage.set(SessionsStorageKeys.DOMAIN, provider);
         setNostrPublicKey(pubKey);
     };
 

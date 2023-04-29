@@ -42,21 +42,41 @@ async function signMetamask(sigHash, metamaskDomain) {
     return tweakedSigner.signSchnorr(sigHash);
 }
 
+async function signUnisat(sigHash) {
+    return window.unisat.signMessage(sigHash.toString("hex"));
+}
+
 async function signNostr(sigHash) {
     return window.nostr.signSchnorr(sigHash.toString("hex"));
 }
 
 export async function signSigHash({ sigHash }) {
-    const metamaskDomain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
 
-    if (metamaskDomain) {
-        return signMetamask(sigHash, metamaskDomain);
+    if (provider) {
+        if (provider == "unisat.io") {
+            return signUnisat(sigHash);
+        }
+        return signMetamask(sigHash, provider);
     }
 
     return signNostr(sigHash);
 }
 
-function getInputParams({ utxo, inputAddressInfo }) {
+function getInputParams({ utxo, inputAddressInfo, psbt }) {
+    console.log(utxo);
+    
+    if (!inputAddressInfo.output) {
+        console.log(psbt);
+        const tx = bitcoin.Transaction.fromBuffer(psbt.data.inputs[0].nonWitnessUtxo);
+        const output = tx.outs[psbt.txInputs[0].index];
+
+        return {
+            hash: utxo.txid,
+            index: utxo.vout,
+            witnessUtxo: output
+        }
+    }
     return {
         hash: utxo.txid,
         index: utxo.vout,

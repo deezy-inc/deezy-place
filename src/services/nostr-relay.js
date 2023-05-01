@@ -36,7 +36,6 @@ class NostrRelay {
                     async (event) => {
                         try {
                             const order = await getOrderInformation(event);
-
                             if (order) observer.next(order);
                         } catch (e) {
                             console.error(e);

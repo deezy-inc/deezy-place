@@ -9,7 +9,7 @@ import Slider, { SliderItem } from "@ui/slider";
 import { getInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
-import { MAX_LIMIT_ONSALE, MAX_ONSALE } from "@lib/constants.config";
+import { MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
@@ -63,12 +63,16 @@ const SliderOptions = {
     ],
 };
 
+const isTextInscription = (inscription) => /(text\/plain|application\/json)/.test(inscription?.content_type);
+
 const NostrLive = ({ className, space }) => {
     const [openOrders, setOpenOrders] = useState([]);
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
     const orderSubscriptionRef = useRef(null);
     const [refreshHack, setRefreshHack] = useState(false);
+    const processedEvents = useRef(new Set());
+    const fetchLimit = useRef(MAX_LIMIT_ONSALE);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -78,16 +82,54 @@ const NostrLive = ({ className, space }) => {
         addOpenOrder$.current.next(order);
     };
 
-    const getInscriptionData = useCallback(async (event) => {
+    const getInscriptionData = async (event) => {
         const { inscription } = await getInscription(event.inscriptionId);
-
         const forSaleInscription = deepClone({
             ...inscription,
             ...event,
         });
-
         return forSaleInscription;
-    }, []);
+    };
+
+    const unsubscribeOrders = () => {
+        try {
+            orderSubscriptionRef?.current?.unsubscribe();
+            addSubscriptionRef?.current?.unsubscribe();
+        } catch (err) {
+            // eslint-disable-next-line no-empty
+        }
+    };
+
+    const shouldFetchMore = () => processedEvents.current.size === fetchLimit.current && openOrders.length < MIN_ONSALE;
+
+    const subscribeOrdersWithLimit = async (limit) => {
+        if (openOrders.length >= MAX_ONSALE) return;
+
+        const subscription = nostrPool
+            .subscribeOrders({
+                limit,
+            })
+            .subscribe(async (event) => {
+                if (processedEvents.current.has(event.id)) return;
+                processedEvents.current.add(event.id);
+
+                const inscription = await getInscriptionData(event);
+                if (!isTextInscription(inscription)) {
+                    addNewOpenOrder(inscription);
+                }
+
+                if (shouldFetchMore()) {
+                    unsubscribeOrders();
+                    nostrPool.unsubscribeOrders();
+                    fetchLimit.current += ONSALE_BATCH_SIZE;
+                    if (openOrders.length < MAX_ONSALE) {
+                        subscribeOrdersWithLimit(fetchLimit.current);
+                    }
+                }
+            });
+
+        orderSubscriptionRef.current = subscription;
+    };
 
     useEffect(() => {
         addSubscriptionRef.current = addOpenOrder$.current
@@ -98,28 +140,12 @@ const NostrLive = ({ className, space }) => {
                 )
             )
             .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool
-            .subscribeOrders({
-                limit: MAX_LIMIT_ONSALE,
-            })
-            .subscribe(async (event) => {
-                // We should not be getting the same event twice
-                if (openOrders.find((order) => order.id === event.id)) return;
-                const inscription = await getInscriptionData(event);
-                // Just add new inscription if it's not a text/plain
-                if (inscription?.content_type?.includes("text/plain")) return;
-                addNewOpenOrder(inscription);
-            });
 
-        return () => {
-            try {
-                orderSubscriptionRef?.current?.unsubscribe();
-                addSubscriptionRef?.current?.unsubscribe();
-                // eslint-disable-next-line no-empty
-            } catch (err) {}
-        };
+        subscribeOrdersWithLimit(fetchLimit.current);
+
+        return () => unsubscribeOrders();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [fetchLimit.current]);
 
     const renderCards = () => {
         if (openOrders.length) {

@@ -91,7 +91,11 @@ export async function getOrderInformation(order) {
     // TODO: Remove this call, not needed.
     const inscription = await getInscriptionDataById(inscriptionId);
 
-    validatePbst(sellerSignedPsbt, inscription.output);
+    try {
+        validatePbst(sellerSignedPsbt, inscription.output);
+    } catch (e) {
+        console.error(e);
+    }
 
     const value = getPsbtPrice(sellerSignedPsbt);
 

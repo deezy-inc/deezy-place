@@ -6,6 +6,10 @@ import { getOrderInformation } from "@utils/openOrdex";
 import { getMetamaskSigner } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
+const defaultEose = () => {
+    console.log(`eose`);
+};
+
 class NostrRelay {
     constructor() {
         this.pool = new SimplePool();
@@ -23,14 +27,13 @@ class NostrRelay {
         }
     }
 
-    subscribeOrders({ limit }) {
+    subscribeOrders({ limit, eose = defaultEose }) {
         return new Observable(async (observer) => {
             try {
                 this.unsubscribeOrders();
                 this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
-                        console.log("event", event);
                         try {
                             const order = await getOrderInformation(event);
 
@@ -39,9 +42,7 @@ class NostrRelay {
                             console.error(e);
                         }
                     },
-                    () => {
-                        console.log(`eose`);
-                    }
+                    eose
                 );
             } catch (error) {
                 observer.error(error);

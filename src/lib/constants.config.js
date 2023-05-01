@@ -14,6 +14,7 @@ export const TESTNET = false;
 export const ASSUMED_TX_BYTES = 111;
 export const ORDINALS_EXPLORER_URL = "https://ordinals-api.deezy.io";
 export const RELAYS = [NOSTR_RELAY_URL];
+export const MAX_LIMIT_ONSALE = 30;
 export const MAX_ONSALE = 15;
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 export const TURBO_API = "https://turbo-ordinals.deezy.io";

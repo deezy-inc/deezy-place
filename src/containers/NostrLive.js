@@ -9,7 +9,7 @@ import Slider, { SliderItem } from "@ui/slider";
 import { getInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
-import { MAX_ONSALE } from "@lib/constants.config";
+import { MAX_LIMIT_ONSALE, MAX_ONSALE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
@@ -98,10 +98,18 @@ const NostrLive = ({ className, space }) => {
                 )
             )
             .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
-            const inscription = await getInscriptionData(event);
-            addNewOpenOrder(inscription);
-        });
+        orderSubscriptionRef.current = nostrPool
+            .subscribeOrders({
+                limit: MAX_LIMIT_ONSALE,
+            })
+            .subscribe(async (event) => {
+                // We should not be getting the same event twice
+                if (openOrders.find((order) => order.id === event.id)) return;
+                const inscription = await getInscriptionData(event);
+                // Just add new inscription if it's not a text/plain
+                if (inscription?.content_type?.includes("text/plain")) return;
+                addNewOpenOrder(inscription);
+            });
 
         return () => {
             try {

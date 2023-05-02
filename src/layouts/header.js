@@ -29,7 +29,7 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
             <header
                 ref={ref}
                 className={clsx(
-                    "rn-header haeder-default black-logo-version header--fixed header--sticky sticky",
+                    "rn-header header-default black-logo-version header--fixed header--sticky sticky",
                     className
                 )}
             >

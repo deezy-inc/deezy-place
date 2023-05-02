@@ -4,8 +4,18 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
+import { Form } from "react-bootstrap";
 
-const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSortAsc, activeSort, sortAsc }) => {
+const OrdinalFilter = ({
+    ownedUtxos,
+    setFilteredOwnedUtxos,
+    setActiveSort,
+    setSortAsc,
+    activeSort,
+    sortAsc,
+    hideText,
+    setHideText,
+}) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const onFilterByValue = () => {
@@ -30,6 +40,10 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
             return;
         }
         setActiveSort("date");
+    };
+
+    const onHideText = (event) => {
+        setHideText(event.target.checked);
     };
 
     return (
@@ -57,7 +71,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     }}
                 />
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -70,7 +84,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "date" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -83,7 +97,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "value" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -96,6 +110,15 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
+            <div className="col">
+                <Form.Check
+                    type="checkbox"
+                    id="hide-text-inscriptions"
+                    label="Hide .txt"
+                    onChange={onHideText}
+                    checked={hideText}
+                />
+            </div>
         </div>
     );
 };
@@ -103,6 +126,8 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
 OrdinalFilter.propTypes = {
     ownedUtxos: PropTypes.array,
     setFilteredOwnedUtxos: PropTypes.func,
+    setHideText: PropTypes.func,
+    hideText: PropTypes.bool,
     setActiveSort: PropTypes.func,
     setSortAsc: PropTypes.func,
     activeSort: PropTypes.string,

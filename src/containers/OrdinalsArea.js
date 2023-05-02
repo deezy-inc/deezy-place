@@ -24,6 +24,7 @@ const OrdinalsArea = ({ className, space }) => {
 
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
+    const [hideText, setHideText] = useState(true);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -61,7 +62,7 @@ const OrdinalsArea = ({ className, space }) => {
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+                    <div className="col-lg-4 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
                         <br />
                         <span>
@@ -79,7 +80,7 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div className="col-lg-8 col-md-6 col-sm-6 col-6">
                         <OrdinalFilter
                             ownedUtxos={ownedUtxos}
                             setFilteredOwnedUtxos={setFilteredOwnedUtxos}
@@ -87,6 +88,8 @@ const OrdinalsArea = ({ className, space }) => {
                             setSortAsc={setSortAsc}
                             activeSort={activeSort}
                             sortAsc={sortAsc}
+                            hideText={hideText}
+                            setHideText={setHideText}
                         />
                     </div>
                 </div>

@@ -1,12 +1,12 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription } from "@utils/inscriptions";
+import { getInscription, isTextInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
@@ -62,8 +62,6 @@ const SliderOptions = {
         },
     ],
 };
-
-const isTextInscription = (inscription) => /(text\/plain|application\/json)/.test(inscription?.content_type);
 
 const NostrLive = ({ className, space }) => {
     const [openOrders, setOpenOrders] = useState([]);
@@ -122,9 +120,6 @@ const NostrLive = ({ className, space }) => {
                     unsubscribeOrders();
                     nostrPool.unsubscribeOrders();
                     fetchLimit.current += ONSALE_BATCH_SIZE;
-                    if (openOrders.length < MAX_ONSALE) {
-                        subscribeOrdersWithLimit(fetchLimit.current);
-                    }
                 }
             });
 

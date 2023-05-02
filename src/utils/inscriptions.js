@@ -99,6 +99,7 @@ export const getInscription = async (inscriptionId) => {
             );
             props.collection = collection;
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.warn("No collection found");
         }
     }
@@ -107,3 +108,5 @@ export const getInscription = async (inscriptionId) => {
 
     return props;
 };
+
+export const isTextInscription = (inscription) => /(text\/plain|application\/json)/.test(inscription?.content_type);

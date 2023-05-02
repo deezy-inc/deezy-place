@@ -7,6 +7,7 @@ import { getMetamaskSigner } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 const defaultEose = () => {
+    // eslint-disable-next-line no-console
     console.log(`eose`);
 };
 
@@ -38,6 +39,7 @@ class NostrRelay {
                             const order = await getOrderInformation(event);
                             if (order) observer.next(order);
                         } catch (e) {
+                            // eslint-disable-next-line no-console
                             console.error(e);
                         }
                     },
@@ -82,6 +84,7 @@ class NostrRelay {
                 }
             });
             pub.on("failed", (reason) => {
+                // eslint-disable-next-line no-console
                 console.error(`failed to publish ${reason}`);
                 // Callback error only if all pubs failed
                 totalPubsFailed += 1;

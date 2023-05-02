@@ -1,3 +1,5 @@
+import { isTextInscription } from "@utils/inscriptions";
+
 export const collectionAuthor = [
     {
         name: "Danny Deezy",
@@ -15,8 +17,11 @@ const filterDescValue = (arr) => arr.sort((a, b) => b.value - a.value);
 const filterAscNum = (arr) => arr.sort((a, b) => a.num - b.num);
 const filterDescNum = (arr) => arr.sort((a, b) => b.num - a.num);
 
-export const applyFilters = ({ utxos, activeSort, sortAsc }) => {
+export const applyFilters = ({ utxos, activeSort, sortAsc, hideText }) => {
     let filtered = utxos;
+    if (hideText) {
+        filtered = filtered.filter((utxo) => !isTextInscription(utxo));
+    }
     if (activeSort === "value") {
         filtered = sortAsc ? filterAscValue(filtered) : filterDescValue(filtered);
     } else if (activeSort === "num") {

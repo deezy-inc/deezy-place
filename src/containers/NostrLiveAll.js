@@ -27,15 +27,17 @@ const NostrLive = ({ className, space }) => {
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
     const [utxosReady, setUtxosReady] = useState(false);
+    const [hideText, setHideText] = useState(true);
 
     useMemo(() => {
         const filteredUtxos = applyFilters({
             utxos: openOrders,
             activeSort,
             sortAsc,
+            hideText,
         });
         setFilteredOwnedUtxos(filteredUtxos);
-    }, [openOrders, activeSort, sortAsc]);
+    }, [openOrders, activeSort, sortAsc, hideText]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -101,6 +103,8 @@ const NostrLive = ({ className, space }) => {
                             setSortAsc={setSortAsc}
                             activeSort={activeSort}
                             sortAsc={sortAsc}
+                            hideText={hideText}
+                            setHideText={setHideText}
                         />
                     </div>
                 </div>

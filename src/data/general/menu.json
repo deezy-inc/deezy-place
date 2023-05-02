@@ -6,15 +6,17 @@
     },
     {
         "id": 2,
-        "text": "About",
-        "path": "/about",
-        "submenu": [
-            {
-                "id": 11,
-                "text": "Dashboard",
-                "path": "/",
-                "icon": "feather-home"
-            }
-        ]
+        "text": "Inscriptions",
+        "path": "/inscriptions"
+    },
+    {
+        "id": 4,
+        "text": "Inscribe",
+        "path": "https://inscribor.com/"
+    },
+    {
+        "id": 5,
+        "text": "Sign",
+        "path": "/tools/sign"
     }
 ]

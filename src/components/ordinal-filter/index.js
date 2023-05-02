@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
-import { Form } from "react-bootstrap";
 
 const OrdinalFilter = ({
     ownedUtxos,
@@ -110,15 +109,22 @@ const OrdinalFilter = ({
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            <div className="col">
-                <Form.Check
-                    type="checkbox"
-                    id="hide-text-inscriptions"
-                    label="Hide .txt"
-                    onChange={onHideText}
-                    checked={hideText}
-                />
-            </div>
+            {setHideText && (
+                <div className="col">
+                    <div className="form-check">
+                        <input
+                            type="checkbox"
+                            id="hide-text-inscriptions"
+                            className="form-check-input w-auto"
+                            onChange={onHideText}
+                            checked={hideText}
+                        />
+                        <label title="" htmlFor="hide-text-inscriptions" className="form-check-label">
+                            Hide .txt
+                        </label>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

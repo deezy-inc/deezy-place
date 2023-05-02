@@ -24,7 +24,6 @@ const OrdinalsArea = ({ className, space }) => {
 
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
-    const [hideText, setHideText] = useState(true);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -88,8 +87,6 @@ const OrdinalsArea = ({ className, space }) => {
                             setSortAsc={setSortAsc}
                             activeSort={activeSort}
                             sortAsc={sortAsc}
-                            hideText={hideText}
-                            setHideText={setHideText}
                         />
                     </div>
                 </div>

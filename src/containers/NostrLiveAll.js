@@ -95,7 +95,7 @@ const NostrLive = ({ className, space }) => {
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: `On Sale` }} isLoading={!utxosReady} />
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <OrdinalFilter
                             ownedUtxos={openOrders}
                             setFilteredOwnedUtxos={setFilteredOwnedUtxos}

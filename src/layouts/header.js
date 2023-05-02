@@ -39,7 +39,7 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
                             <Logo logo={headerData.logo} />
                             <div className="mainmenu-wrapper">
                                 <nav id="sideNav" className="mainmenu-nav d-none d-xl-block">
-                                    <MainMenu menu={[]} />
+                                    <MainMenu menu={menuData} />
                                 </nav>
                             </div>
                         </div>

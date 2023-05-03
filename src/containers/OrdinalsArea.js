@@ -47,7 +47,14 @@ const OrdinalsArea = ({ className, space }) => {
         const loadUtxos = async () => {
             setUtxosReady(false);
 
-            const utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            let utxosWithInscriptionData = [];
+
+            try {
+                utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            } catch (error) {
+                console.error(error);
+                // TODO: handle error
+            }
 
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);

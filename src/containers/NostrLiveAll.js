@@ -13,12 +13,7 @@ import { scan } from "rxjs/operators";
 import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import { SUPPORTED_FORMATS } from "@lib/constants.config";
-
-function getPriority(mimeType) {
-    const type = mimeType.split("/")[0];
-    return SUPPORTED_FORMATS[type] || Number.MAX_VALUE;
-}
+import { DEFAULT_UTXO_OPTIONS } from "@lib/constants.config";
 
 const MAX_ONSALE = 200;
 
@@ -34,23 +29,9 @@ const NostrLive = ({ className, space }) => {
     const [sortAsc, setSortAsc] = useState(false);
     const [utxosReady, setUtxosReady] = useState(false);
 
-    const ownedUtxosTypes = useMemo(() => {
-        const options = openOrders.reduce((acc, utxo) => {
-            if (!acc[utxo.content_type]) {
-                acc[utxo.content_type] = 1;
-            }
-            acc[utxo.content_type] += 1;
-            return acc;
-        }, {});
-        const sortedOptions = Object.keys(options).sort((a, b) => getPriority(a) - getPriority(b));
-        return sortedOptions;
-    }, [openOrders]);
+    const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
-    const [utxosType, setUtxosType] = useState("");
-
-    useEffect(() => {
-        setUtxosType(ownedUtxosTypes[0]);
-    }, [ownedUtxosTypes]);
+    const [utxosType, setUtxosType] = useState(DEFAULT_UTXO_OPTIONS[0]);
 
     useMemo(() => {
         const filteredUtxos = applyFilters({
@@ -92,13 +73,14 @@ const NostrLive = ({ className, space }) => {
                     openOrders
                 )
             )
-            .subscribe((e) => {
-                setOpenOrders(e);
-                setFilteredOwnedUtxos(e);
-            });
+            .subscribe(setOpenOrders);
         orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
-            const inscription = await getInscriptionData(event);
-            addNewOpenOrder(inscription);
+            try {
+                const inscription = await getInscriptionData(event);
+                addNewOpenOrder(inscription);
+            } catch (error) {
+                console.error(error);
+            }
         });
 
         return () => {
@@ -110,8 +92,6 @@ const NostrLive = ({ className, space }) => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    console.log("openOrders", openOrders);
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
@@ -129,7 +109,7 @@ const NostrLive = ({ className, space }) => {
                             activeSort={activeSort}
                             sortAsc={sortAsc}
                             setUtxosType={setUtxosType}
-                            ownedUtxosTypes={ownedUtxosTypes}
+                            utxosOptions={defaultUtxosTypes}
                             utxosType={utxosType}
                         />
                     </div>

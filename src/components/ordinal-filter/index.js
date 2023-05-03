@@ -15,7 +15,7 @@ const OrdinalFilter = ({
     sortAsc,
     utxosType,
     setUtxosType,
-    ownedUtxosTypes,
+    utxosOptions,
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,7 +44,6 @@ const OrdinalFilter = ({
     };
 
     const onUtxosType = (event) => {
-        console.log(event.target.value);
         setUtxosType(event.target.value);
     };
 
@@ -112,10 +111,10 @@ const OrdinalFilter = ({
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            {ownedUtxosTypes && (
+            {utxosOptions && (
                 <div className="col">
                     <Form.Select aria-label="Type" onChange={onUtxosType} value={utxosType}>
-                        {ownedUtxosTypes.map((type) => (
+                        {utxosOptions.map((type) => (
                             <option value={type}>{type}</option>
                         ))}
                     </Form.Select>
@@ -126,7 +125,7 @@ const OrdinalFilter = ({
 };
 
 OrdinalFilter.propTypes = {
-    ownedUtxosTypes: PropTypes.array,
+    utxosOptions: PropTypes.array,
     ownedUtxos: PropTypes.array,
     setFilteredOwnedUtxos: PropTypes.func,
     setActiveSort: PropTypes.func,

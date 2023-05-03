@@ -17,10 +17,10 @@ const filterDescValue = (arr) => arr.sort((a, b) => b.value - a.value);
 const filterAscNum = (arr) => arr.sort((a, b) => a.num - b.num);
 const filterDescNum = (arr) => arr.sort((a, b) => b.num - a.num);
 
-export const applyFilters = ({ utxos, activeSort, sortAsc, hideText }) => {
+export const applyFilters = ({ utxos, activeSort, sortAsc, utxosType }) => {
     let filtered = utxos;
-    if (hideText) {
-        filtered = filtered.filter((utxo) => !isTextInscription(utxo));
+    if (utxosType) {
+        filtered = filtered.filter((utxo) => utxo.content_type === utxosType);
     }
     if (activeSort === "value") {
         filtered = sortAsc ? filterAscValue(filtered) : filterDescValue(filtered);

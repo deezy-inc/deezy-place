@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
+import { Form } from "react-bootstrap";
 
 const OrdinalFilter = ({
     ownedUtxos,
@@ -12,8 +13,9 @@ const OrdinalFilter = ({
     setSortAsc,
     activeSort,
     sortAsc,
-    hideText,
-    setHideText,
+    utxosType,
+    setUtxosType,
+    ownedUtxosTypes,
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -41,13 +43,14 @@ const OrdinalFilter = ({
         setActiveSort("date");
     };
 
-    const onHideText = (event) => {
-        setHideText(event.target.checked);
+    const onUtxosType = (event) => {
+        console.log(event.target.value);
+        setUtxosType(event.target.value);
     };
 
     return (
         <div className="row">
-            <div className="col-6">
+            <div className="col-6 col-md-5">
                 <input
                     placeholder="Search"
                     value={searchQuery}
@@ -109,20 +112,13 @@ const OrdinalFilter = ({
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            {setHideText && (
+            {ownedUtxosTypes && (
                 <div className="col">
-                    <div className="form-check">
-                        <input
-                            type="checkbox"
-                            id="hide-text-inscriptions"
-                            className="form-check-input w-auto"
-                            onChange={onHideText}
-                            checked={hideText}
-                        />
-                        <label title="" htmlFor="hide-text-inscriptions" className="form-check-label">
-                            Hide .txt
-                        </label>
-                    </div>
+                    <Form.Select aria-label="Type" onChange={onUtxosType} value={utxosType}>
+                        {ownedUtxosTypes.map((type) => (
+                            <option value={type}>{type}</option>
+                        ))}
+                    </Form.Select>
                 </div>
             )}
         </div>
@@ -130,14 +126,15 @@ const OrdinalFilter = ({
 };
 
 OrdinalFilter.propTypes = {
+    ownedUtxosTypes: PropTypes.array,
     ownedUtxos: PropTypes.array,
     setFilteredOwnedUtxos: PropTypes.func,
-    setHideText: PropTypes.func,
-    hideText: PropTypes.bool,
     setActiveSort: PropTypes.func,
     setSortAsc: PropTypes.func,
     activeSort: PropTypes.string,
     sortAsc: PropTypes.bool,
+    utxosType: PropTypes.string,
+    setUtxosType: PropTypes.func,
 };
 
 OrdinalFilter.defaultProps = {};

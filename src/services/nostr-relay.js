@@ -30,6 +30,7 @@ class NostrRelay {
 
     subscribeOrders({ limit, eose = defaultEose }) {
         return new Observable(async (observer) => {
+            let i = 0;
             try {
                 this.unsubscribeOrders();
                 this.subscriptionOrders = this.subscribe(
@@ -38,6 +39,8 @@ class NostrRelay {
                         try {
                             const order = await getOrderInformation(event);
                             if (order) observer.next(order);
+                            i += 1;
+                            console.log("loading", i);
                         } catch (e) {
                             // eslint-disable-next-line no-console
                             console.error(e);

@@ -13,6 +13,12 @@ import { scan } from "rxjs/operators";
 import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
+import { SUPPORTED_FORMATS } from "@lib/constants.config";
+
+function getPriority(mimeType) {
+    const type = mimeType.split("/")[0];
+    return SUPPORTED_FORMATS[type] || Number.MAX_VALUE;
+}
 
 const MAX_ONSALE = 200;
 
@@ -27,17 +33,34 @@ const NostrLive = ({ className, space }) => {
     const [activeSort, setActiveSort] = useState("date");
     const [sortAsc, setSortAsc] = useState(false);
     const [utxosReady, setUtxosReady] = useState(false);
-    const [hideText, setHideText] = useState(true);
+
+    const ownedUtxosTypes = useMemo(() => {
+        const options = openOrders.reduce((acc, utxo) => {
+            if (!acc[utxo.content_type]) {
+                acc[utxo.content_type] = 1;
+            }
+            acc[utxo.content_type] += 1;
+            return acc;
+        }, {});
+        const sortedOptions = Object.keys(options).sort((a, b) => getPriority(a) - getPriority(b));
+        return sortedOptions;
+    }, [openOrders]);
+
+    const [utxosType, setUtxosType] = useState("");
+
+    useEffect(() => {
+        setUtxosType(ownedUtxosTypes[0]);
+    }, [ownedUtxosTypes]);
 
     useMemo(() => {
         const filteredUtxos = applyFilters({
             utxos: openOrders,
             activeSort,
             sortAsc,
-            hideText,
+            utxosType,
         });
         setFilteredOwnedUtxos(filteredUtxos);
-    }, [openOrders, activeSort, sortAsc, hideText]);
+    }, [openOrders, activeSort, sortAsc, utxosType]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -88,6 +111,8 @@ const NostrLive = ({ className, space }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    console.log("openOrders", openOrders);
+
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
@@ -103,14 +128,15 @@ const NostrLive = ({ className, space }) => {
                             setSortAsc={setSortAsc}
                             activeSort={activeSort}
                             sortAsc={sortAsc}
-                            hideText={hideText}
-                            setHideText={setHideText}
+                            setUtxosType={setUtxosType}
+                            ownedUtxosTypes={ownedUtxosTypes}
+                            utxosType={utxosType}
                         />
                     </div>
                 </div>
 
                 <div className="row g-5">
-                    {utxosReady && openOrders.length > 0 && (
+                    {utxosReady && openOrders.length > 0 && utxosType && (
                         <>
                             {filteredOwnedUtxos.map((inscription) => (
                                 <div key={inscription.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">

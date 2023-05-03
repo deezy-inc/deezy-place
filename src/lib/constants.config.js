@@ -17,7 +17,7 @@ export const RELAYS = [NOSTR_RELAY_URL];
 export const MAX_ONSALE = 15;
 export const ORDINALS_WALLET = "https://ordinalswallet.com/";
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
-export const TURBO_API = "https://turbo.ordinalswallet.com";
+export const TURBO_API = "https://turbo-ordinals.deezy.io";
 export const BLOCKSTREAM_API = "https://blockstream.info/api";
 export const POOL_API_URL = TESTNET ? "https://mempool.space/signet" : "https://blockstream.info";
 export const MEMPOOL_API_URL = TESTNET ? "https://mempool.space/signet" : "https://mempool.space";

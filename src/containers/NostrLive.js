@@ -63,6 +63,22 @@ const SliderOptions = {
     ],
 };
 
+const useOpenOrdersSubscription = (observable, setter, initialData) => {
+    useEffect(() => {
+        const subscription = observable
+            .pipe(
+                scan(
+                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
+                    initialData
+                )
+            )
+            .subscribe(setter);
+
+        return () => subscription.unsubscribe();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+};
+
 const NostrLive = ({ className, space }) => {
     const [openOrders, setOpenOrders] = useState([]);
     const [openTextOrders, setTextOpenOrders] = useState([]);
@@ -147,28 +163,11 @@ const NostrLive = ({ className, space }) => {
         orderSubscriptionRef.current = subscription;
     };
 
+    useOpenOrdersSubscription(addOpenOrder$.current, setOpenOrders, openOrders);
+    useOpenOrdersSubscription(addTextOpenOrder$.current, setTextOpenOrders, openTextOrders);
+
     useEffect(() => {
-        addOpenOrder$.current
-            .pipe(
-                scan(
-                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
-                    openOrders
-                )
-            )
-            .subscribe(setOpenOrders);
-
-        addTextOpenOrder$.current
-            .pipe(
-                scan(
-                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
-                    openOrders
-                )
-            )
-            .subscribe(setTextOpenOrders);
-
         subscribeOrdersWithLimit(fetchLimit.current);
-
-        return () => unsubscribeOrders();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

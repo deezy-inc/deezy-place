@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
-import { getInscription } from "@utils/inscriptions";
+import { getInscription, shouldReplaceInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { Subject } from "rxjs";
@@ -16,6 +16,20 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
 const MAX_ONSALE = 200;
+
+const updateInscriptions = (acc, curr) => {
+    const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
+
+    if (existingIndex !== -1) {
+        if (shouldReplaceInscription(acc[existingIndex], curr)) {
+            acc[existingIndex] = curr;
+        }
+    } else {
+        acc.push(curr);
+    }
+
+    return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+};
 
 const NostrLive = ({ className, space }) => {
     const [openOrders, setOpenOrders] = useState([]);
@@ -67,12 +81,7 @@ const NostrLive = ({ className, space }) => {
 
     useEffect(() => {
         addSubscriptionRef.current = addOpenOrder$.current
-            .pipe(
-                scan(
-                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
-                    openOrders
-                )
-            )
+            .pipe(scan(updateInscriptions, openOrders))
             .subscribe(setOpenOrders);
         orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
             try {

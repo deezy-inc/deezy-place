@@ -112,3 +112,7 @@ export const getInscription = async (inscriptionId) => {
 export const isTextInscription = (utxo) => /(text\/plain|application\/json)/.test(utxo?.content_type);
 
 export const isImageInscription = (utxo) => /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo?.content_type);
+
+export const shouldReplaceInscription = (existingInscription, newInscription) =>
+    existingInscription.value > newInscription.value ||
+    (existingInscription.value === newInscription.value && existingInscription.created_at < newInscription.created_at);

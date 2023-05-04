@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types, radix, no-empty, guard-for-in */
-import { NETWORK, ORDINALS_EXPLORER_URL_LEGACY, DUMMY_UTXO_VALUE } from "@lib/constants.config";
+import { NETWORK, ORDINALS_EXPLORER_URL, DUMMY_UTXO_VALUE } from "@lib/constants.config";
 import { getInscriptions } from "@utils/inscriptions";
 import { doesUtxoContainInscription, getAddressUtxos } from "@utils/utxos";
 import { fetchRecommendedFee, satToBtc, calculateFee, getTxHexById } from "@utils/crypto";
@@ -20,7 +20,7 @@ function getInscriptionId(order) {
 
 // TODO: REMOVE THIS, NO NEED TO RE-FETCH FROM ORDINALS EXPLORER
 async function getInscriptionDataById(inscriptionId, verifyIsInscriptionNumber) {
-    const html = await fetch(`${ORDINALS_EXPLORER_URL_LEGACY}/inscription/${inscriptionId}`).then((response) =>
+    const html = await fetch(`${ORDINALS_EXPLORER_URL}/inscription/${inscriptionId}`).then((response) =>
         response.text()
     );
 

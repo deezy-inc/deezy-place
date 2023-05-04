@@ -1,4 +1,4 @@
-import { POOL_API_URL, ORDINALS_EXPLORER_URL_LEGACY } from "@lib/constants.config";
+import { POOL_API_URL } from "@lib/constants.config";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 import axios from "axios";

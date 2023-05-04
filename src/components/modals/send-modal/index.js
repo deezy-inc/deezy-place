@@ -61,6 +61,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
     const boostRequired = !!utxo && !!sendFeeRate && outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
 
+    const closeModal = () => {
+        onSale();
+        handleModal();
+    };
+
     const submit = async () => {
         setIsSending(true);
 
@@ -80,18 +85,15 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 if (window.webln) {
                     if (!window.webln.enabled) await window.webln.enable();
                     result = await window.webln.sendPayment(data.bolt11_invoice);
-                    toast.success(`Transaction sent: ${result}, copied to clipboard`);
+                    toast.success(`Transaction sent: ${result.paymentHash}, copied to clipboard`);
                 } else {
                     result = data.bolt11_invoice;
                     toast.success(
                         `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
                     );
                 }
-                console.log(result);
-                setSentTxId(result);
-                navigator.clipboard.writeText(result);
-                // Display confirmation component
-                setIsMounted(!isMounted);
+                // There is no confirmation modal to show since there is no tx id. Just close the modal
+                closeModal();
             } catch (e) {
                 toast.error(e.message);
             } finally {
@@ -119,11 +121,6 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         } finally {
             setIsSending(false);
         }
-    };
-
-    const closeModal = () => {
-        onSale();
-        handleModal();
     };
 
     const renderBody = () => {

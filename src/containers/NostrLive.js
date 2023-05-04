@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
@@ -172,9 +172,13 @@ const NostrLive = ({ className, space }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const orders = useMemo(
+        () => openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse(),
+        [openOrders, openTextOrders]
+    );
+
     const renderCards = () => {
-        if (openOrders.length || openTextOrders.length) {
-            const orders = openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse();
+        if (orders.length) {
             return orders.map((utxo) => (
                 <SliderItem key={utxo.txid} className="ordinal-slide">
                     <OrdinalCard

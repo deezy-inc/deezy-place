@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { Form } from "react-bootstrap";
+import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
 const OrdinalFilter = ({
     ownedUtxos,
@@ -44,8 +45,10 @@ const OrdinalFilter = ({
     };
 
     const onUtxosType = (event) => {
-        setUtxosType(event.target.value);
+        setUtxosType(!event.target.checked ? "" : HIDE_TEXT_UTXO_OPTION);
     };
+
+    const hideTxt = utxosType === HIDE_TEXT_UTXO_OPTION;
 
     return (
         <div className="row">
@@ -111,13 +114,25 @@ const OrdinalFilter = ({
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            {utxosOptions && (
+            {/* Please keep for later complex filters */}
+            {/* {utxosOptions && (
                 <div className="col">
                     <Form.Select aria-label="Type" onChange={onUtxosType} value={utxosType}>
                         {utxosOptions.map((type) => (
                             <option value={type}>{type}</option>
                         ))}
                     </Form.Select>
+                </div>
+            )} */}
+            {utxosOptions && (
+                <div className="col">
+                    <Form.Check
+                        type="checkbox"
+                        id="hide-text-inscriptions"
+                        label="Hide .txt"
+                        onChange={onUtxosType}
+                        checked={hideTxt}
+                    />
                 </div>
             )}
         </div>

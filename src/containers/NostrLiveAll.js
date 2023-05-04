@@ -13,7 +13,7 @@ import { scan } from "rxjs/operators";
 import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import { DEFAULT_UTXO_OPTIONS } from "@lib/constants.config";
+import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
 const MAX_ONSALE = 200;
 
@@ -31,7 +31,7 @@ const NostrLive = ({ className, space }) => {
 
     const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
-    const [utxosType, setUtxosType] = useState(DEFAULT_UTXO_OPTIONS[0]);
+    const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
 
     useMemo(() => {
         const filteredUtxos = applyFilters({
@@ -116,7 +116,7 @@ const NostrLive = ({ className, space }) => {
                 </div>
 
                 <div className="row g-5">
-                    {utxosReady && openOrders.length > 0 && utxosType && (
+                    {utxosReady && openOrders.length > 0 && (
                         <>
                             {filteredOwnedUtxos.map((inscription) => (
                                 <div key={inscription.id} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">

@@ -73,6 +73,7 @@ const NostrLive = ({ className, space }) => {
     const processedEvents = useRef(new Set());
     const fetchLimit = useRef(MAX_LIMIT_ONSALE);
     const processedOrders = useRef(0);
+    const fetchIds = useRef([]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -134,7 +135,8 @@ const NostrLive = ({ className, space }) => {
                     console.error(error);
                 }
 
-                if (shouldFetchMore()) {
+                if (shouldFetchMore() && !fetchIds.current.includes(event.id)) {
+                    fetchIds.current.push(event.id);
                     unsubscribeOrders();
                     nostrPool.unsubscribeOrders();
                     fetchLimit.current += ONSALE_BATCH_SIZE;

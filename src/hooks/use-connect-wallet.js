@@ -10,6 +10,7 @@ function useConnectWallet() {
     const onConnectHandler = async (metamask) => {
         const pubKey = await connectWallet(metamask);
         SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
+        SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, pubKey);
         setNostrPublicKey(pubKey);
     };
 
@@ -21,13 +22,9 @@ function useConnectWallet() {
     };
 
     useEffect(() => {
-        async function getAddrInfo() {
-            if (nostrPublicKey) {
-                SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, nostrPublicKey);
-            }
+        if (nostrPublicKey) {
+            SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, nostrPublicKey);
         }
-
-        getAddrInfo();
     }, [nostrPublicKey]);
 
     useEffect(() => {

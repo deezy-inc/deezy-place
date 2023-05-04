@@ -95,11 +95,6 @@ export async function signBip322MessageSimple(message) {
     const len = encode(toSignTx.ins[0].witness.length);
     const result = Buffer.concat([len, ...toSignTx.ins[0].witness.map((w) => encodeVarString(w))]);
 
-    const toReturn = { virtualToSpend, virtualToSign: toSignTx, signature: base64.encode(result) };
-
-    const sig = `Your BIP322 signature is: ${toReturn.signature}`;
-    alert(sig);
-    console.log(toReturn);
-
-    return toReturn;
+    const { signature } = { virtualToSpend, virtualToSign: toSignTx, signature: base64.encode(result) };
+    return signature;
 }

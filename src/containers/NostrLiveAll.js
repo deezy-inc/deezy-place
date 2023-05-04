@@ -13,6 +13,7 @@ import { scan } from "rxjs/operators";
 import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
+import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
 const MAX_ONSALE = 200;
 
@@ -28,14 +29,19 @@ const NostrLive = ({ className, space }) => {
     const [sortAsc, setSortAsc] = useState(false);
     const [utxosReady, setUtxosReady] = useState(false);
 
+    const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
+
+    const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
+
     useMemo(() => {
         const filteredUtxos = applyFilters({
             utxos: openOrders,
             activeSort,
             sortAsc,
+            utxosType,
         });
         setFilteredOwnedUtxos(filteredUtxos);
-    }, [openOrders, activeSort, sortAsc]);
+    }, [openOrders, activeSort, sortAsc, utxosType]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -67,13 +73,14 @@ const NostrLive = ({ className, space }) => {
                     openOrders
                 )
             )
-            .subscribe((e) => {
-                setOpenOrders(e);
-                setFilteredOwnedUtxos(e);
-            });
+            .subscribe(setOpenOrders);
         orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
-            const inscription = await getInscriptionData(event);
-            addNewOpenOrder(inscription);
+            try {
+                const inscription = await getInscriptionData(event);
+                addNewOpenOrder(inscription);
+            } catch (error) {
+                console.error(error);
+            }
         });
 
         return () => {
@@ -93,7 +100,7 @@ const NostrLive = ({ className, space }) => {
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: `On Sale` }} isLoading={!utxosReady} />
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
                         <OrdinalFilter
                             ownedUtxos={openOrders}
                             setFilteredOwnedUtxos={setFilteredOwnedUtxos}
@@ -101,6 +108,9 @@ const NostrLive = ({ className, space }) => {
                             setSortAsc={setSortAsc}
                             activeSort={activeSort}
                             sortAsc={sortAsc}
+                            setUtxosType={setUtxosType}
+                            utxosOptions={defaultUtxosTypes}
+                            utxosType={utxosType}
                         />
                     </div>
                 </div>

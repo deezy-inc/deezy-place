@@ -6,6 +6,11 @@ import { getOrderInformation } from "@utils/openOrdex";
 import { getMetamaskSigner } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
+const defaultEose = () => {
+    // eslint-disable-next-line no-console
+    console.log(`eose`);
+};
+
 class NostrRelay {
     constructor() {
         this.pool = new SimplePool();
@@ -23,25 +28,25 @@ class NostrRelay {
         }
     }
 
-    subscribeOrders({ limit }) {
+    subscribeOrders({ limit, eose = defaultEose }) {
         return new Observable(async (observer) => {
+            let i = 0;
             try {
                 this.unsubscribeOrders();
                 this.subscriptionOrders = this.subscribe(
                     [{ kinds: [NOSTR_KIND_INSCRIPTION], limit }],
                     async (event) => {
-                        console.log("event", event);
                         try {
                             const order = await getOrderInformation(event);
-
                             if (order) observer.next(order);
+                            i += 1;
+                            console.log("loading", i); // Please keep (little bit) this log for debugging
                         } catch (e) {
+                            // eslint-disable-next-line no-console
                             console.error(e);
                         }
                     },
-                    () => {
-                        console.log(`eose`);
-                    }
+                    eose
                 );
             } catch (error) {
                 observer.error(error);
@@ -82,6 +87,7 @@ class NostrRelay {
                 }
             });
             pub.on("failed", (reason) => {
+                // eslint-disable-next-line no-console
                 console.error(`failed to publish ${reason}`);
                 // Callback error only if all pubs failed
                 totalPubsFailed += 1;

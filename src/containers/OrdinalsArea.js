@@ -47,7 +47,14 @@ const OrdinalsArea = ({ className, space }) => {
         const loadUtxos = async () => {
             setUtxosReady(false);
 
-            const utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            let utxosWithInscriptionData = [];
+
+            try {
+                utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            } catch (error) {
+                console.error(error);
+                // TODO: handle error
+            }
 
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);
@@ -61,7 +68,7 @@ const OrdinalsArea = ({ className, space }) => {
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+                    <div className="col-lg-4 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
                         <br />
                         <span>
@@ -79,7 +86,7 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div className="col-lg-8 col-md-6 col-sm-6 col-6">
                         <OrdinalFilter
                             ownedUtxos={ownedUtxos}
                             setFilteredOwnedUtxos={setFilteredOwnedUtxos}

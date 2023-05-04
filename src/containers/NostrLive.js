@@ -1,15 +1,15 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription } from "@utils/inscriptions";
+import { getInscription, isTextInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
-import { MAX_ONSALE } from "@lib/constants.config";
+import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
@@ -65,10 +65,15 @@ const SliderOptions = {
 
 const NostrLive = ({ className, space }) => {
     const [openOrders, setOpenOrders] = useState([]);
+    const [openTextOrders, setTextOpenOrders] = useState([]);
     const addOpenOrder$ = useRef(new Subject());
-    const addSubscriptionRef = useRef(null);
+    const addTextOpenOrder$ = useRef(new Subject());
     const orderSubscriptionRef = useRef(null);
     const [refreshHack, setRefreshHack] = useState(false);
+    const processedEvents = useRef(new Set());
+    const fetchLimit = useRef(MAX_LIMIT_ONSALE);
+    const processedOrders = useRef(0);
+    const fetchIds = useRef([]);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -78,19 +83,72 @@ const NostrLive = ({ className, space }) => {
         addOpenOrder$.current.next(order);
     };
 
-    const getInscriptionData = useCallback(async (event) => {
-        const { inscription } = await getInscription(event.inscriptionId);
+    const addNewTextOpenOrder = (order) => {
+        addTextOpenOrder$.current.next(order);
+    };
 
+    const getInscriptionData = async (event) => {
+        const { inscription } = await getInscription(event.inscriptionId);
         const forSaleInscription = deepClone({
             ...inscription,
             ...event,
         });
-
         return forSaleInscription;
-    }, []);
+    };
+
+    const unsubscribeOrders = () => {
+        try {
+            orderSubscriptionRef?.current?.unsubscribe();
+        } catch (err) {
+            // eslint-disable-next-line no-empty
+        }
+    };
+
+    const shouldFetchMore = () => {
+        const limit =
+            processedEvents.current.size === fetchLimit.current &&
+            processedOrders.current < MIN_ONSALE &&
+            processedEvents.current.size <= MAX_FETCH_LIMIT;
+        // Keep {} to easy debugging
+        return limit;
+    };
+
+    const subscribeOrdersWithLimit = async (limit) => {
+        if (openOrders.length >= MAX_ONSALE || processedEvents.current >= MAX_FETCH_LIMIT) return;
+
+        const subscription = nostrPool
+            .subscribeOrders({
+                limit,
+            })
+            .subscribe(async (event) => {
+                if (processedEvents.current.has(event.id)) return;
+                processedEvents.current.add(event.id);
+                try {
+                    const inscription = await getInscriptionData(event);
+                    if (!isTextInscription(inscription)) {
+                        processedOrders.current += 1;
+                        addNewOpenOrder(inscription);
+                    } else {
+                        addNewTextOpenOrder(inscription);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+
+                if (shouldFetchMore() && !fetchIds.current.includes(event.id)) {
+                    fetchIds.current.push(event.id);
+                    unsubscribeOrders();
+                    nostrPool.unsubscribeOrders();
+                    fetchLimit.current += ONSALE_BATCH_SIZE;
+                    subscribeOrdersWithLimit(fetchLimit.current);
+                }
+            });
+
+        orderSubscriptionRef.current = subscription;
+    };
 
     useEffect(() => {
-        addSubscriptionRef.current = addOpenOrder$.current
+        addOpenOrder$.current
             .pipe(
                 scan(
                     (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
@@ -98,24 +156,34 @@ const NostrLive = ({ className, space }) => {
                 )
             )
             .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
-            const inscription = await getInscriptionData(event);
-            addNewOpenOrder(inscription);
-        });
 
-        return () => {
-            try {
-                orderSubscriptionRef?.current?.unsubscribe();
-                addSubscriptionRef?.current?.unsubscribe();
-                // eslint-disable-next-line no-empty
-            } catch (err) {}
-        };
+        addTextOpenOrder$.current
+            .pipe(
+                scan(
+                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
+                    openOrders
+                )
+            )
+            .subscribe(setTextOpenOrders);
+
+        subscribeOrdersWithLimit(fetchLimit.current);
+
+        return () => unsubscribeOrders();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // We can improve how we handle the orders,
+    // but for now we will just concat the text orders with the open orders
+    const orders = useMemo(() => {
+        if (openOrders.length < MIN_ONSALE) {
+            return openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse();
+        }
+        return openOrders;
+    }, [openOrders, openTextOrders]);
+
     const renderCards = () => {
-        if (openOrders.length) {
-            return openOrders.map((utxo) => (
+        if (orders.length) {
+            return orders.map((utxo) => (
                 <SliderItem key={utxo.txid} className="ordinal-slide">
                     <OrdinalCard
                         overlay

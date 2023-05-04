@@ -172,10 +172,14 @@ const NostrLive = ({ className, space }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const orders = useMemo(
-        () => openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse(),
-        [openOrders, openTextOrders]
-    );
+    // We can improve how we handle the orders,
+    // but for now we will just concat the text orders with the open orders
+    const orders = useMemo(() => {
+        if (openOrders.length < MIN_ONSALE) {
+            return openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse();
+        }
+        return openOrders;
+    }, [openOrders, openTextOrders]);
 
     const renderCards = () => {
         if (orders.length) {

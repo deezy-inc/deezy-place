@@ -40,7 +40,7 @@ class NostrRelay {
                             const order = await getOrderInformation(event);
                             if (order) observer.next(order);
                             i += 1;
-                            console.log("loading", i);
+                            console.log("loading", i); // Please keep (little bit) this log for debugging
                         } catch (e) {
                             // eslint-disable-next-line no-console
                             console.error(e);

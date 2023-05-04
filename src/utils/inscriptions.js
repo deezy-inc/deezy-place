@@ -109,4 +109,6 @@ export const getInscription = async (inscriptionId) => {
     return props;
 };
 
-export const isTextInscription = (inscription) => /(text\/plain|application\/json)/.test(inscription?.content_type);
+export const isTextInscription = (utxo) => /(text\/plain|application\/json)/.test(utxo?.content_type);
+
+export const isImageInscription = (utxo) => /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo?.content_type);

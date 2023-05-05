@@ -40,6 +40,14 @@ const ConnectWallet = ({ onConnect, show, handleModal, ethProvider }) => {
                 onConnect();
             },
         },
+        {
+            name: "Kollider",
+            image: "/images/logo/kollider.png",
+
+            onClick: () => {
+                onConnect();
+            },
+        },
     ];
 
     const getWallets = () => {

@@ -175,9 +175,9 @@ const NostrLive = ({ className, space }) => {
     // but for now we will just concat the text orders with the open orders
     const orders = useMemo(() => {
         if (openOrders.length < MIN_ONSALE) {
-            return openOrders.concat(openTextOrders).slice(0, MAX_ONSALE).reverse();
+            return openOrders.concat(openTextOrders).slice(0, MIN_ONSALE).reverse();
         }
-        return openOrders;
+        return openOrders.reverse();
     }, [openOrders, openTextOrders]);
 
     const renderCards = () => {

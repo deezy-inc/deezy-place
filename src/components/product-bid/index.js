@@ -4,10 +4,10 @@ import { useState, useContext } from "react";
 import SendModal from "@components/modals/send-modal";
 // import SellModal from "@components/modals/sell-modal";
 // import BuyModal from "@components/modals/buy-modal";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-    const { nostrAddress, isExperimental } = useContext(WalletContext);
+    const { nostrAddress, isExperimental } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);

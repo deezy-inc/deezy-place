@@ -1,17 +1,17 @@
 /* eslint-disable */
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE } from "@lib/constants.config";
+import { TESTNET } from "@lib/constants.config";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
 import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 import { signPsbtMessage } from "@utils/psbt";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
@@ -22,7 +22,7 @@ import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 bitcoin.initEccLib(ecc);
 
 const SendModal = ({ show, handleModal, utxo, onSale }) => {
-    const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
+    const { nostrAddress, nostrPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);

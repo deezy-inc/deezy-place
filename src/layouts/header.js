@@ -1,6 +1,6 @@
 /* eslint no-extra-boolean-cast: "off" */
 
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 
@@ -11,18 +11,15 @@ import UserDropdown from "@components/user-dropdown";
 import { useOffcanvas } from "@hooks";
 import BurgerButton from "@ui/burger-button";
 import Button from "@ui/button";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 import ConnectWallet from "@components/modals/connect-wallet";
 import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
-const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHandler }, ref) => {
+const Header = React.forwardRef(({ className }, ref) => {
+    const { nostrPublicKey, nostrAddress, onDisconnectHandler, onShowConnectModal } = useWallet();
+
     const { offcanvas, offcanvasHandler } = useOffcanvas();
-    const { nostrPublicKey, nostrAddress, ethProvider } = useContext(WalletContext);
-    const [showConnectModal, setShowConnectModal] = useState(false);
-    const handleShowConnectModal = () => {
-        setShowConnectModal((prev) => !prev);
-    };
 
     return (
         <>
@@ -51,16 +48,12 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
                                             color="primary-alta"
                                             className="connectBtn"
                                             size="small"
-                                            onClick={handleShowConnectModal}
+                                            onClick={onShowConnectModal}
                                         >
                                             Connect Wallet
                                         </Button>
-                                        <ConnectWallet
-                                            show={showConnectModal}
-                                            onConnect={onConnectHandler}
-                                            handleModal={handleShowConnectModal}
-                                            ethProvider={ethProvider}
-                                        />
+
+                                        <ConnectWallet />
                                     </div>
                                 </div>
                             )}
@@ -89,8 +82,6 @@ const Header = React.forwardRef(({ className, onConnectHandler, onDisconnectHand
 
 Header.propTypes = {
     className: PropTypes.string,
-    onConnectHandler: PropTypes.func,
-    onDisconnectHandler: PropTypes.func,
 };
 
 export default Header;

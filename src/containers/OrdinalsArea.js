@@ -1,21 +1,21 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-import { useContext, useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
-import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getInscriptions } from "@utils/inscriptions";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
+import { useWallet } from "@context/wallet-context";
 
 const OrdinalsArea = ({ className, space }) => {
-    const { nostrAddress } = useContext(WalletContext);
+    const { nostrAddress } = useWallet();
 
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
@@ -43,7 +43,18 @@ const OrdinalsArea = ({ className, space }) => {
         setFilteredOwnedUtxos(filteredUtxos);
     }, [filteredOwnedUtxos, activeSort, sortAsc]);
 
+    const resetUtxos = () => {
+        setOwnedUtxos([]);
+        setFilteredOwnedUtxos([]);
+        setUtxosReady(true);
+    };
+
     useEffect(() => {
+        if (!nostrAddress) {
+            resetUtxos();
+            return;
+        }
+
         const loadUtxos = async () => {
             setUtxosReady(false);
 

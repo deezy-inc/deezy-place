@@ -1,9 +1,8 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import ConnectWallet from "@components/modals/connect-wallet";
-import WalletContext from "@context/wallet-context";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import Button from "@ui/button";
@@ -11,10 +10,11 @@ import SectionTitle from "@components/section-title";
 import clsx from "clsx";
 import { signBip322MessageSimple } from "@utils/bip322";
 import { toast } from "react-toastify";
+import { useWallet } from "@context/wallet-context";
 
-const Sign = ({ onConnectHandler, className, space }) => {
-    const { nostrPublicKey, nostrAddress, ethProvider } = useContext(WalletContext);
-    const [showConnectModal, setShowConnectModal] = useState(false);
+const Sign = ({ className, space }) => {
+    const { nostrPublicKey, onShowConnectModal } = useWallet();
+
     const [signedMessage, setSignedMessage] = useState(null);
     const [message, setMessage] = useState(null);
 
@@ -40,10 +40,6 @@ const Sign = ({ onConnectHandler, className, space }) => {
         }
     }, [nostrPublicKey]);
 
-    const handleShowConnectModal = async () => {
-        setShowConnectModal((prev) => !prev);
-    };
-
     const messageOnChange = (evt) => {
         setMessage(evt.target.value);
 
@@ -52,7 +48,7 @@ const Sign = ({ onConnectHandler, className, space }) => {
 
     const submit = async () => {
         if (!nostrPublicKey) {
-            handleShowConnectModal();
+            onShowConnectModal();
             return;
         }
 
@@ -120,21 +116,13 @@ const Sign = ({ onConnectHandler, className, space }) => {
                     </div>
                 </div>
 
-                {!nostrPublicKey && (
-                    <ConnectWallet
-                        show={showConnectModal}
-                        onConnect={onConnectHandler}
-                        handleModal={handleShowConnectModal}
-                        ethProvider={ethProvider}
-                    />
-                )}
+                {!nostrPublicKey && <ConnectWallet />}
             </div>
         </div>
     );
 };
 
 Sign.propTypes = {
-    onConnectHandler: PropTypes.func,
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
 };

@@ -1,5 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import { useState, useContext, useEffect } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
@@ -10,7 +10,6 @@ import { TESTNET, NETWORK } from "@lib/constants.config";
 import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import WalletContext from "@context/wallet-context";
 import { getAvailableUtxosWithoutInscription, generatePSBTListingInscriptionForBuy } from "@utils/openOrdex";
 import { TailSpin } from "react-loading-icons";
 import { toast } from "react-toastify";
@@ -20,11 +19,12 @@ import { signPsbtMessage, broadcastTx } from "@utils/psbt";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
+import { useWallet } from "@context/wallet-context";
 
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-    const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
+    const { nostrAddress } = useWallet();
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
     const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);

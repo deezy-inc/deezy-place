@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { InscriptionPreview } from "@components/inscription-preview";
@@ -8,11 +8,11 @@ import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import BuyModal from "@components/modals/buy-modal";
 import InscriptionCollection from "@components/product-details/collection";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
-    const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
+    const { nostrAddress, nostrPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);

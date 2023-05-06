@@ -1,7 +1,7 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
@@ -9,7 +9,7 @@ import OrdinalCard from "@components/ordinal-card";
 import { deepClone } from "@utils/methods";
 import OpenOrdex from "@utils/openOrdex";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 
 const collectionAuthor = [
     {
@@ -22,7 +22,7 @@ const collectionAuthor = [
 ];
 
 const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
-    const { nostrAddress, isExperimental } = useContext(WalletContext);
+    const { nostrAddress, isExperimental } = useWallet();
     const [openOrders, setOpenOrders] = useState([]);
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
 

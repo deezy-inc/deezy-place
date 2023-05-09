@@ -7,6 +7,7 @@ import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import BuyModal from "@components/modals/buy-modal";
+import BuyLightingModal from "@components/modals/buy-with-lighting";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
@@ -16,6 +17,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
+    const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
 
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -27,6 +29,10 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
 
     const handleBuyModal = () => {
         setShowBuyModal((prev) => !prev);
+    };
+
+    const handleBuyLightingModal = () => {
+        setShowBuyLigthingModal((prev) => !prev);
     };
 
     const [isOwner, setIsOwner] = useState(false);
@@ -151,7 +157,20 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             >
                                                 <div className="action">
                                                     <i className="feather-shopping-cart" />
-                                                    <span>Buy</span>
+                                                    <span>Buy with bitcoin</span>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {!isOwner && nostr && nostr.value && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleBuyLightingModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-zap" />
+                                                    <span>Buy with lighting</span>
                                                 </div>
                                             </button>
                                         )}
@@ -193,6 +212,16 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                 <BuyModal
                     show={showBuyModal}
                     handleModal={handleBuyModal}
+                    utxo={inscription}
+                    onSale={onSend}
+                    nostr={nostr}
+                />
+            )}
+
+            {showBuyLigthingModal && (
+                <BuyLightingModal
+                    show={showBuyLigthingModal}
+                    handleModal={handleBuyLightingModal}
                     utxo={inscription}
                     onSale={onSend}
                     nostr={nostr}

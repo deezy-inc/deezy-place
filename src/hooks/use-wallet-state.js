@@ -27,6 +27,8 @@ export const useWalletState = () => {
             setNostrAddress(undefined);
             return;
         }
+
+        console.log(getAddressInfo(nostrPublicKey));
         const { address } = getAddressInfo(nostrPublicKey);
         setNostrAddress(address);
     }, [nostrPublicKey]);

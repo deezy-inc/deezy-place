@@ -165,7 +165,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                                     <Form.Label>Select a fee rate</Form.Label>
                                     <Form.Range
                                         min="1"
-                                        max="100"
+                                        max="1200"
                                         defaultValue={sendFeeRate}
                                         onChange={feeRateOnChange}
                                     />

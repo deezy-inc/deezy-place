@@ -1,4 +1,4 @@
-import { POOL_API_URL } from "@lib/constants.config";
+import { MEMPOOL_API_URL } from "@lib/constants.config";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 import axios from "axios";
@@ -9,7 +9,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // This function retrieves the list of UTXOs for the given address from the mempool.space API
 const getAddressUtxosFromApi = async (address) => {
-    const url = `${POOL_API_URL}/api/address/${address}/utxo`;
+    const url = `${MEMPOOL_API_URL}/api/address/${address}/utxo`;
     const resp = await axios.get(url);
     const utxos = resp.data.map((tx) => ({
         txid: tx.txid,
@@ -32,7 +32,7 @@ const getAddressUtxosManually = async (address) => {
         // eslint-disable-next-line no-await-in-loop
         await delay(100);
 
-        const url = `${POOL_API_URL}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
+        const url = `${MEMPOOL_API_URL}/api/address/${address}/txs${lastSeenTxId ? `/chain/${lastSeenTxId}` : ""}`;
         // eslint-disable-next-line no-await-in-loop
         const resp = await axios.get(url);
 

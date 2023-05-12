@@ -33,4 +33,7 @@ module.exports = withBundleAnalyzer({
             ]);
         return config;
     },
+    env: {
+        IS_TESTNET: process.env.IS_TESTNET || false,
+    },
 });

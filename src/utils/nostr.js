@@ -59,24 +59,15 @@ export function getEvent({
     return event;
 }
 
-export async function broadcastEvent(signedEvent) {
-    // convert the callback to a promise
-    return new Promise((resolve, reject) => {
-        nostrPool.publish(signedEvent, resolve, reject);
-    });
-}
-
-export async function signEvent({ utxo, ordinalValue, signedPsbt, pubkey }) {
+export async function signAndBroadcastEvent({ utxo, ordinalValue, signedPsbt, pubkey }) {
     const { inscriptionId } = utxo;
     const inscriptionUtxo = `${utxo.txid}:${utxo.vout}`;
 
     const event = getEvent({ inscriptionId, inscriptionUtxo, priceInSats: ordinalValue, signedPsbt, pubkey });
     const signedEvent = await nostrPool.sign(event);
 
-    return signedEvent;
-}
-
-export async function signAndBroadcastEvent({ utxo, ordinalValue, signedPsbt, pubkey }) {
-    const signedEvent = signEvent({ utxo, ordinalValue, signedPsbt, pubkey });
-    return broadcastEvent(signedEvent);
+    // convert the callback to a promise
+    return new Promise((resolve, reject) => {
+        nostrPool.publish(signedEvent, resolve, reject);
+    });
 }

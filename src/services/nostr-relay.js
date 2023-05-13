@@ -83,6 +83,7 @@ class NostrRelay {
                 // Callback success only once
                 if (onSuccess && !notified) {
                     notified = true;
+                    console.log("onSuccess");
                     onSuccess();
                 }
             });

@@ -7,8 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET } from "@lib/constants.config";
-import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
-import { signEvent } from "@utils/nostr";
+import { shortenStr, fetchBitcoinPrice } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";
@@ -20,6 +19,8 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 import DatePicker from "react-datepicker";
 import { useMemo } from "react";
+import { createAuction } from "@services/auction";
+import { broadcastEvent, signAndBroadcastEvent } from "@utils/nostr";
 
 bitcoin.initEccLib(ecc);
 
@@ -103,7 +104,7 @@ function calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption,
     return results;
 }
 
-const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
+const createEvents = async ({ schedule, utxo, destinationBtcAddress, nostrPublicKey }) => {
     let events = [];
     try {
         for (const event of schedule) {
@@ -114,7 +115,6 @@ const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
                 price,
             });
             const signedPsbt = await signPsbtMessage(psbt);
-            // events.push({ ...props, price, signedPsbt: "" });
             events.push({ ...props, utxo, price, signedPsbt: signedPsbt.toBase64() });
         }
     } catch (error) {
@@ -188,6 +188,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                 nostrAddress,
             };
             console.log(dutchAuction);
+            await createAuction(dutchAuction);
             toast.info(`Order successfully scheduled to be published to Nostr!`);
         } catch (e) {
             toast.error(e.message);
@@ -230,7 +231,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
 
     const decreaseAmountOnChange = (evt) => {
         const newValue = evt.target.value;
-        if (!newValue || newValue === "") {
+        if (!newValue || newValue === "" || Number(newValue) < 1) {
             return;
         }
         setDecreaseAmount(Number(newValue));

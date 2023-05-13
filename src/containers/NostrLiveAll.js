@@ -17,7 +17,7 @@ import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.conf
 
 const MAX_ONSALE = 200;
 
-const updateInscriptions = (acc, curr) => {
+export const updateInscriptions = (acc, curr) => {
     const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
 
     if (existingIndex !== -1) {

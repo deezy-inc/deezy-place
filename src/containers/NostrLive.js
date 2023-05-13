@@ -6,7 +6,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription, isTextInscription } from "@utils/inscriptions";
+import { getInscription, isTextInscription, shouldReplaceInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
@@ -14,6 +14,20 @@ import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
+
+export const updateInscriptions = (acc, curr) => {
+    const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
+
+    if (existingIndex !== -1) {
+        if (shouldReplaceInscription(acc[existingIndex], curr)) {
+            acc[existingIndex] = curr;
+        }
+    } else {
+        acc.push(curr);
+    }
+
+    return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+};
 
 const collectionAuthor = [
     {
@@ -65,15 +79,7 @@ const SliderOptions = {
 
 const useOpenOrdersSubscription = (observable, setter, initialData) => {
     useEffect(() => {
-        const subscription = observable
-            .pipe(
-                scan(
-                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
-                    initialData
-                )
-            )
-            .subscribe(setter);
-
+        const subscription = observable.pipe(scan(updateInscriptions, initialData)).subscribe(setter);
         return () => subscription.unsubscribe();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -90,6 +96,7 @@ const NostrLive = ({ className, space }) => {
     const fetchLimit = useRef(MAX_LIMIT_ONSALE);
     const processedOrders = useRef(0);
     const fetchIds = useRef([]);
+    const [isWindowFocused, setIsWindowFocused] = useState(true);
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -167,8 +174,21 @@ const NostrLive = ({ className, space }) => {
     useOpenOrdersSubscription(addTextOpenOrder$.current, setTextOpenOrders, openTextOrders);
 
     useEffect(() => {
-        subscribeOrdersWithLimit(fetchLimit.current);
+        if (isWindowFocused) {
+            console.log("isWindowFocused: reload");
+            subscribeOrdersWithLimit(fetchLimit.current);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isWindowFocused]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            setIsWindowFocused(!document.hidden);
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, []);
 
     // We can improve how we handle the orders,

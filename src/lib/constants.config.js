@@ -1,6 +1,7 @@
 import * as bitcoin from "bitcoinjs-lib";
 
 export const TESTNET = Boolean(process.env.IS_TESTNET);
+console.log(process.env);
 
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 

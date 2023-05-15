@@ -1,13 +1,20 @@
 import * as bitcoin from "bitcoinjs-lib";
 
-export const TESTNET = Boolean(process.env.IS_TESTNET);
-console.log(process.env);
+const MAINNET_HOSTS = ["https://nosft.xyz"];
+
+let host;
+// TODO: Env variable not working
+if (typeof window !== "undefined") {
+    host = window.location.host;
+}
+
+export const TESTNET = !MAINNET_HOSTS.includes(host); // Boolean(process.env.IS_TESTNET);
 
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 
 export const NOSTR_KIND_INSCRIPTION = TESTNET ? 1802 : 802; // 1802 for testnet, 802 for mainnet
 export const INSCRIPTION_SEARCH_DEPTH = 5;
-export const GITHUB_URL = "https://github.cosm/dannydeezy/nosft";
+export const GITHUB_URL = "https://github.com/dannydeezy/nosft";
 export const DEFAULT_FEE_RATE = 7;
 export const SENDS_ENABLED = true;
 export const ASSUMED_TX_BYTES = 111;
@@ -22,7 +29,8 @@ export const MIN_ONSALE = 5;
 export const ONSALE_BATCH_SIZE = 5;
 export const BITCOIN_PRICE_API_URL = "https://blockchain.info/ticker?cors=true";
 export const TURBO_API = TESTNET ? "https://turbo-ordinals-testnet.deezy.io" : "https://turbo-ordinals.deezy.io";
-export const MEMPOOL_API_URL = TESTNET ? "https://mempool-testnet.deezy.io" : "https://mempool.deezy.io";
+// Deezy's mempool testnet is not working yet.
+export const MEMPOOL_API_URL = TESTNET ? "https://mempool.space/testnet" : "https://mempool.deezy.io";
 export const NETWORK = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";
 export const DUMMY_UTXO_VALUE = 600;

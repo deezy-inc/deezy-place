@@ -123,8 +123,7 @@
     gap: 16px;
 }
 .pd-react-area {
-    display: flex;
-    width: 80px;
+    min-width: 80px;
     @media #{$small-mobile} {
         margin-bottom: 15px;
     }

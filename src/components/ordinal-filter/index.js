@@ -4,8 +4,20 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
+import { Form } from "react-bootstrap";
+import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
-const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSortAsc, activeSort, sortAsc }) => {
+const OrdinalFilter = ({
+    ownedUtxos,
+    setFilteredOwnedUtxos,
+    setActiveSort,
+    setSortAsc,
+    activeSort,
+    sortAsc,
+    utxosType,
+    setUtxosType,
+    utxosOptions,
+}) => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const onFilterByValue = () => {
@@ -32,9 +44,15 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
         setActiveSort("date");
     };
 
+    const onUtxosType = (event) => {
+        setUtxosType(!event.target.checked ? "" : HIDE_TEXT_UTXO_OPTION);
+    };
+
+    const hideTxt = utxosType === HIDE_TEXT_UTXO_OPTION;
+
     return (
         <div className="row">
-            <div className="col-6">
+            <div className="col-6 col-md-5">
                 <input
                     placeholder="Search"
                     value={searchQuery}
@@ -57,7 +75,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     }}
                 />
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -70,7 +88,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "date" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -83,7 +101,7 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "value" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
-            <div className="col-2">
+            <div className="col">
                 <button
                     type="button"
                     className={clsx(
@@ -96,17 +114,41 @@ const OrdinalFilter = ({ ownedUtxos, setFilteredOwnedUtxos, setActiveSort, setSo
                     {activeSort === "num" && <div>{sortAsc ? <TiArrowSortedUp /> : <TiArrowSortedDown />}</div>}
                 </button>
             </div>
+            {/* Please keep for later complex filters */}
+            {/* {utxosOptions && (
+                <div className="col">
+                    <Form.Select aria-label="Type" onChange={onUtxosType} value={utxosType}>
+                        {utxosOptions.map((type) => (
+                            <option value={type}>{type}</option>
+                        ))}
+                    </Form.Select>
+                </div>
+            )} */}
+            {utxosOptions && (
+                <div className="col">
+                    <Form.Check
+                        type="checkbox"
+                        id="hide-text-inscriptions"
+                        label="Hide .txt"
+                        onChange={onUtxosType}
+                        checked={hideTxt}
+                    />
+                </div>
+            )}
         </div>
     );
 };
 
 OrdinalFilter.propTypes = {
+    utxosOptions: PropTypes.array,
     ownedUtxos: PropTypes.array,
     setFilteredOwnedUtxos: PropTypes.func,
     setActiveSort: PropTypes.func,
     setSortAsc: PropTypes.func,
     activeSort: PropTypes.string,
     sortAsc: PropTypes.bool,
+    utxosType: PropTypes.string,
+    setUtxosType: PropTypes.func,
 };
 
 OrdinalFilter.defaultProps = {};

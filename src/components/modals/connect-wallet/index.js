@@ -2,8 +2,11 @@
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Image from "next/image";
+import { useWallet } from "@context/wallet-context";
 
-const ConnectWallet = ({ onConnect, show, handleModal, ethProvider }) => {
+const ConnectWallet = () => {
+    const { ethProvider, onConnectHandler: onConnect, showConnectModal: show, onHideConnectModal } = useWallet();
+
     const wallets = [
         {
             name: "MetaMask",
@@ -54,9 +57,9 @@ const ConnectWallet = ({ onConnect, show, handleModal, ethProvider }) => {
     };
 
     return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
+        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={onHideConnectModal} centered>
             {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
+                <button type="button" className="btn-close" aria-label="Close" onClick={onHideConnectModal}>
                     <i className="feather-x" />
                 </button>
             )}
@@ -87,10 +90,5 @@ const ConnectWallet = ({ onConnect, show, handleModal, ethProvider }) => {
     );
 };
 
-ConnectWallet.propTypes = {
-    show: PropTypes.bool.isRequired,
-    handleModal: PropTypes.func.isRequired,
-    onConnect: PropTypes.func.isRequired,
-    ethProvider: PropTypes.object,
-};
+ConnectWallet.propTypes = {};
 export default ConnectWallet;

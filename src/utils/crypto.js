@@ -1,22 +1,29 @@
-/* eslint-disable */
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { TESTNET, ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, DEFAULT_DERIV_PATH } from "@lib/constants";
-import BIP32Factory from "bip32";
-import { ethers } from "ethers";
+import { ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@lib/constants.config";
+
 import { ECPairFactory } from "ecpair";
 
 bitcoin.initEccLib(ecc);
-const bip32 = BIP32Factory(ecc);
 const ECPair = ECPairFactory(ecc);
 
-export const outputValue = (currentUtxo, sendFeeRate) => currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
+export const outputValue = (currentUtxo, sendFeeRate, price) =>
+    price || currentUtxo.value - sendFeeRate * ASSUMED_TX_BYTES;
 
-export const ordinalsUrl = (utxo) => `https://ordinals.com/output/${utxo.txid}:${utxo.vout}`;
+// Assume taproot for everything
+// P2TR (Pay-to-Taproot):
+// Input size: ~57.5 vB (single key spend), variable for more complex scripts using Tapscript
+// Output size: ~43 vB
+export function calculateFee({ vins, vouts, recommendedFeeRate, includeChangeOutput = 1 }) {
+    const baseTxSize = 10;
+    const inSize = 57.5;
+    const outSize = 43;
 
-export const ordinalsImageUrl = (utxo) => `https://ordinals.com/content/${utxo.txid}i${utxo.vout}`;
+    const txSize = baseTxSize + vins * inSize + vouts * outSize + includeChangeOutput * outSize;
+    const fee = txSize * recommendedFeeRate;
 
-export const cloudfrontUrl = (utxo) => `https://d2v3k2do8kym1f.cloudfront.net/minted-items/${utxo.txid}:${utxo.vout}`;
+    return Math.round(fee);
+}
 
 export const shortenStr = (str) => {
     if (!str) return "";
@@ -24,53 +31,6 @@ export const shortenStr = (str) => {
 };
 
 export const toXOnly = (key) => (key.length === 33 ? key.slice(1, 33) : key);
-
-export const getAddressInfo = (publicKey) => {
-    console.log(`Pubkey: ${publicKey.toString()}`);
-    const pubkeyBuffer = Buffer.from(publicKey, "hex");
-    const addrInfo = bitcoin.payments.p2tr({
-        pubkey: pubkeyBuffer,
-        network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
-    });
-    return addrInfo;
-};
-
-// sign message with first sign transaction
-export const TAPROOT_MESSAGE = (domain) =>
-    // will switch to nosft.xyz once sends are implemented
-    `Sign this message to generate your Bitcoin Taproot key. This key will be used for your ${domain} transactions.`;
-
-export const connectWallet = async (metamask) => {
-    const { ethereum } = window;
-
-    if (ethereum && metamask) {
-        let ethAddress = ethereum.selectedAddress;
-        if (!ethAddress) {
-            await ethereum.request({ method: "eth_requestAccounts" });
-            ethAddress = ethereum.selectedAddress;
-        }
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const toSign = `0x${Buffer.from(TAPROOT_MESSAGE(metamask)).toString("hex")}`;
-        const signature = await provider.send("personal_sign", [toSign, ethAddress]);
-        const seed = ethers.utils.arrayify(ethers.utils.keccak256(ethers.utils.arrayify(signature)));
-        const root = bip32.fromSeed(Buffer.from(seed));
-        const taprootChild = root.derivePath(DEFAULT_DERIV_PATH);
-        const taprootAddress = bitcoin.payments.p2tr({
-            internalPubkey: toXOnly(taprootChild.publicKey),
-        });
-        return taprootAddress.pubkey.toString("hex");
-    }
-    if (window.nostr && window.nostr.enable) {
-        await window.nostr.enable();
-    } else {
-        alert(
-            "Oops, it looks like you haven't set up your Nostr key yet or installed Metamask." +
-                "Go to your Alby Account Settings and create or import a Nostr key."
-        );
-        return undefined;
-    }
-    return window.nostr.getPublicKey();
-};
 
 export function satToBtc(sat) {
     return Number(sat) / 10 ** 8;
@@ -88,10 +48,16 @@ export const fetchBitcoinPrice = async () =>
         .then((response) => response.json())
         .then((data) => data.USD.last);
 
+export const fetchRecommendedFee = async () =>
+    fetch(`${MEMPOOL_API_URL}/api/v1/fees/recommended`)
+        .then((response) => response.json())
+        .then((data) => data[FEE_LEVEL]);
+
 export function tapTweakHash(pubKey, h) {
     return bitcoin.crypto.taggedHash("TapTweak", Buffer.concat(h ? [pubKey, h] : [pubKey]));
 }
 
+/* eslint-disable */
 export function tweakSigner(signer) {
     function _interopNamespace(e) {
         const n = Object.create(null);
@@ -103,7 +69,7 @@ export function tweakSigner(signer) {
                     Object.defineProperty(
                         n,
                         k,
-                        d.get
+                        d?.get
                             ? d
                             : {
                                   enumerable: true,
@@ -131,6 +97,7 @@ export function tweakSigner(signer) {
     }
     const tweakedPrivateKey = ecc__namespace.privateAdd(
         privateKey,
+        // @ts-ignore
         tapTweakHash(toXOnly(signer.publicKey), bitcoin.networks.bitcoin.tweakHash)
     );
     if (!tweakedPrivateKey) {
@@ -140,6 +107,7 @@ export function tweakSigner(signer) {
         network: bitcoin.networks.bitcoin,
     });
 }
+/* eslint-enable */
 
 export const parseOutpoint = (outpoint) => {
     const rawVout = outpoint.slice(-8);
@@ -155,11 +123,15 @@ export const parseOutpoint = (outpoint) => {
         view.setUint8(i, parseInt(b, 16));
     });
 
-    const vout = view.getInt32(0, 1);
+    const vout = view.getInt32(0, true);
     return [txid, vout];
 };
 
 export function sortUtxos(utxos) {
     const sortedData = utxos.sort((a, b) => b.status.block_time - a.status.block_time);
     return sortedData.map((utxo) => ({ ...utxo, key: `${utxo.txid}:${utxo.vout}` }));
+}
+
+export async function getTxHexById(txId) {
+    return fetch(`${MEMPOOL_API_URL}/api/tx/${txId}/hex`).then((response) => response.text());
 }

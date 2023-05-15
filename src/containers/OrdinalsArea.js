@@ -1,21 +1,21 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-extra-boolean-cast */
-import { useContext, useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
-import WalletContext from "@context/wallet-context";
 import Image from "next/image";
 import { shortenStr } from "@utils/crypto";
 import { getInscriptions } from "@utils/inscriptions";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
+import { useWallet } from "@context/wallet-context";
 
 const OrdinalsArea = ({ className, space }) => {
-    const { nostrAddress } = useContext(WalletContext);
+    const { nostrAddress } = useWallet();
 
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
@@ -43,11 +43,29 @@ const OrdinalsArea = ({ className, space }) => {
         setFilteredOwnedUtxos(filteredUtxos);
     }, [filteredOwnedUtxos, activeSort, sortAsc]);
 
+    const resetUtxos = () => {
+        setOwnedUtxos([]);
+        setFilteredOwnedUtxos([]);
+        setUtxosReady(true);
+    };
+
     useEffect(() => {
+        if (!nostrAddress) {
+            resetUtxos();
+            return;
+        }
+
         const loadUtxos = async () => {
             setUtxosReady(false);
 
-            const utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            let utxosWithInscriptionData = [];
+
+            try {
+                utxosWithInscriptionData = await getInscriptions(nostrAddress);
+            } catch (error) {
+                console.error(error);
+                // TODO: handle error
+            }
 
             setOwnedUtxos(utxosWithInscriptionData);
             setFilteredOwnedUtxos(utxosWithInscriptionData);
@@ -61,7 +79,7 @@ const OrdinalsArea = ({ className, space }) => {
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+                    <div className="col-lg-4 col-md-6 col-sm-6 col-12">
                         <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
                         <br />
                         <span>
@@ -79,7 +97,7 @@ const OrdinalsArea = ({ className, space }) => {
                             </button>
                         </span>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div className="col-lg-8 col-md-6 col-sm-6 col-6">
                         <OrdinalFilter
                             ownedUtxos={ownedUtxos}
                             setFilteredOwnedUtxos={setFilteredOwnedUtxos}

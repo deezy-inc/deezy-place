@@ -1,18 +1,12 @@
-import { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import Image from "next/image";
 import Button from "@ui/button";
 import { HeadingType, TextType, ButtonType, ImageType } from "@utils/types";
 import ConnectWallet from "@components/modals/connect-wallet";
-import WalletContext from "@context/wallet-context";
+import { useWallet } from "@context/wallet-context";
 
-const HeroArea = ({ data, onConnectHandler }) => {
-    const [showConnectModal, setShowConnectModal] = useState(false);
-    const { ethProvider } = useContext(WalletContext);
-    const handleShowConnectModal = () => {
-        setShowConnectModal((prev) => !prev);
-    };
-
+const HeroArea = ({ data }) => {
+    const { onShowConnectModal } = useWallet();
     return (
         <div className="slider-one rn-section-gapTop">
             <div className="container">
@@ -45,17 +39,12 @@ const HeroArea = ({ data, onConnectHandler }) => {
                                 // data-sal-delay={400 + 1 * 100}
                                 // data-sal="slide-up"
                                 // data-sal-duration="400"
-                                onClick={handleShowConnectModal}
+                                onClick={onShowConnectModal}
                             >
                                 Connect Wallet
                             </Button>
 
-                            <ConnectWallet
-                                show={showConnectModal}
-                                onConnect={onConnectHandler}
-                                handleModal={handleShowConnectModal}
-                                ethProvider={ethProvider}
-                            />
+                            <ConnectWallet />
                         </div>
                     </div>
                     <div className="col-lg-5 col-md-6 col-sm-12 offset-lg-1">
@@ -84,7 +73,6 @@ HeroArea.propTypes = {
         buttons: PropTypes.arrayOf(ButtonType),
         images: PropTypes.arrayOf(ImageType),
     }),
-    onConnectHandler: PropTypes.func,
 };
 
 export default HeroArea;

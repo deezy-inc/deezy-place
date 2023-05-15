@@ -14,6 +14,7 @@
             margin-top: 0;
             margin-bottom: 0;
             position: relative;
+
             a {
                 font-weight: 500;
                 padding: 28px 12px;
@@ -25,6 +26,15 @@
                 transition: var(--transition);
                 @media #{$laptop-device} {
                     padding: 28px 6px;
+                }
+
+                &:hover {
+                    color: var(--color-primary);
+                    transform: scale(1.02);
+                }
+
+                &.active {
+                    color: var(--color-primary);
                 }
             }
             .submenu {
@@ -264,9 +274,7 @@
 
                         &.nav-item {
                             .submenu {
-                                background: var(
-                                    --background-color-2
-                                ) !important;
+                                background: var(--background-color-2) !important;
                             }
                         }
                     }
@@ -293,14 +301,7 @@ span {
             left: 0;
             top: 0;
             position: absolute;
-            background: linear-gradient(
-                    95deg,
-                    #000000 15%,
-                    #0074b9 45%,
-                    #0400ff 75%,
-                    #2a1b95
-                )
-                95%/200% 100%;
+            background: linear-gradient(95deg, #000000 15%, #0074b9 45%, #0400ff 75%, #2a1b95) 95%/200% 100%;
             z-index: -1;
             border-radius: 100px;
             opacity: 0.5;

@@ -1,5 +1,5 @@
 const LocalStorageKeys = {
-    INSCRIPTIONS_OUTPOINT: "INSCRIPTIONS_OUTPOINT",
+    INSCRIPTIONS_OUTPOINT: "INSCRIPTION_OUTPOINT",
 };
 
 const LocalStorage = {

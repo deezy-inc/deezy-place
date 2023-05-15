@@ -1,0 +1,13 @@
+.tx-success-container {
+    .action {
+        display: flex;
+        align-items: center;
+        justify-items: center;
+        flex-direction: column;
+    }
+
+    .txid {
+        display: flex;
+        gap: 8px;
+    }
+}

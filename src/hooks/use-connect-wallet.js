@@ -1,33 +1,28 @@
 import { useState, useEffect } from "react";
-import { connectWallet } from "@utils/crypto";
+import { connectWallet } from "@utils/wallet";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import LocalStorage from "@services/local-storage";
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
-    const [utxosReady, setUtxosReady] = useState(false);
 
     const onConnectHandler = async (metamask) => {
         const pubKey = await connectWallet(metamask);
         SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
+        SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, pubKey);
         setNostrPublicKey(pubKey);
     };
 
     const onDisconnectHandler = async () => {
-        setNostrPublicKey(undefined);
         SessionStorage.clear();
         LocalStorage.clear();
-        setUtxosReady(false);
+        setNostrPublicKey(undefined);
     };
 
     useEffect(() => {
-        async function getAddrInfo() {
-            if (nostrPublicKey) {
-                SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, nostrPublicKey);
-            }
+        if (nostrPublicKey) {
+            SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, nostrPublicKey);
         }
-
-        getAddrInfo();
     }, [nostrPublicKey]);
 
     useEffect(() => {

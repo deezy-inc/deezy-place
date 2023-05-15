@@ -1,4 +1,5 @@
-import { MEMPOOL_API_URL } from "@lib/constants";
+import { MEMPOOL_API_URL } from "@lib/constants.config";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 import axios from "axios";
 
@@ -80,3 +81,9 @@ export const getAddressUtxos = async (address) => {
         return utxos;
     }
 };
+
+export async function doesUtxoContainInscription(utxo) {
+    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${utxo.txid}:${utxo.vout}`;
+    const cachedOutpoint = await LocalStorage.get(key);
+    return Boolean(cachedOutpoint);
+}

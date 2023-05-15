@@ -7,3 +7,42 @@
         margin-right: 18px;
     }
 }
+
+/*-------------------------
+    Section Title
+--------------------------*/
+.live-title {
+    position: relative;
+    margin-left: 19px;
+    padding-left: 15px;
+    &::before {
+        width: 9px;
+        height: 9px;
+        background: var(--color-primary);
+        position: absolute;
+        left: -17px;
+        top: 50%;
+        content: "";
+        transform: translateY(-50%);
+        border-radius: 100%;
+        opacity: 0.5;
+        animation: customOne 1.5s infinite;
+    }
+    &::after {
+        width: 15px;
+        height: 15px;
+        border: 1px solid var(--color-primary);
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        content: "";
+        transform: translateY(-50%);
+        border-radius: 100%;
+        opacity: 1;
+        animation: customOne 1.2s infinite;
+    }
+}
+
+.ordinals-counter {
+    font-size: 12px;
+}

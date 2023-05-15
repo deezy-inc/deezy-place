@@ -4,32 +4,34 @@
 import { getAddressUtxos } from "@utils/utxos";
 import { sortUtxos, parseOutpoint } from "@utils/crypto";
 import axios from "axios";
-import { TURBO_API } from "@lib/constants";
+import { TURBO_API, MEMPOOL_API_URL } from "@lib/constants.config";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
-export const getOutpointFromCache = async (inscriptionId) => {
+// TODO: Implement also some type of server side caching.
+const getOutpointFromCache = async (inscriptionId) => {
     const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
     const cachedOutpoint = await LocalStorage.get(key);
     if (cachedOutpoint) {
         return cachedOutpoint;
     }
 
-    const {
-        data: {
-            inscription: { outpoint },
-        },
-    } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+    const result = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+    const [txid, vout] = parseOutpoint(result.data.inscription.outpoint);
+    const utxoKey = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${txid}:${vout}`;
 
-    await LocalStorage.set(key, outpoint);
+    await LocalStorage.set(key, result.data);
+    await LocalStorage.set(utxoKey, result.data);
 
-    return outpoint;
+    return result.data;
 };
 
 const getInscriptionsByUtxoKey = async (inscriptions) => {
     const inscriptionsByUtxoKey = {};
     const batchPromises = [];
     const populateInscriptionsMap = async (ins) => {
-        const outpoint = await getOutpointFromCache(ins.id);
+        const {
+            inscription: { outpoint },
+        } = await getOutpointFromCache(ins.id);
         const [txid, vout] = parseOutpoint(outpoint);
 
         inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
@@ -57,7 +59,7 @@ const addInscriptionDataToUtxos = (utxos, inscriptionsByUtxoKey) =>
         };
     });
 
-export const getInscriptionsForAddress = async (address) => {
+const getInscriptionsForAddress = async (address) => {
     const response = await axios.get(`${TURBO_API}/wallet/${address}/inscriptions`);
     return response.data;
 };
@@ -71,3 +73,46 @@ export const getInscriptions = async (address) => {
 
     return addInscriptionDataToUtxos(utxos, inscriptionsByUtxoKey);
 };
+
+export const getInscription = async (inscriptionId) => {
+    const props = {};
+
+    const { data: inscriptionData } = await axios.get(`${TURBO_API}/inscription/${inscriptionId}`);
+
+    const outpointResult = await getOutpointFromCache(inscriptionId);
+    const {
+        inscription: { outpoint },
+        owner,
+    } = outpointResult;
+
+    const [txid, vout] = parseOutpoint(outpoint);
+    // Get related transaction
+    const { data: utxo } = await axios.get(`${MEMPOOL_API_URL}/api/tx/${txid}`);
+
+    // get value of the utxo
+    const { value } = utxo.vout[vout];
+
+    if (inscriptionData?.collection?.name) {
+        try {
+            const { data: collection } = await axios.get(
+                `${TURBO_API}/collection/${inscriptionData?.collection?.slug}`
+            );
+            props.collection = collection;
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.warn("No collection found");
+        }
+    }
+
+    props.inscription = { ...inscriptionData, inscriptionId, ...utxo, vout, value, owner };
+
+    return props;
+};
+
+export const isTextInscription = (utxo) => /(text\/plain|application\/json)/.test(utxo?.content_type);
+
+export const isImageInscription = (utxo) => /(^image)(\/)[a-zA-Z0-9_]*/gm.test(utxo?.content_type);
+
+export const shouldReplaceInscription = (existingInscription, newInscription) =>
+    existingInscription.value > newInscription.value ||
+    (existingInscription.value === newInscription.value && existingInscription.created_at < newInscription.created_at);

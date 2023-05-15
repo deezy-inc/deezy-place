@@ -1,25 +1,28 @@
-/* eslint-disable react/forbid-prop-types */
-import { useState, useContext, useEffect } from "react";
+/* eslint-disable */
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, ORDINALS_EXPLORER_URL } from "@lib/constants";
+import { TESTNET } from "@lib/constants.config";
 import { shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@utils/crypto";
+import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import WalletContext from "@context/wallet-context";
-import OpenOrdex from "@utils/openOrdexV3";
+import { useWallet } from "@context/wallet-context";
+import { signPsbtMessage } from "@utils/psbt";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
+
 import { InscriptionPreview } from "@components/inscription-preview";
+import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo }) => {
-    const { nostrAddress, nostrPublicKey } = useContext(WalletContext);
+const SendModal = ({ show, handleModal, utxo, onSale }) => {
+    const { nostrAddress, nostrPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
@@ -28,48 +31,81 @@ const SendModal = ({ show, handleModal, utxo }) => {
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [isOnSale, setIsOnSale] = useState(false);
 
-    let openOrderx;
-
     useEffect(() => {
         const getPrice = async () => {
             const btcPrice = await fetchBitcoinPrice();
             setBitcoinPrice(btcPrice);
         };
 
+        setDestinationBtcAddress(nostrAddress);
+
         getPrice();
-    }, []);
+    }, [nostrAddress]);
 
     const sale = async () => {
         setIsOnSale(true);
-        if (!openOrderx) {
-            console.log("init");
-            openOrderx = await OpenOrdex.init();
-        }
 
-        const inscription = await openOrderx.getInscriptionDataById(utxo.inscriptionId);
-        const signedPsbt = await openOrderx.generatePSBTListingInscriptionForSale(
-            inscription.output,
-            ordinalValue,
-            destinationBtcAddress
-        );
+        const psbt = await generatePSBTListingInscriptionForSale({
+            utxo,
+            paymentAddress: destinationBtcAddress,
+            price: ordinalValue,
+        });
 
         try {
-            await openOrderx.submitSignedSalePsbt(utxo, ordinalValue, signedPsbt);
-            toast.info("Ordinal is now on sale");
+            const signedPsbt = await signPsbtMessage(psbt);
+            console.log(signedPsbt);
+
+            await signAndBroadcastEvent({
+                utxo,
+                ordinalValue,
+                signedPsbt: signedPsbt.toBase64(),
+                pubkey: nostrPublicKey,
+            });
+
+            toast.info(`Order successfully published to Nostr!`);
         } catch (e) {
             toast.error(e.message);
         }
-        // TODO: Notify nostr that ordinal is available
-        // const event = {
-        //     pubkey: nostrPublicKey,
-        //     kind: RELAY_KINDS.INSCRIPTION,
-        //     tags: [["i", inscriptionId, signedContent]],
-        //     content: `sell ${inscriptionId}`,
-        // };
-        // const signedEvent = await nostrRelay.sign(event);
-        // await nostrRelay.publish(signedEvent, console.info, console.error);
+
         setIsOnSale(false);
+        onSale();
         handleModal();
+    };
+
+    const submit = async () => {
+        if (!destinationBtcAddress) return;
+        if (!isBtcAmountValid) return;
+        if (!isBtcInputAddressValid) return;
+
+        await sale();
+    };
+
+    const priceOnChange = (evt) => {
+        const newValue = evt.target.value;
+        if (newValue === "") {
+            setIsBtcAmountValid(true);
+            return;
+        }
+
+        if (!newValue) {
+            setIsBtcAmountValid(false);
+            return;
+        }
+
+        setOrdinalValue(Number(newValue));
+    };
+
+    const addressOnChange = (evt) => {
+        const newaddr = evt.target.value;
+        if (newaddr === "") {
+            setIsBtcInputAddressValid(true);
+            return;
+        }
+        if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
+            setIsBtcInputAddressValid(false);
+            return;
+        }
+        setDestinationBtcAddress(newaddr);
     };
 
     return (
@@ -84,14 +120,9 @@ const SendModal = ({ show, handleModal, utxo }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this Ordinal</p>
-                <InscriptionPreview
-                    id="preview"
-                    sandbox="allow-scripts allow-same-origin"
-                    scrolling="no"
-                    loading="lazy"
-                    title={utxo.inscriptionId}
-                    src={`${ORDINALS_EXPLORER_URL}/preview/${utxo.inscriptionId}`}
-                />
+                <div className="inscription-preview">
+                    <InscriptionPreview utxo={utxo} />
+                </div>
 
                 <div className="placebid-form-box">
                     <div className="bid-content">
@@ -101,18 +132,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                     <Form.Label>Address to receive payment</Form.Label>
                                     <Form.Control
                                         defaultValue={nostrAddress}
-                                        onChange={(evt) => {
-                                            const newaddr = evt.target.value;
-                                            if (newaddr === "") {
-                                                setIsBtcInputAddressValid(true);
-                                                return;
-                                            }
-                                            if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
-                                                setIsBtcInputAddressValid(false);
-                                                return;
-                                            }
-                                            setDestinationBtcAddress(newaddr);
-                                        }}
+                                        onChange={addressOnChange}
                                         placeholder="Paste BTC address to receive your payment here"
                                         aria-label="Paste BTC address to receive your payment here"
                                         aria-describedby="basic-addon2"
@@ -130,20 +150,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                                     <Form.Label>Price (in Sats)</Form.Label>
                                     <Form.Control
                                         defaultValue={utxo.value}
-                                        onChange={(evt) => {
-                                            const newValue = evt.target.value;
-                                            if (newValue === "") {
-                                                setIsBtcAmountValid(true);
-                                                return;
-                                            }
-
-                                            if (!newValue) {
-                                                setIsBtcAmountValid(false);
-                                                return;
-                                            }
-
-                                            setOrdinalValue(Number(newValue));
-                                        }}
+                                        onChange={priceOnChange}
                                         type="number"
                                         placeholder="Price (in Sats)"
                                         aria-label="Price (in Sats)"
@@ -182,15 +189,7 @@ const SendModal = ({ show, handleModal, utxo }) => {
                             disabled={!destinationBtcAddress}
                             autoFocus
                             className={isOnSale ? "btn-loading" : ""}
-                            onClick={async () => {
-                                if (!destinationBtcAddress) return;
-                                if (!isBtcAmountValid) return;
-                                if (!isBtcInputAddressValid) return;
-                                const msg = `Are you sure you want to sell this ordinal for ${ordinalValue} sats?`;
-                                if (!window.confirm(msg)) return;
-
-                                await sale();
-                            }}
+                            onClick={submit}
                         >
                             {isOnSale ? <TailSpin stroke="#fec823" speed={0.75} /> : "Sale"}
                         </Button>
@@ -205,5 +204,6 @@ SendModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
+    onSale: PropTypes.func,
 };
 export default SendModal;

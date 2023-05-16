@@ -10,7 +10,7 @@ import ProductBid from "@components/product-bid";
 import { useWallet } from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr } from "@utils/crypto";
-import { MEMPOOL_API_URL } from "@lib/constants.config";
+import { MEMPOOL_API_URL } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 

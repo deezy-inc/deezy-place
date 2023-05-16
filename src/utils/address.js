@@ -1,6 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { NETWORK } from "@lib/constants.config";
+import { NETWORK } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 

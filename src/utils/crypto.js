@@ -1,6 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
-import { ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@lib/constants.config";
+import { ASSUMED_TX_BYTES, BITCOIN_PRICE_API_URL, FEE_LEVEL, MEMPOOL_API_URL } from "@services/nosft";
 
 import { ECPairFactory } from "ecpair";
 

@@ -1,4 +1,4 @@
-import { MEMPOOL_API_URL } from "@lib/constants.config";
+import { MEMPOOL_API_URL } from "@services/nosft";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 import axios from "axios";

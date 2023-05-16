@@ -1,10 +1,9 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
 /* eslint-disable no-restricted-syntax */
-import { getAddressUtxos } from "@utils/utxos";
 import { sortUtxos, parseOutpoint } from "@utils/crypto";
 import axios from "axios";
-import { TURBO_API, MEMPOOL_API_URL } from "@services/nosft";
+import { TURBO_API, MEMPOOL_API_URL, getAddressUtxos } from "@services/nosft";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 // TODO: Implement also some type of server side caching.

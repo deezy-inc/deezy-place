@@ -1,7 +1,12 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types, radix, no-empty, guard-for-in */
-import { NETWORK, ORDINALS_EXPLORER_URL, DUMMY_UTXO_VALUE } from "@services/nosft";
+import {
+    doesUtxoContainInscription,
+    getAddressUtxos,
+    NETWORK,
+    ORDINALS_EXPLORER_URL,
+    DUMMY_UTXO_VALUE,
+} from "@services/nosft";
 import { getInscriptions } from "@utils/inscriptions";
-import { doesUtxoContainInscription, getAddressUtxos } from "@utils/utxos";
 import { fetchRecommendedFee, satToBtc, calculateFee, getTxHexById } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";

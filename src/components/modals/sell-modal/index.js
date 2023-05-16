@@ -6,7 +6,14 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { signPsbtMessage, shortenStr, fetchBitcoinPrice, satsToFormattedDollarString, TESTNET } from "@services/nosft";
+import {
+    generatePSBTListingInscriptionForSale,
+    signPsbtMessage,
+    shortenStr,
+    fetchBitcoinPrice,
+    satsToFormattedDollarString,
+    TESTNET,
+} from "@services/nosft";
 import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -15,7 +22,6 @@ import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 
 import { InscriptionPreview } from "@components/inscription-preview";
-import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 
 bitcoin.initEccLib(ecc);
 

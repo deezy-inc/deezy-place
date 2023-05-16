@@ -2,8 +2,7 @@
 import { nostrPool } from "@services/nostr-relay";
 import { getEventHash } from "nostr-tools";
 
-import { getOrderInformation } from "@utils/openOrdex";
-import { NOSTR_KIND_INSCRIPTION } from "@services/nosft";
+import { getOrderInformation, NOSTR_KIND_INSCRIPTION } from "@services/nosft";
 
 export async function getInscription(utxo) {
     const orders = (

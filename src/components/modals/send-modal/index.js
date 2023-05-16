@@ -7,6 +7,8 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
+    createAndSignPsbtForBoost,
+    signAndBroadcastUtxo,
     shortenStr,
     outputValue,
     TESTNET,
@@ -15,7 +17,6 @@ import {
     BOOST_UTXO_VALUE,
     DEEZY_BOOST_API,
 } from "@services/nosft";
-import { createAndSignPsbtForBoost, signAndBroadcastUtxo } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";
 

@@ -12,7 +12,14 @@ const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
 const { getInscription, getInscriptions } = nosft.inscriptions;
-const { signPsbtMessage, broadcastTx, signAndBroadcastUtxo, getMetamaskSigner, signSigHash } = nosft.psbt;
+const {
+    signPsbtMessage,
+    broadcastTx,
+    signAndBroadcastUtxo,
+    getMetamaskSigner,
+    signSigHash,
+    createAndSignPsbtForBoost,
+} = nosft.psbt;
 const { signAndBroadcastEvent, getNostrInscription, subscribeOrders, unsubscribeOrders } = nosft.nostr;
 
 const {
@@ -100,6 +107,7 @@ export {
     signAndBroadcastUtxo,
     getMetamaskSigner,
     signSigHash,
+    createAndSignPsbtForBoost,
 
     // open ordex
     getAvailableUtxosWithoutInscription,

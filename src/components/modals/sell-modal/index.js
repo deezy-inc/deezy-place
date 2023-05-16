@@ -7,6 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
+    signAndBroadcastEvent,
     generatePSBTListingInscriptionForSale,
     signPsbtMessage,
     shortenStr,
@@ -14,7 +15,6 @@ import {
     satsToFormattedDollarString,
     TESTNET,
 } from "@services/nosft";
-import { signAndBroadcastEvent } from "@utils/nostr";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";

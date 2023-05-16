@@ -104,18 +104,19 @@ function calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption,
     return results;
 }
 
-const createEvents = async ({ schedule, utxo, destinationBtcAddress, nostrPublicKey }) => {
+const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
     let events = [];
     try {
         for (const event of schedule) {
             const { price, ...props } = event;
+            console.log({ price });
             const psbt = await generatePSBTListingInscriptionForSale({
                 utxo,
                 paymentAddress: destinationBtcAddress,
                 price,
             });
             const signedPsbt = await signPsbtMessage(psbt);
-            events.push({ ...props, utxo, price, signedPsbt: signedPsbt.toBase64() });
+            events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
         }
     } catch (error) {
         console.error(error);
@@ -134,7 +135,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [reservePrice, setReservePrice] = useState(Math.round(utxo.value / 2));
     const [bitcoinPrice, setBitcoinPrice] = useState("-");
     const [isOnSale, setIsOnSale] = useState(false);
-    const [decreaseAmount, setDecreaseAmount] = useState(Math.round(utxo.value / 5));
+    const [decreaseAmount, setDecreaseAmount] = useState(Math.round(utxo.value / 2));
 
     const [step, setStep] = useState(0);
     const [startDate, setStartDate] = useState(new Date(Date.now() + 5 * 60 * 1000)); // Add 5 minutes to the start date
@@ -186,6 +187,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                 reservePrice,
                 metadata: newSchedule,
                 nostrAddress,
+                utxo,
             };
             console.log(dutchAuction);
             await createAuction(dutchAuction);

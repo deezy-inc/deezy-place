@@ -6,7 +6,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription, isTextInscription } from "@utils/inscriptions";
+import { getInscription, isTextInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";

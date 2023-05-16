@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types, radix, no-empty, guard-for-in */
 import {
+    getInscriptions,
     fetchRecommendedFee,
     satToBtc,
     calculateFee,
@@ -10,7 +11,6 @@ import {
     ORDINALS_EXPLORER_URL,
     DUMMY_UTXO_VALUE,
 } from "@services/nosft";
-import { getInscriptions } from "@utils/inscriptions";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 

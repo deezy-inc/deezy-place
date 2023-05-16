@@ -1,5 +1,5 @@
 import { DEFAULT_UTXO_TYPES, HIDE_TEXT_UTXO_OPTION, OTHER_UTXO_OPTION } from "@lib/constants.config";
-import { isTextInscription } from "@utils/inscriptions";
+import { isTextInscription } from "@services/nosft";
 
 export const collectionAuthor = [
     {

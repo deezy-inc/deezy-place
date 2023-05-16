@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
-import { getInscription, shouldReplaceInscription } from "@utils/inscriptions";
+import { getInscription, shouldReplaceInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { Subject } from "rxjs";

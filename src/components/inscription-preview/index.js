@@ -1,8 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { ORDINALS_EXPLORER_URL } from "@services/nosft";
+import { isImageInscription, ORDINALS_EXPLORER_URL } from "@services/nosft";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import { isImageInscription } from "@utils/inscriptions";
 
 export const InscriptionPreview = ({ utxo }) => {
     const [loading, setLoading] = useState(true);

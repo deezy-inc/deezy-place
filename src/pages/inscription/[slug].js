@@ -4,7 +4,7 @@ import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import { getInscription } from "@utils/inscriptions";
+import { getInscription } from "@services/nosft";
 import ProductDetailsArea from "@containers/product-details";
 import { getInscription as getNostrInscription } from "@utils/nostr";
 import { useRouter } from "next/router";

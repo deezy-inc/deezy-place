@@ -31,6 +31,7 @@ const App = () => {
         <WalletContext.Provider value={walletState}>
             <Wrapper>
                 <SEO pageTitle="Deezy" />
+
                 <Header ref={elementRef} />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}

@@ -8,7 +8,7 @@ import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import { shortenStr } from "@utils/crypto";
+import { shortenStr } from "@services/nosft";
 import { getInscriptions } from "@utils/inscriptions";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";

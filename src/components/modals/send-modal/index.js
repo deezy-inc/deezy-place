@@ -6,8 +6,15 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, DEFAULT_FEE_RATE, MIN_OUTPUT_VALUE, BOOST_UTXO_VALUE, DEEZY_BOOST_API } from "@services/nosft";
-import { shortenStr, outputValue } from "@utils/crypto";
+import {
+    shortenStr,
+    outputValue,
+    TESTNET,
+    DEFAULT_FEE_RATE,
+    MIN_OUTPUT_VALUE,
+    BOOST_UTXO_VALUE,
+    DEEZY_BOOST_API,
+} from "@services/nosft";
 import { createAndSignPsbtForBoost, signAndBroadcastUtxo } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";

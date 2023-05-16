@@ -7,6 +7,7 @@ import { useWallet } from "@context/wallet-context";
 
 const HeroArea = ({ data }) => {
     const { onShowConnectModal } = useWallet();
+
     return (
         <div className="slider-one rn-section-gapTop">
             <div className="container">

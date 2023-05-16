@@ -13,8 +13,9 @@ import BurgerButton from "@ui/burger-button";
 import Button from "@ui/button";
 import { useWallet } from "@context/wallet-context";
 import ConnectWallet from "@components/modals/connect-wallet";
+import { TESTNET, INSCRIBOR_URL } from "@lib/constants.config";
+import menuData from "../data/general/menu";
 import headerData from "../data/general/header.json";
-import menuData from "../data/general/menu.json";
 
 const Header = React.forwardRef(({ className }, ref) => {
     const { nostrPublicKey, nostrAddress, onDisconnectHandler, onShowConnectModal } = useWallet();
@@ -30,13 +31,18 @@ const Header = React.forwardRef(({ className }, ref) => {
                     className
                 )}
             >
+                {TESTNET && (
+                    <div className="testnet">
+                        <p className="rightToLeft">YOU ARE USING TESTNET!</p>
+                    </div>
+                )}
                 <div className="container">
                     <div className="header-inner">
                         <div className="header-left">
                             <Logo logo={headerData.logo} />
                             <div className="mainmenu-wrapper">
                                 <nav id="sideNav" className="mainmenu-nav d-none d-xl-block">
-                                    <MainMenu menu={menuData} />
+                                    <MainMenu menu={menuData(INSCRIBOR_URL)} />
                                 </nav>
                             </div>
                         </div>
@@ -75,7 +81,12 @@ const Header = React.forwardRef(({ className }, ref) => {
                     </div>
                 </div>
             </header>
-            <MobileMenu isOpen={offcanvas} onClick={offcanvasHandler} menu={menuData} logo={headerData.logo} />
+            <MobileMenu
+                isOpen={offcanvas}
+                onClick={offcanvasHandler}
+                menu={menuData(INSCRIBOR_URL)}
+                logo={headerData.logo}
+            />
         </>
     );
 });

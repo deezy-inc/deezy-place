@@ -1,14 +1,14 @@
 import * as bitcoin from "bitcoinjs-lib";
+// import { getQueryStringParam } from "@utils/methods"
+// const MAINNET_HOSTS = ["https://nosft.xyz"];
 
-const MAINNET_HOSTS = ["https://nosft.xyz"];
-
-let host;
-// TODO: Env variable not working
-if (typeof window !== "undefined") {
-    host = window.location.host;
-}
-
-export const TESTNET = !MAINNET_HOSTS.includes(host); // Boolean(process.env.IS_TESTNET);
+// let host;
+// // TODO: Env variable not working
+// if (typeof window !== "undefined") {
+//     host = window.location.host;
+// }
+// There is no good wallet for testnet yet.
+export const TESTNET = false; // getQueryStringParam("") || !MAINNET_HOSTS.includes(host); // Boolean(process.env.IS_TESTNET);
 
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
 
@@ -38,6 +38,7 @@ export const MIN_OUTPUT_VALUE = 600;
 export const BOOST_UTXO_VALUE = 10000;
 export const FEE_LEVEL = "hourFee"; // "fastestFee" || "halfHourFee" || "hourFee" || "economyFee" || "minimumFee"
 export const DEEZY_BOOST_API = `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost`;
+export const INSCRIBOR_URL = TESTNET ? "https://testnet.inscribor.com" : "https://inscribor.com";
 // Later we can sort by priority
 export const OUTXO_PRIOTITY = {
     "image/png": 0,

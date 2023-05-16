@@ -320,6 +320,15 @@
 }
 
 .header-default {
+    .testnet {
+        width: 100%;
+        background-color: #ffc823;
+        p {
+            color: black;
+            font-weight: 500;
+            font-size: 16px;
+        }
+    }
     .header-inner {
         display: flex;
         align-items: center;

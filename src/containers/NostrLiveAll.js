@@ -7,7 +7,7 @@ import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import { getInscription, shouldReplaceInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
-import { nostrPool } from "@services/nostr-relay";
+import { nostrPool } from "@utils/nostr-relay";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalFilter from "@components/ordinal-filter";

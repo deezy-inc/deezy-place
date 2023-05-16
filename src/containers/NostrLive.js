@@ -8,7 +8,7 @@ import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
 import { getInscription, isTextInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
-import { nostrPool } from "@services/nostr-relay";
+import { nostrPool } from "@utils/nostr-relay";
 import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";

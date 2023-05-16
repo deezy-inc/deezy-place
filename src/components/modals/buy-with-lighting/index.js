@@ -6,8 +6,14 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-import { TESTNET, NETWORK, DEFAULT_FEE_RATE } from "@lib/constants.config";
-import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice } from "@utils/crypto";
+import {
+    shortenStr,
+    satsToFormattedDollarString,
+    fetchBitcoinPrice,
+    TESTNET,
+    NETWORK,
+    DEFAULT_FEE_RATE,
+} from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { TailSpin } from "react-loading-icons";

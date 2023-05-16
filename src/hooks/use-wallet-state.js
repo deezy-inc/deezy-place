@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useToggle } from "react-use";
-import { getAddressInfo } from "../utils/address";
+import { getAddressInfo } from "@services/nosft";
 import useConnectWallet from "./use-connect-wallet";
 
 export const useWalletState = () => {

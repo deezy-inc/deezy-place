@@ -13,7 +13,7 @@ import BurgerButton from "@ui/burger-button";
 import Button from "@ui/button";
 import { useWallet } from "@context/wallet-context";
 import ConnectWallet from "@components/modals/connect-wallet";
-import { TESTNET, INSCRIBOR_URL } from "@lib/constants.config";
+import { TESTNET, INSCRIBOR_URL } from "@services/nosft";
 import menuData from "../data/general/menu";
 import headerData from "../data/general/header.json";
 

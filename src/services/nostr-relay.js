@@ -1,9 +1,8 @@
 import { SimplePool, getEventHash } from "nostr-tools";
-import { NOSTR_KIND_INSCRIPTION, RELAYS } from "@lib/constants.config";
+import { getMetamaskSigner, NOSTR_KIND_INSCRIPTION, RELAYS } from "@services/nosft";
 import { cleanEvent } from "@utils/nostr/event";
 import { Observable } from "rxjs";
 import { getOrderInformation } from "@utils/openOrdex";
-import { getMetamaskSigner } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 const defaultEose = () => {

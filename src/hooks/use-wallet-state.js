@@ -3,7 +3,7 @@ import { useToggle } from "react-use";
 import { getAddressInfo } from "@services/nosft";
 import useConnectWallet from "./use-connect-wallet";
 
-export const useWalletState = () => {
+function useWalletState() {
     const { nostrPublicKey, onConnectHandler, onDisconnectHandler: onDisconnect } = useConnectWallet();
     const [nostrAddress, setNostrAddress] = useState();
     const [ethProvider, setEthProvider] = useState();
@@ -55,4 +55,6 @@ export const useWalletState = () => {
     );
 
     return walletState;
-};
+}
+
+export default useWalletState;

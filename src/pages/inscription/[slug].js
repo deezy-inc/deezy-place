@@ -9,8 +9,7 @@ import ProductDetailsArea from "@containers/product-details";
 import { getInscription as getNostrInscription } from "@utils/nostr";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
-import { useWalletState } from "src/hooks/use-wallet-state";
-import useHeaderHeight from "src/hooks/use-header-height";
+import { useWalletState, useHeaderHeight } from "@hooks";
 
 const Inscription = () => {
     const walletState = useWalletState();

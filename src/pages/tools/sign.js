@@ -7,8 +7,7 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import Sign from "@containers/Sign";
 import { WalletContext } from "@context/wallet-context";
-import { useWalletState } from "src/hooks/use-wallet-state";
-import useHeaderHeight from "src/hooks/use-header-height";
+import { useWalletState, useHeaderHeight } from "@hooks";
 
 export async function getStaticProps() {
     return { props: { className: "template-color-1" } };

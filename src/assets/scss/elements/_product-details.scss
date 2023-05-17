@@ -44,6 +44,30 @@
 }
 
 .rn-pd-content-area {
+    .auction-prices {
+        display: flex;
+        gap: 5%;
+        margin-top: 20px;
+        p {
+            margin-bottom: 0px;
+        }
+        .price-box {
+            .title {
+                font-weight: 500;
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .price {
+                font-weight: 500;
+                color: var(--color-white);
+                span {
+                    font-size: 12px;
+                    color: var(--color-primary);
+                }
+            }
+        }
+    }
     div {
         &.bid {
             font-weight: 500;
@@ -51,6 +75,7 @@
 
             span {
                 &.price {
+                    font-size: 12px;
                     color: var(--color-primary);
                 }
             }

@@ -11,13 +11,33 @@ import BuyLightingModal from "@components/modals/buy-with-lighting";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
+import dynamic from "next/dynamic";
+import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr } from "@services/nosft";
 
-const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
+const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
+    ssr: false,
+});
+
+const CountdownTimerText = dynamic(() => import("@components/countdown-timer/countdown-timer-text"), {
+    ssr: false,
+});
+
+const ProductDetailsArea = ({ space, className, inscription, collection, nostr, auction }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
+    const [bitcoinPrice, setBitcoinPrice] = useState();
+
+    useEffect(() => {
+        const getPrice = async () => {
+            const btcPrice = await fetchBitcoinPrice();
+            setBitcoinPrice(btcPrice);
+        };
+
+        getPrice();
+    }, []);
 
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -44,6 +64,17 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const minted = new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
 
     const properties = [
+        {
+            id: 7,
+            type: "Owner",
+            value: shortenStr(inscription.owner),
+        },
+        {
+            id: 7,
+            type: "Inscription Id",
+            value: shortenStr(inscription.id),
+        },
+
         {
             id: 1,
             type: "Content Type",
@@ -86,15 +117,56 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                     <div className="product-details">
                         <div className="rn-pd-thumbnail">
                             <InscriptionPreview utxo={inscription} />
+                            {auction && <CountdownTimer date={auction.endDate} />}
                         </div>
                     </div>
+
                     <div className=" mt_md--50 mt_sm--60">
                         <div className="rn-pd-content-area">
                             <ProductTitle title={`Inscription #${inscription.num}`} likeCount={30} />
 
-                            {nostr && nostr.value && (
-                                <div className="bid mb--10">
-                                    Listed for <span className="price">{nostr.value} Sats</span>
+                            {nostr && nostr.value && !auction && (
+                                <>
+                                    <div className="bid mb--10">
+                                        Listed for {nostr.value} Sats{" "}
+                                        <span className="price">
+                                            ${satsToFormattedDollarString(nostr.value, bitcoinPrice)}
+                                        </span>
+                                    </div>
+                                    {auction && <hr className="mt--20" />}
+                                </>
+                            )}
+
+                            {auction && nostr?.value && (
+                                <div className="dutchAuction">
+                                    <h6 className="title-name live-title">Dutch Auction</h6>
+
+                                    <div className="auction-prices">
+                                        <div className="price-box">
+                                            <p className="title">Current price</p>
+                                            <p className="price">
+                                                {nostr.value} Sats{" "}
+                                                <span>${satsToFormattedDollarString(nostr.value, bitcoinPrice)}</span>
+                                            </p>
+                                        </div>
+
+                                        <div className="price-box">
+                                            <p className="title">Next price</p>
+                                            <p className="price">
+                                                {auction.next.price}{" "}
+                                                <span>
+                                                    ${satsToFormattedDollarString(auction.next.price, bitcoinPrice)}
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bid mt--10">
+                                        Next price in{" "}
+                                        <span className="price">
+                                            <CountdownTimerText date={auction.endDate} />
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 
@@ -104,19 +176,6 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                     <InscriptionCollection collection={collection} />
                                 </div>
                             )}
-
-                            <div className="rn-pd-bd-wrapper">
-                                <div className="rn-pd-sm-property-wrapper">
-                                    <div className="property-wrapper">
-                                        {properties.map((property) => (
-                                            <div key={property.id} className="pd-property-inner">
-                                                <span className="color-body type">{property.type}</span>
-                                                <span className="color-white value">{`${property.value}`}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
 
                             {nostrPublicKey && nostrAddress && (
                                 <div className="rn-pd-sm-property-wrapper">
@@ -197,6 +256,21 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                 )} */}
                                 </div>
                             )}
+
+                            <hr className="mt--20" />
+
+                            <div className="rn-pd-bd-wrapper">
+                                <div className="rn-pd-sm-property-wrapper">
+                                    <div className="property-wrapper">
+                                        {properties.map((property) => (
+                                            <div key={property.id} className="pd-property-inner">
+                                                <span className="color-body type">{property.type}</span>
+                                                <span className="color-white value">{`${property.value}`}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -237,6 +311,12 @@ ProductDetailsArea.propTypes = {
     inscription: PropTypes.any,
     collection: PropTypes.any,
     nostr: NostrEvenType,
+    auction: PropTypes.shape({
+        endDate: PropTypes.any,
+        next: PropTypes.shape({
+            price: PropTypes.number,
+        }),
+    }),
 };
 
 ProductDetailsArea.defaultProps = {

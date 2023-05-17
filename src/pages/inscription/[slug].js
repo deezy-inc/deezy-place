@@ -53,7 +53,17 @@ const Inscription = () => {
                 <Header ref={elementRef} />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {inscription && (
-                        <ProductDetailsArea inscription={inscription} collection={collection} nostr={nostrData} />
+                        <ProductDetailsArea
+                            inscription={inscription}
+                            collection={collection}
+                            nostr={nostrData}
+                            // auction={{
+                            //     endDate: new Date("2023/05/18"),
+                            //     next: {
+                            //         price: 40000,
+                            //     },
+                            // }}
+                        />
                     )}
                 </main>
 

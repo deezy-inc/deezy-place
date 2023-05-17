@@ -11,6 +11,7 @@ import { normalizedData } from "@utils/methods";
 import homepageData from "@data/general/home.json";
 
 import NostrLive from "@containers/NostrLive";
+import NostrBidding from "@containers/NostrBidding";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 
@@ -36,6 +37,7 @@ const App = () => {
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}
 
                     {nostrPublicKey && nostrAddress && <NostrLive />}
+                    {nostrPublicKey && nostrAddress && <NostrBidding />}
                     {nostrPublicKey && nostrAddress && <OrdinalsArea />}
                 </main>
 

@@ -11,7 +11,8 @@ const nosft = Nosft({ ...localConfig });
 const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
-const { getInscription, getInscriptions } = nosft.inscriptions;
+const { getInscription, getInscriptions, isTextInscription, isImageInscription, shouldReplaceInscription } =
+    nosft.inscriptions;
 const {
     signPsbtMessage,
     broadcastTx,
@@ -100,6 +101,9 @@ export {
     // inscriptions
     getInscription,
     getInscriptions,
+    isTextInscription,
+    isImageInscription,
+    shouldReplaceInscription,
 
     // psbt
     signPsbtMessage,

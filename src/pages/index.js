@@ -11,9 +11,8 @@ import { normalizedData } from "@utils/methods";
 import homepageData from "@data/general/home.json";
 
 import NostrLive from "@containers/NostrLive";
-import { useWalletState } from "src/hooks/use-wallet-state";
+import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
-import useHeaderHeight from "src/hooks/use-header-height";
 
 export async function getStaticProps() {
     return { props: { className: "template-color-1" } };

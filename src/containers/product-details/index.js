@@ -6,6 +6,7 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
+import AuctionModal from "@components/modals/auction-modal";
 import BuyModal from "@components/modals/buy-modal";
 import BuyLightingModal from "@components/modals/buy-with-lighting";
 import InscriptionCollection from "@components/product-details/collection";
@@ -16,6 +17,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const { nostrAddress, nostrPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
+    const [showAuctionModal, setShowAuctionModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
 
@@ -25,6 +27,10 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
 
     const handleSellModal = () => {
         setShowSellModal((prev) => !prev);
+    };
+
+    const handleAuctionModal = () => {
+        setShowAuctionModal((prev) => !prev);
     };
 
     const handleBuyModal = () => {
@@ -78,6 +84,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     ];
 
     const onSend = () => {};
+    const onAuction = () => {};
 
     return (
         <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
@@ -149,6 +156,19 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
+                                        {isOwner && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleAuctionModal}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-tag" />
+                                                    <span>Auction</span>
+                                                </div>
+                                            </button>
+                                        )}
+
                                         {!isOwner && nostr && nostr.value && (
                                             <button
                                                 className="pd-react-area btn-transparent"
@@ -207,6 +227,14 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
             )}
             {showSellModal && (
                 <SellModal show={showSellModal} handleModal={handleSellModal} utxo={inscription} onSale={onSend} />
+            )}
+            {showAuctionModal && (
+                <AuctionModal
+                    show={showAuctionModal}
+                    handleModal={handleAuctionModal}
+                    utxo={inscription}
+                    onSale={onAuction}
+                />
             )}
             {showBuyModal && (
                 <BuyModal

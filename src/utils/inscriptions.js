@@ -64,6 +64,7 @@ const getInscriptionsForAddress = async (address) => {
 
 export const getInscriptions = async (address) => {
     const addressUtxos = await getAddressUtxos(address);
+    console.log("addressUtxos", addressUtxos);
     const utxos = await sortUtxos(addressUtxos);
     const inscriptions = await getInscriptionsForAddress(address);
 

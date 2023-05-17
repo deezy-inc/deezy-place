@@ -201,6 +201,8 @@ export async function generatePSBTListingInscriptionForSale({ utxo, paymentAddre
 
     const tx = bitcoin.Transaction.fromHex(await getTxHexById(ordinalUtxoTxId));
 
+    console.log("tx", tx, price);
+
     for (const output in tx.outs) {
         try {
             tx.setWitness(parseInt(output), []);
@@ -217,6 +219,11 @@ export async function generatePSBTListingInscriptionForSale({ utxo, paymentAddre
     };
 
     psbt.addInput(input);
+
+    console.log({
+        address: paymentAddress,
+        value: price,
+    });
 
     psbt.addOutput({
         address: paymentAddress,

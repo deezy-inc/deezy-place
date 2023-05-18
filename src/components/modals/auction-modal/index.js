@@ -113,7 +113,6 @@ const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
     try {
         for (const event of schedule) {
             const { price, ...props } = event;
-            console.log({ price });
             const psbt = await generatePSBTListingInscriptionForSale({
                 utxo,
                 paymentAddress: destinationBtcAddress,
@@ -149,7 +148,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
         return calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate });
     }, [ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate]);
 
-    const decreaseInterval = useMemo(() => {
+    const timeBetweenEachDecrease = useMemo(() => {
         switch (selectedOption) {
             case "Each minute":
                 return 60;
@@ -186,12 +185,13 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             const dutchAuction = {
                 startTime: unixTime,
                 decreaseAmount,
-                decreaseInterval,
+                timeBetweenEachDecrease,
                 initialPrice: ordinalValue,
                 reservePrice,
                 metadata: newSchedule,
                 nostrAddress,
-                utxo,
+                output: utxo.output,
+                inscriptionId: utxo.inscriptionId,
             };
             console.log(dutchAuction);
             await createAuction(dutchAuction);

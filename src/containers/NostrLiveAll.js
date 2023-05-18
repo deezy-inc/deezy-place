@@ -14,6 +14,7 @@ import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
+import { isSpent } from "@utils/utxos";
 
 const MAX_ONSALE = 200;
 
@@ -86,6 +87,12 @@ const NostrLive = ({ className, space }) => {
         orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
             try {
                 const inscription = await getInscriptionData(event);
+
+                const isSpentUtxo = await isSpent(inscription);
+                if (isSpentUtxo.spent) {
+                    console.log("utxo is spent", inscription);
+                    return;
+                }
                 addNewOpenOrder(inscription);
             } catch (error) {
                 console.error(error);

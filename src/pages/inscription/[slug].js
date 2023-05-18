@@ -38,7 +38,7 @@ const Inscription = () => {
     useEffect(() => {
         if (!inscription?.inscriptionId) return;
         const fetchNostrInscription = async () => {
-            const data = await getNostrInscription(`${inscription.txid}:${inscription.vout}`);
+            const data = await getNostrInscription(inscription);
             if (data) {
                 setNostrData(data);
             }

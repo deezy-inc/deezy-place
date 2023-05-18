@@ -87,3 +87,23 @@ export async function doesUtxoContainInscription(utxo) {
     const cachedOutpoint = await LocalStorage.get(key);
     return Boolean(cachedOutpoint);
 }
+
+export async function isSpent(utxo) {
+    const [txid, vout] = utxo.output.split(":");
+    const {
+        data: { spent, ...props },
+    } = await axios.get(`${MEMPOOL_API_URL}/api/tx/${txid}/outspend/${vout}`);
+
+    const isUtxoSpent = {
+        ...props,
+        spent,
+    };
+
+    if (!spent) return isUtxoSpent;
+
+    // This data is not yet needed. Let's reduce the number of API calls.
+    // const { data: last_lock_height } = await axios.get(`${MEMPOOL_API_URL}/api/blocks/tip/height`);
+    // const confirmations = last_lock_height - props.status.block_height;
+    // isUtxoSpent.confirmations = confirmations;
+    return isUtxoSpent;
+}

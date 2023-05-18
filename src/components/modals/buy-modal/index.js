@@ -88,6 +88,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             try {
                 await updatePayerAddress(nostrAddress);
             } catch (e) {
+                if (e.message.includes("Not enough cardinal spendable funds")) {
+                    toast.error(e.message);
+                    return;
+                }
+
                 setIsBtcInputAddressValid(false);
                 toast.error(e.message);
                 return;

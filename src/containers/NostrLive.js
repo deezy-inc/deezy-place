@@ -14,6 +14,7 @@ import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
+import { isSpent } from "@utils/utxos";
 
 const collectionAuthor = [
     {
@@ -139,8 +140,17 @@ const NostrLive = ({ className, space }) => {
             .subscribe(async (event) => {
                 if (processedEvents.current.has(event.id)) return;
                 processedEvents.current.add(event.id);
+
                 try {
                     const inscription = await getInscriptionData(event);
+
+                    // If utxo is spent, we don't want to show it
+                    const isSpentUtxo = await isSpent(inscription);
+                    if (isSpentUtxo.spent) {
+                        console.log("utxo is spent", inscription);
+                        return;
+                    }
+
                     if (!isTextInscription(inscription)) {
                         processedOrders.current += 1;
                         addNewOpenOrder(inscription);

@@ -1,11 +1,12 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop */
+/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
 import { nostrPool } from "@services/nostr-relay";
 import { getEventHash } from "nostr-tools";
-
+import { isSpent } from "@utils/utxos";
 import { getOrderInformation } from "@utils/openOrdex";
 import { NOSTR_KIND_INSCRIPTION } from "@lib/constants.config";
 
-export async function getInscription(utxo) {
+export async function getInscription(inscription) {
+    const utxo = `${inscription.txid}:${inscription.vout}`;
     const orders = (
         await nostrPool.list([
             {
@@ -19,6 +20,9 @@ export async function getInscription(utxo) {
 
     for (const order of orders) {
         try {
+            const isUtxoSpent = await isSpent(inscription);
+            if (isUtxoSpent.spent) continue;
+
             const orderInformation = await getOrderInformation(order);
 
             if (Number(orderInformation.value) === Number(order.tags.find((x) => x?.[0] === "s")[1])) {

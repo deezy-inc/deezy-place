@@ -85,7 +85,7 @@ const useOpenOrdersSubscription = (observable, setter, initialData) => {
     }, []);
 };
 
-const NostrLive = ({ className, space }) => {
+const NostrLive = ({ className, space, type }) => {
     const [openOrders, setOpenOrders] = useState([]);
     const [openTextOrders, setTextOpenOrders] = useState([]);
     const addOpenOrder$ = useRef(new Subject());
@@ -96,6 +96,7 @@ const NostrLive = ({ className, space }) => {
     const fetchLimit = useRef(MAX_LIMIT_ONSALE);
     const processedOrders = useRef(0);
     const fetchIds = useRef([]);
+
     const [isWindowFocused, setIsWindowFocused] = useState(true);
 
     const handleRefreshHack = () => {
@@ -139,13 +140,16 @@ const NostrLive = ({ className, space }) => {
     const subscribeOrdersWithLimit = async (limit) => {
         if (openOrders.length >= MAX_ONSALE || processedEvents.current >= MAX_FETCH_LIMIT) return;
 
+        // Based on the type, we subscribe to elements that are on sale or in auction.
         const subscription = nostrPool
             .subscribeOrders({
                 limit,
+                type,
             })
             .subscribe(async (event) => {
                 if (processedEvents.current.has(event.id)) return;
                 processedEvents.current.add(event.id);
+
                 try {
                     const inscription = await getInscriptionData(event);
                     if (!isTextInscription(inscription)) {
@@ -233,7 +237,10 @@ const NostrLive = ({ className, space }) => {
             <div className="container">
                 <div className="row mb--20">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt_mobile--15">
-                        <SectionTitle className="mb--0 live-title" {...{ title: "On Sale" }} />
+                        <SectionTitle
+                            className="mb--0 live-title"
+                            {...{ title: type === "bidding" ? "Live Auction" : "On Sale" }}
+                        />
                     </div>
 
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
@@ -261,10 +268,12 @@ const NostrLive = ({ className, space }) => {
 NostrLive.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
+    type: PropTypes.oneOf(["bidding", "live"]),
 };
 
 NostrLive.defaultProps = {
     space: 1,
+    type: "live",
 };
 
 export default NostrLive;

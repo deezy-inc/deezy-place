@@ -144,6 +144,12 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                 </>
                             )}
 
+                            {collection && (
+                                <div className="catagory-collection">
+                                    <InscriptionCollection collection={collection} />
+                                </div>
+                            )}
+
                             {auction && nostr?.value && (
                                 <div className="dutchAuction">
                                     <h6 className="title-name live-title">Dutch Auction</h6>
@@ -157,32 +163,30 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             </p>
                                         </div>
 
-                                        <div className="price-box">
-                                            <p className="title">Next price</p>
-                                            <p className="price">
-                                                {auction.next.price}{" "}
-                                                <span>
-                                                    ${satsToFormattedDollarString(auction.next.price, bitcoinPrice)}
-                                                </span>
-                                            </p>
+                                        {auction?.next?.price && (
+                                            <div className="price-box">
+                                                <p className="title">Next price</p>
+                                                <p className="price">
+                                                    {auction.next.price}{" "}
+                                                    <span>
+                                                        ${satsToFormattedDollarString(auction.next.price, bitcoinPrice)}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {auction?.next?.price && (
+                                        <div className="bid mt--10 mb--20">
+                                            Next price in{" "}
+                                            <span className="price">
+                                                <CountdownTimerText date={auction.endDate} />
+                                            </span>
                                         </div>
-                                    </div>
-
-                                    <div className="bid mt--10">
-                                        Next price in{" "}
-                                        <span className="price">
-                                            <CountdownTimerText date={auction.endDate} />
-                                        </span>
-                                    </div>
+                                    )}
                                 </div>
                             )}
 
                             {/* <h6 className="title-name">{inscription.id}</h6> */}
-                            {collection && (
-                                <div className="catagory-collection">
-                                    <InscriptionCollection collection={collection} />
-                                </div>
-                            )}
 
                             {nostrPublicKey && nostrAddress && (
                                 <div className="rn-pd-sm-property-wrapper">

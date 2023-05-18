@@ -4,7 +4,7 @@ import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import { getInscription, getNostrInscription } from "@services/nosft";
+import { getInscription, getNostrInscription, getAuctionByInscription } from "@services/nosft";
 import ProductDetailsArea from "@containers/product-details";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
@@ -19,6 +19,7 @@ const Inscription = () => {
     const headerHeight = useHeaderHeight(elementRef);
 
     const [nostrData, setNostrData] = useState();
+    const [auctionData, setAuctionData] = useState();
     const [inscription, setInscription] = useState();
     const [collection, setCollection] = useState();
 
@@ -36,8 +37,17 @@ const Inscription = () => {
     useEffect(() => {
         if (!inscription?.inscriptionId) return;
         const fetchNostrInscription = async () => {
+            const auctions = await getAuctionByInscription(inscription?.inscriptionId);
+            const auction = auctions?.find((a) => a.status === "RUNNING");
+
+            if (auction) {
+                setAuctionData(auction);
+            }
+
+            // TODO: if the item is on auction, let's get the auction data by the even, not the inscriptionId
             const data = await getNostrInscription(`${inscription.txid}:${inscription.vout}`);
             if (data) {
+                // If exists in nostr, it might be in auction
                 setNostrData(data);
             }
         };
@@ -56,12 +66,7 @@ const Inscription = () => {
                             inscription={inscription}
                             collection={collection}
                             nostr={nostrData}
-                            // auction={{
-                            //     endDate: new Date("2023/05/18"),
-                            //     next: {
-                            //         price: 40000,
-                            //     },
-                            // }}
+                            auction={auctionData}
                         />
                     )}
                 </main>

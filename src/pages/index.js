@@ -35,7 +35,9 @@ const App = () => {
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
                     {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}
 
+                    {nostrPublicKey && nostrAddress && <NostrLive type="bidding" />}
                     {nostrPublicKey && nostrAddress && <NostrLive />}
+
                     {nostrPublicKey && nostrAddress && <OrdinalsArea />}
                 </main>
 

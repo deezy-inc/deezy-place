@@ -23,6 +23,7 @@ const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
 
 const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onSale }) => {
     const { nostrAddress } = useWallet();
+
     const path = utxo?.inscriptionId ? `/inscription/${utxo?.inscriptionId}` : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
 
     return (
@@ -31,7 +32,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                 <div className={clsx("product-style-one", !overlay && "no-overlay")}>
                     <div className="card-thumbnail">
                         <InscriptionPreview utxo={utxo} />
-                        {utxo && <CountdownTimer date={new Date("2023/06/05")} />}
+                        {utxo?.auction?.endDate && <CountdownTimer date={new Date(utxo.auction.endDate)} />}
                     </div>
                     <div className="inscription-details-area">
                         {utxo && (

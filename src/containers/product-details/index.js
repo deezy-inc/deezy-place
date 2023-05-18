@@ -162,7 +162,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
-                                        {!isOwner && nostr && nostr.value && (
+                                        {/* {!isOwner && nostr && nostr.value && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -173,7 +173,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                                     <span>Buy with lighting</span>
                                                 </div>
                                             </button>
-                                        )}
+                                        )} */}
 
                                         {/*
 

@@ -8,7 +8,7 @@ import SectionTitle from "@components/section-title";
 import OrdinalCard from "@components/ordinal-card";
 import { toast } from "react-toastify";
 import Image from "next/image";
-import { getInscriptions, shortenStr } from "@services/nosft";
+import { getInscriptions, shortenStr, fetchBitcoinPrice, satsToFormattedDollarString } from "@services/nosft";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
@@ -52,16 +52,15 @@ const SliderOptions = {
     ],
 };
 
-const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }) => {
+const OrdinalsArea = ({ className, space }) => {
     const { nostrAddress } = useWallet();
 
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
     const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
     const [refreshHack, setRefreshHack] = useState(false);
-
-    const [activeSort, setActiveSort] = useState("date");
-    const [sortAsc, setSortAsc] = useState(false);
+    const [balance, setBalance] = useState(0);
+    const [bitcoinPrice, setBitcoinPrice] = useState("-");
 
     const handleRefreshHack = () => {
         setRefreshHack(!refreshHack);
@@ -71,15 +70,6 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
         navigator.clipboard.writeText(nostrAddress);
         toast("Receive Address copied to clipboard!");
     };
-
-    useMemo(() => {
-        const filteredUtxos = applyFilters({
-            utxos: filteredOwnedUtxos,
-            activeSort,
-            sortAsc,
-        });
-        setFilteredOwnedUtxos(filteredUtxos);
-    }, [filteredOwnedUtxos, activeSort, sortAsc]);
 
     const resetUtxos = () => {
         setOwnedUtxos([]);
@@ -93,6 +83,11 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
             return;
         }
 
+        const getPrice = async () => {
+            const btcPrice = await fetchBitcoinPrice();
+            setBitcoinPrice(btcPrice);
+        };
+
         const loadUtxos = async () => {
             setUtxosReady(false);
 
@@ -100,9 +95,10 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
 
             try {
                 utxosWithInscriptionData = await getInscriptions(nostrAddress);
-                if (displayOnlyInscriptions) {
-                    utxosWithInscriptionData = utxosWithInscriptionData.filter((utxo) => !!utxo.inscriptionId);
-                }
+                utxosWithInscriptionData = utxosWithInscriptionData.filter((utxo) => !!!utxo.inscriptionId);
+                setBalance(utxosWithInscriptionData.reduce((acc, utxo) => acc + utxo.value, 0));
+                console.log(utxosWithInscriptionData);
+
                 console.log(utxosWithInscriptionData);
             } catch (error) {
                 console.error(error);
@@ -114,47 +110,47 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
             setUtxosReady(true);
         };
 
+        getPrice();
         loadUtxos();
-    }, [refreshHack, nostrAddress]);
+    }, [nostrAddress]);
 
     return (
-        <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
+        <div
+            id="your-collection"
+            className={clsx("rn-product-area", "wallet", space === 1 && "rn-section-gapTop", className)}
+        >
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-4 col-md-6 col-sm-6 col-12">
-                        <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
-                        {!hideAddress && (
-                            <>
-                                <br />
-                                <span>
-                                    <Image
-                                        src="/images/logo/ordinals-white.svg"
-                                        alt="Ordinal"
-                                        width={15}
-                                        height={15}
-                                        className="mb-1"
-                                        priority
-                                    />
-                                    <button type="button" className="btn-transparent" onClick={onCopyAddress}>
-                                        {" "}
-                                        {shortenStr(nostrAddress)}
-                                    </button>
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    {ownedUtxos.length > 0 && (
-                        <div className="col-lg-8 col-md-6 col-sm-6 col-6">
-                            <OrdinalFilter
-                                ownedUtxos={ownedUtxos}
-                                setFilteredOwnedUtxos={setFilteredOwnedUtxos}
-                                setActiveSort={setActiveSort}
-                                setSortAsc={setSortAsc}
-                                activeSort={activeSort}
-                                sortAsc={sortAsc}
+                        <div className="wallet-title">
+                            <SectionTitle
+                                className="mb--0"
+                                {...{ title: "Available Balance" }}
+                                isLoading={!utxosReady}
                             />
+                            {!!balance && (
+                                <span className="balance-info">
+                                    <span className="price">${satsToFormattedDollarString(balance, bitcoinPrice)}</span>
+                                </span>
+                            )}
                         </div>
-                    )}
+
+                        <br />
+                        <span>
+                            <Image
+                                src="/images/logo/ordinals-white.svg"
+                                alt="Ordinal"
+                                width={15}
+                                height={15}
+                                className="mb-1"
+                                priority
+                            />
+                            <button type="button" className="btn-transparent" onClick={onCopyAddress}>
+                                {" "}
+                                {shortenStr(nostrAddress)}
+                            </button>
+                        </span>
+                    </div>
                 </div>
 
                 <div className="row g-5">
@@ -212,9 +208,6 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
 OrdinalsArea.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
-    onSale: PropTypes.func,
-    displayOnlyInscriptions: PropTypes.bool,
-    hideAddress: PropTypes.bool,
 };
 
 OrdinalsArea.defaultProps = {

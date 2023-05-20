@@ -22,7 +22,7 @@ const {
     createAndSignPsbtForBoost,
 } = nosft.psbt;
 const { signAndBroadcastEvent, getNostrInscription, subscribeOrders, unsubscribeOrders } = nosft.nostr;
-const { subscribeOrders: subcribeAuctionOrders, getAuctionByInscription } = nosft.auction;
+const { subscribeOrders: subcribeAuctionOrders, getAuctionByInscription, createAuction } = nosft.auction;
 
 const {
     getAvailableUtxosWithoutInscription,
@@ -129,6 +129,7 @@ export {
     // auction
     subcribeAuctionOrders,
     getAuctionByInscription,
+    createAuction,
 
     // Config variables
     TAPROOT_MESSAGE,

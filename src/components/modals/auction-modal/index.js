@@ -6,17 +6,16 @@ import Button from "@ui/button";
 import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
-
+import dynamic from "next/dynamic";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-
+import { createAuction } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import DatePicker from "react-datepicker";
 import { useMemo } from "react";
-import { createAuction } from "@services/auction";
 
 import {
     generatePSBTListingInscriptionForSale,
@@ -24,6 +23,7 @@ import {
     shortenStr,
     fetchBitcoinPrice,
     TESTNET,
+    satsToFormattedDollarString,
 } from "@services/nosft";
 bitcoin.initEccLib(ecc);
 
@@ -33,7 +33,7 @@ const RoundOptions = ({ selectedOption, onChange }) => {
     };
 
     return (
-        <div>
+        <div className="decrease-interval-options">
             <Form.Check
                 type="radio"
                 id="eachMinute"
@@ -107,27 +107,6 @@ function calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption,
     return results;
 }
 
-// important
-const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
-    let events = [];
-    try {
-        for (const event of schedule) {
-            const { price, ...props } = event;
-            const psbt = await generatePSBTListingInscriptionForSale({
-                utxo,
-                paymentAddress: destinationBtcAddress,
-                price,
-            });
-            const signedPsbt = await signPsbtMessage(psbt);
-            events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
-        }
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-    return events;
-};
-
 const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
 
@@ -139,23 +118,29 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [bitcoinPrice, setBitcoinPrice] = useState("-");
     const [isOnSale, setIsOnSale] = useState(false);
     const [decreaseAmount, setDecreaseAmount] = useState(Math.round(utxo.value / 2));
-
+    const [priceDecreases, setPriceDecreases] = useState(1);
+    const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
     const [step, setStep] = useState(0);
-    const [startDate, setStartDate] = useState(new Date(Date.now() + 5 * 60 * 1000)); // Add 5 minutes to the start date
+    const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 60 * 1000)); // Add 5 minutes to the start date
     const [selectedOption, setSelectedOption] = useState("Each minute");
+    const [signedEvents, setSignedEvents] = useState(0);
 
     const schedule = useMemo(() => {
         return calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate });
     }, [ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate]);
 
+    const CountdownTimerText = dynamic(() => import("@components/countdown-timer/countdown-timer-text"), {
+        ssr: false,
+    });
+
     const timeBetweenEachDecrease = useMemo(() => {
         switch (selectedOption) {
-            case "Each minute":
-                return 60;
-            case "Each hour":
+            case "10 min":
+                return 60 * 10;
+            case "1 hour":
                 return 3600;
-            case "Each day":
-                return 86400;
+            case "3 hours":
+                return 3600 * 3;
             default:
                 return 3600;
         }
@@ -175,6 +160,28 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
 
         getPrice();
     }, [nostrAddress]);
+
+    const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
+        let events = [];
+        try {
+            setSignedEvents(0);
+            for (const event of schedule) {
+                const { price, ...props } = event;
+                const psbt = await generatePSBTListingInscriptionForSale({
+                    utxo,
+                    paymentAddress: destinationBtcAddress,
+                    price,
+                });
+                const signedPsbt = await signPsbtMessage(psbt);
+                events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
+                setSignedEvents(signedEvents + 1);
+            }
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+        return events;
+    };
 
     const startAuction = async () => {
         setIsOnSale(true);
@@ -216,31 +223,48 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             return;
         }
 
+        if (step === 1) {
+            setStep(2);
+            return;
+        }
+
+        setStep(3);
         await startAuction();
     };
 
     const priceOnChange = (evt) => {
         const newValue = evt.target.value;
         if (!newValue) {
+            setOrdinalValue(0);
             return;
         }
+
         setOrdinalValue(Number(newValue));
     };
 
     const minPriceOnChange = (evt) => {
         const newValue = evt.target.value;
         if (!newValue) {
+            setIsLowerPriceInvalid(false);
+            setReservePrice(0);
             return;
         }
+
+        if (reservePrice > ordinalValue) {
+            setIsLowerPriceInvalid(true);
+            return;
+        }
+
+        setIsLowerPriceInvalid(false);
         setReservePrice(Number(newValue));
     };
 
-    const decreaseAmountOnChange = (evt) => {
-        const newValue = evt.target.value;
-        if (!newValue || newValue === "" || Number(newValue) < 1) {
-            return;
-        }
-        setDecreaseAmount(Number(newValue));
+    const feeRateOnChange = (evt) => {
+        const decreases = Number(evt.target.value);
+        setPriceDecreases(decreases);
+        // Calculate the decrease amount between initial and end value
+        const decreaseAmount = (Number(ordinalValue) - Number(reservePrice)) / decreases;
+        setDecreaseAmount(decreaseAmount);
     };
 
     const addressOnChange = (evt) => {
@@ -256,7 +280,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
         setDestinationBtcAddress(newaddr);
     };
 
-    const action = step === 0 ? "Configure" : "Start Auction";
+    const action = step === 0 || step === 1 ? "Next" : "Create Auction";
 
     return (
         <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
@@ -270,7 +294,6 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this Ordinal by Dutch Auction</p>
-
                 {step === 0 && (
                     <div className="inscription-preview">
                         <InscriptionPreview utxo={utxo} />
@@ -328,8 +351,10 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                             aria-describedby="basic-addon2"
                                             autoFocus
                                         />
+                                    </InputGroup>
 
-                                        <Form.Label>Min price (in Sats)</Form.Label>
+                                    <InputGroup className="mb-lg-5">
+                                        <Form.Label>Lowest price (in Sats)</Form.Label>
                                         <Form.Control
                                             defaultValue={reservePrice}
                                             onChange={minPriceOnChange}
@@ -337,21 +362,55 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                             placeholder="Price (in Sats)"
                                             aria-label="Price (in Sats)"
                                             aria-describedby="basic-addon2"
+                                            isInvalid={isLowerPriceInvalid}
                                             autoFocus
                                         />
+                                        <Form.Control.Feedback type="invalid">
+                                            <br />
+                                            Lowest price must be lower than initial price
+                                        </Form.Control.Feedback>
                                     </InputGroup>
 
-                                    <Form.Label>Decrease by</Form.Label>
-                                    <Form.Control
-                                        defaultValue={decreaseAmount}
-                                        onChange={decreaseAmountOnChange}
-                                        type="number"
-                                        placeholder="Price (in Sats)"
-                                        aria-label="Price (in Sats)"
-                                        autoFocus
-                                    />
+                                    <InputGroup className="mb-lg-5">
+                                        <Form.Label>Number of price decreases ({priceDecreases})</Form.Label>
+                                        <Form.Range
+                                            min="1"
+                                            max="10"
+                                            defaultValue={priceDecreases}
+                                            onChange={feeRateOnChange}
+                                        />
+                                    </InputGroup>
                                 </div>
                             </div>
+
+                            <div className="bid-content-mid">
+                                <div className="bid-content-left">
+                                    {!!destinationBtcAddress && <span>Payment Receive Address</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
+                                    {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
+                                    {decreaseAmount && <span>Decrease Amount</span>}
+                                </div>
+
+                                <div className="bid-content-right">
+                                    {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(ordinalValue, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(reservePrice) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(reservePrice, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(decreaseAmount) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(decreaseAmount, bitcoinPrice)}`}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="bid-content">
                             <div className="bid-content-top">
                                 <div className="bid-content-left">
                                     <InputGroup className="mb-lg-5 omg">
@@ -370,12 +429,91 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                         />
                                     </InputGroup>
 
-                                    <InputGroup className="mb-lg-5">
+                                    <InputGroup className="mb-lg-5 schedule-options">
+                                        <Form.Label>How long between each decrease?</Form.Label>
                                         <RoundOptions selectedOption={selectedOption} onChange={handleOptionChange} />
                                     </InputGroup>
-                                    <p>
-                                        Events: {schedule.length} {"-->"} {JSON.stringify(schedule, null, 2)}
-                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bid-content-mid">
+                                <div className="bid-content-left">
+                                    {!!destinationBtcAddress && <span>Payment Receive Address</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
+                                    {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
+                                    {decreaseAmount && <span>Decrease Amount</span>}
+                                    {schedule?.[0]?.scheduledTime && <span>Starts in</span>}
+                                </div>
+
+                                <div className="bid-content-right">
+                                    {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(ordinalValue, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(reservePrice) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(reservePrice, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(decreaseAmount) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(decreaseAmount, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {!!schedule?.[0]?.scheduledTime && (
+                                        <span>
+                                            {
+                                                <CountdownTimerText
+                                                    className="countdown-text-small"
+                                                    date={new Date(schedule[0].scheduledTime * 1000)}
+                                                />
+                                            }
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="bid-content">
+                            <div className="bid-content-mid">
+                                <div className="bid-content-left">
+                                    {!!destinationBtcAddress && <span>Payment Receive Address</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
+                                    {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
+                                    {decreaseAmount && <span>Decrease Amount</span>}
+                                    {schedule?.[0]?.scheduledTime && <span>Starts in</span>}
+                                    <span>Signed Events</span>
+                                </div>
+
+                                <div className="bid-content-right">
+                                    {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
+                                    {Boolean(ordinalValue) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(ordinalValue, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(reservePrice) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(reservePrice, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {Boolean(decreaseAmount) && bitcoinPrice && (
+                                        <span>{`$${satsToFormattedDollarString(decreaseAmount, bitcoinPrice)}`}</span>
+                                    )}
+
+                                    {!!schedule?.[0]?.scheduledTime && (
+                                        <span>
+                                            {
+                                                <CountdownTimerText
+                                                    className="countdown-text-small"
+                                                    date={new Date(schedule[0].scheduledTime * 1000)}
+                                                />
+                                            }
+                                        </span>
+                                    )}
+
+                                    <span>
+                                        {signedEvents} / {schedule.length}
+                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -7,7 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET, NETWORK, DEFAULT_FEE_RATE } from "@lib/constants.config";
-import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice } from "@utils/crypto";
+import { shortenStr, satsToFormattedDollarString, fetchBitcoinPrice, fetchRecommendedFee } from "@utils/crypto";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { TailSpin } from "react-loading-icons";
@@ -44,6 +44,12 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             setBitcoinPrice(btcPrice);
         };
 
+        const fetchFee = async () => {
+            const fee = await fetchRecommendedFee();
+            setSendFeeRate(fee);
+        };
+
+        fetchFee();
         getPrice();
     }, [nostrAddress]);
 

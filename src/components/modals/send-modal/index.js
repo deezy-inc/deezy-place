@@ -7,7 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { TESTNET, DEFAULT_FEE_RATE, MIN_OUTPUT_VALUE, BOOST_UTXO_VALUE } from "@lib/constants.config";
-import { shortenStr, outputValue } from "@utils/crypto";
+import { shortenStr, outputValue, fetchRecommendedFee } from "@utils/crypto";
 import { createAndSignPsbtForBoost, signAndBroadcastUtxo } from "@utils/psbt";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";
@@ -39,6 +39,13 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         if (pubKey) {
             setNostrPublicKey(pubKey);
         }
+
+        const fetchFee = async () => {
+            const fee = await fetchRecommendedFee();
+            setSendFeeRate(fee);
+        };
+
+        fetchFee();
     }, []);
 
     const addressOnChange = (evt) => {

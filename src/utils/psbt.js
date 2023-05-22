@@ -65,6 +65,7 @@ function getInputParams({ utxo, inputAddressInfo }) {
             script: Buffer.from(inputAddressInfo.output, "hex"),
         },
         tapInternalKey: inputAddressInfo.pubkey,
+        sequence: 0xfffffffd,
     };
 }
 

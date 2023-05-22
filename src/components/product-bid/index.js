@@ -62,7 +62,9 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
 
             {Boolean(nostrAddress) && renderMainAction(type)}
 
-            <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
+            {showSendModal && (
+                <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
+            )}
 
             {/* <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} /> */}
 

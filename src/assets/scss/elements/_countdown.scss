@@ -1,4 +1,9 @@
 // count down
+.countdown-text-small {
+    display: flex;
+    gap: 4px;
+}
+
 .countdown {
     display: flex;
     margin: -4px;

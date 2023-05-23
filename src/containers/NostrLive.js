@@ -245,7 +245,7 @@ const NostrLive = ({ className, space, type }) => {
 
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
                         <div className="view-more-btn text-start text-sm-end ">
-                            <Anchor className="btn-transparent" path="/inscriptions">
+                            <Anchor className="btn-transparent" path={type === "live" ? "/inscriptions" : "/auction"}>
                                 VIEW ALL
                                 <i className="feather-arrow-right mb-md-5" />
                             </Anchor>

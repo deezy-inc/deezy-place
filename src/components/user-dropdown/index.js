@@ -4,8 +4,11 @@ import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { useRouter } from "next/router";
 
 const UserDropdown = ({ onDisconnect, receiveAddress }) => {
+    const router = useRouter();
+
     const getLogoUrl = () => {
         const domain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
         switch (domain) {
@@ -19,6 +22,11 @@ const UserDropdown = ({ onDisconnect, receiveAddress }) => {
                 return "/images/logo/alby.png";
         }
     };
+
+    const onWalletClick = () => {
+        router.push("/wallet");
+    };
+
     return (
         <div className="icon-box">
             <Anchor path="#">
@@ -81,6 +89,14 @@ const UserDropdown = ({ onDisconnect, receiveAddress }) => {
                     </li> */}
                     </ul>
                 </div>
+
+                <ul className="list-inner">
+                    <li>
+                        <button type="button" onClick={onWalletClick}>
+                            Wallet
+                        </button>
+                    </li>
+                </ul>
 
                 <ul className="list-inner">
                     <li>

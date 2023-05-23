@@ -11,6 +11,11 @@ export default function (inscriborLink) {
             path: "/inscriptions",
         },
         {
+            id: 3,
+            text: "Auctions",
+            path: "/auction",
+        },
+        {
             id: 4,
             text: "Inscribe",
             path: inscriborLink,

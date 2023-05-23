@@ -226,13 +226,13 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                                 onClick={handleAuctionModal}
                                             >
                                                 <div className="action">
-                                                    <i className="feather-tag" />
+                                                    <i className="feather-book-open" />
                                                     <span>Auction</span>
                                                 </div>
                                             </button>
                                         )}
 
-                                        {!isOwner && nostr && nostr.value && (
+                                        {nostr && nostr.value && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -245,7 +245,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             </button>
                                         )}
 
-                                        {!isOwner && nostr && nostr.value && (
+                                        {nostr && nostr.value && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"

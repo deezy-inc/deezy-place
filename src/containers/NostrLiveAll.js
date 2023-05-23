@@ -14,8 +14,47 @@ import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/ordinal-card";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { DEFAULT_UTXO_OPTIONS, HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
+import Slider, { SliderItem } from "@ui/slider";
 
 const MAX_ONSALE = 200;
+
+const SliderOptions = {
+    infinite: true,
+    slidesToShow: 5,
+    slidesToScroll: 1,
+    autoplay: true,
+    speed: 4000,
+    responsive: [
+        {
+            breakpoint: 1399,
+            settings: {
+                slidesToShow: 4,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 1200,
+            settings: {
+                slidesToShow: 3,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 992,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+            },
+        },
+        {
+            breakpoint: 576,
+            settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+            },
+        },
+    ],
+};
 
 export const updateInscriptions = (acc, curr) => {
     const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
@@ -31,7 +70,7 @@ export const updateInscriptions = (acc, curr) => {
     return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
 };
 
-const NostrLive = ({ className, space }) => {
+const NostrLive = ({ className, space, type, address }) => {
     const [openOrders, setOpenOrders] = useState([]);
     const addOpenOrder$ = useRef(new Subject());
     const addSubscriptionRef = useRef(null);
@@ -46,6 +85,7 @@ const NostrLive = ({ className, space }) => {
     const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
     const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
+    const isLive = type === "live";
 
     useMemo(() => {
         const filteredUtxos = applyFilters({
@@ -83,14 +123,16 @@ const NostrLive = ({ className, space }) => {
         addSubscriptionRef.current = addOpenOrder$.current
             .pipe(scan(updateInscriptions, openOrders))
             .subscribe(setOpenOrders);
-        orderSubscriptionRef.current = nostrPool.subscribeOrders({ limit: MAX_ONSALE }).subscribe(async (event) => {
-            try {
-                const inscription = await getInscriptionData(event);
-                addNewOpenOrder(inscription);
-            } catch (error) {
-                console.error(error);
-            }
-        });
+        orderSubscriptionRef.current = nostrPool
+            .subscribeOrders({ limit: MAX_ONSALE, type, address })
+            .subscribe(async (event) => {
+                try {
+                    const inscription = await getInscriptionData(event);
+                    addNewOpenOrder(inscription);
+                } catch (error) {
+                    console.error(error);
+                }
+            });
 
         return () => {
             try {
@@ -102,26 +144,42 @@ const NostrLive = ({ className, space }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const getTitle = () => {
+        if (type === "my-bidding") {
+            return "My Auctions";
+        }
+
+        if (type === "bidding") {
+            return "On Auction";
+        }
+
+        return "On Sale";
+    };
+
+    const title = getTitle();
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <SectionTitle className="mb--0" {...{ title: `On Sale` }} isLoading={!utxosReady} />
+                        <SectionTitle className="mb--0 live-title" {...{ title }} isLoading={!utxosReady} />
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <OrdinalFilter
-                            ownedUtxos={openOrders}
-                            setFilteredOwnedUtxos={setFilteredOwnedUtxos}
-                            setActiveSort={setActiveSort}
-                            setSortAsc={setSortAsc}
-                            activeSort={activeSort}
-                            sortAsc={sortAsc}
-                            setUtxosType={setUtxosType}
-                            utxosOptions={defaultUtxosTypes}
-                            utxosType={utxosType}
-                        />
-                    </div>
+
+                    {openOrders.length > 0 && (
+                        <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+                            <OrdinalFilter
+                                ownedUtxos={openOrders}
+                                setFilteredOwnedUtxos={setFilteredOwnedUtxos}
+                                setActiveSort={setActiveSort}
+                                setSortAsc={setSortAsc}
+                                activeSort={activeSort}
+                                sortAsc={sortAsc}
+                                setUtxosType={setUtxosType}
+                                utxosOptions={defaultUtxosTypes}
+                                utxosType={utxosType}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="row g-5">
@@ -153,6 +211,16 @@ const NostrLive = ({ className, space }) => {
                             )}
                         </>
                     )}
+
+                    {(!utxosReady || openOrders.length === 0) && (
+                        <Slider options={SliderOptions} className="slick-gutter-15">
+                            {[...Array(5)].map((_, index) => (
+                                <SliderItem key={index} className="ordinal-slide">
+                                    <OrdinalCard overlay />
+                                </SliderItem>
+                            ))}
+                        </Slider>
+                    )}
                 </div>
             </div>
         </div>
@@ -162,10 +230,13 @@ const NostrLive = ({ className, space }) => {
 NostrLive.propTypes = {
     className: PropTypes.string,
     space: PropTypes.oneOf([1, 2]),
+    type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
+    address: PropTypes.string,
 };
 
 NostrLive.defaultProps = {
     space: 1,
+    type: "live",
 };
 
 export default NostrLive;

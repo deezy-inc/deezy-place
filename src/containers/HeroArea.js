@@ -6,7 +6,7 @@ import ConnectWallet from "@components/modals/connect-wallet";
 import { useWallet } from "@context/wallet-context";
 
 const HeroArea = ({ data }) => {
-    const { onShowConnectModal } = useWallet();
+    const { onShowConnectModal, nostrAddress } = useWallet();
 
     return (
         <div className="slider-one rn-section-gapTop">
@@ -35,18 +35,20 @@ const HeroArea = ({ data }) => {
                             </p>
                         ))}
 
-                        <div className="button-group rn-icon-list user-account">
-                            <Button
-                                // data-sal-delay={400 + 1 * 100}
-                                // data-sal="slide-up"
-                                // data-sal-duration="400"
-                                onClick={onShowConnectModal}
-                            >
-                                Connect Wallet
-                            </Button>
+                        {!nostrAddress && (
+                            <div className="button-group rn-icon-list user-account">
+                                <Button
+                                    // data-sal-delay={400 + 1 * 100}
+                                    // data-sal="slide-up"
+                                    // data-sal-duration="400"
+                                    onClick={onShowConnectModal}
+                                >
+                                    Connect Wallet
+                                </Button>
 
-                            <ConnectWallet />
-                        </div>
+                                <ConnectWallet />
+                            </div>
+                        )}
                     </div>
                     <div className="col-lg-5 col-md-6 col-sm-12 offset-lg-1">
                         {data?.images?.[0]?.src && (

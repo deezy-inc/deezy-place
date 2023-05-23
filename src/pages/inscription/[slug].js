@@ -9,6 +9,7 @@ import ProductDetailsArea from "@containers/product-details";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
+import { TailSpin } from "react-loading-icons";
 
 const Inscription = () => {
     const walletState = useWalletState();
@@ -60,7 +61,11 @@ const Inscription = () => {
             <Wrapper>
                 <SEO pageTitle="Inscription details" />
                 <Header ref={elementRef} />
-                <main id="main-content" style={{ paddingTop: headerHeight }}>
+                <main
+                    id="main-content"
+                    style={{ paddingTop: headerHeight }}
+                    className="d-flex align-items-center justify-content-center"
+                >
                     {inscription && (
                         <ProductDetailsArea
                             inscription={inscription}
@@ -68,6 +73,11 @@ const Inscription = () => {
                             nostr={nostrData}
                             auction={auctionData}
                         />
+                    )}
+                    {!inscription && (
+                        <div className="text-center" style={{ padding: "80px" }}>
+                            <TailSpin stroke="#fec823" speed={0.75} />
+                        </div>
                     )}
                 </main>
 

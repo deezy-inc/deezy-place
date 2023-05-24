@@ -166,7 +166,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
-                                        {!isOwner && nostr && nostr.value && !isUtxoSpent && (
+                                        {/* {!isOwner && nostr && nostr.value && !isUtxoSpent && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -177,7 +177,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                                     <span>Buy with bitcoin</span>
                                                 </div>
                                             </button>
-                                        )}
+                                        )} */}
 
                                         {!isOwner && nostr && nostr.value && !isUtxoSpent && (
                                             <button

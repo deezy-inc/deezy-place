@@ -9,7 +9,8 @@ import ProductDetailsArea from "@containers/product-details";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
-import { TailSpin } from "react-loading-icons";
+import "react-loading-skeleton/dist/skeleton.css";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 const Inscription = () => {
     const walletState = useWalletState();
@@ -74,9 +75,12 @@ const Inscription = () => {
                             auction={auctionData}
                         />
                     )}
+
                     {!inscription && (
-                        <div className="text-center" style={{ padding: "80px" }}>
-                            <TailSpin stroke="#fec823" speed={0.75} />
+                        <div className="inscription-area container">
+                            <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
+                                <Skeleton count={20} />
+                            </SkeletonTheme>
                         </div>
                     )}
                 </main>

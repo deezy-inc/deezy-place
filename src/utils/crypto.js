@@ -117,13 +117,8 @@ export const parseOutpoint = (outpoint) => {
         .reverse()
         .join("");
 
-    const buf = new ArrayBuffer(4);
-    const view = new DataView(buf);
-    rawVout.match(/../g).forEach((b, i) => {
-        view.setUint8(i, parseInt(b, 16));
-    });
+    const vout = parseInt(rawVout, 16);
 
-    const vout = view.getInt32(0, true);
     return [txid, vout];
 };
 

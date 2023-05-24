@@ -9,32 +9,41 @@ import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 // TODO: Implement also some type of server side caching.
 const getOutpointFromCache = async (inscriptionId) => {
-    const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
-    const cachedOutpoint = await LocalStorage.get(key);
-    if (cachedOutpoint) {
-        return cachedOutpoint;
+    try {
+        const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
+        const cachedOutpoint = await LocalStorage.get(key);
+        if (cachedOutpoint) {
+            return cachedOutpoint;
+        }
+
+        const result = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
+        const [txid, vout] = parseOutpoint(result.data.inscription.outpoint);
+        const utxoKey = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${txid}:${vout}`;
+
+        await LocalStorage.set(key, result.data);
+        await LocalStorage.set(utxoKey, result.data);
+
+        return result.data;
+    } catch (e) {
+        console.error(e);
     }
 
-    const result = await axios.get(`${TURBO_API}/inscription/${inscriptionId}/outpoint`);
-    const [txid, vout] = parseOutpoint(result.data.inscription.outpoint);
-    const utxoKey = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${txid}:${vout}`;
-
-    await LocalStorage.set(key, result.data);
-    await LocalStorage.set(utxoKey, result.data);
-
-    return result.data;
+    return undefined;
 };
 
 const getInscriptionsByUtxoKey = async (inscriptions) => {
     const inscriptionsByUtxoKey = {};
     const batchPromises = [];
     const populateInscriptionsMap = async (ins) => {
-        const {
-            inscription: { outpoint },
-        } = await getOutpointFromCache(ins.id);
-        const [txid, vout] = parseOutpoint(outpoint);
+        const outpointData = await getOutpointFromCache(ins.id);
+        if (outpointData) {
+            const {
+                inscription: { outpoint },
+            } = outpointData;
+            const [txid, vout] = parseOutpoint(outpoint);
 
-        inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+            inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+        }
     };
 
     for (const ins of inscriptions) {

@@ -12,10 +12,10 @@ import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { createAuction } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import DatePicker from "react-datepicker";
 import { useMemo } from "react";
+import { duration } from "@utils/time";
 
 import {
     generatePSBTListingInscriptionForSale,
@@ -24,38 +24,79 @@ import {
     fetchBitcoinPrice,
     TESTNET,
     satsToFormattedDollarString,
+    createAuction,
+    fetchBlockAverage,
 } from "@services/nosft";
+
 bitcoin.initEccLib(ecc);
 
-const RoundOptions = ({ selectedOption, onChange }) => {
+const _TIME_OPTIONS_IDS = {
+    Every10Minutes: "Every10Minutes",
+    EveryHour: "EveryHour",
+    EveryDay: "EveryDay",
+    Custom: "Custom",
+};
+
+const _TIME_OPTIONS_LABELS = {
+    [_TIME_OPTIONS_IDS.Every10Minutes]: "Every 10 minutes",
+    [_TIME_OPTIONS_IDS.EveryHour]: "Every hour",
+    [_TIME_OPTIONS_IDS.EveryDay]: "Each day",
+    [_TIME_OPTIONS_IDS.Custom]: "Custom",
+};
+
+const _TIME_OPTIONS_VALUES = {
+    [_TIME_OPTIONS_IDS.Every10Minutes]: duration.minutes(10),
+    [_TIME_OPTIONS_IDS.EveryHour]: duration.hours(1),
+    [_TIME_OPTIONS_IDS.EveryDay]: duration.days(1),
+    [_TIME_OPTIONS_IDS.Custom]: duration.days(1),
+};
+
+const RoundOptions = ({ selectedOption, onChange, blockAverage }) => {
     const handleCheckboxChange = (option) => {
         onChange(option);
+    };
+
+    const getLabel = (id) => {
+        if (!blockAverage) {
+            return _TIME_OPTIONS_LABELS[id];
+        }
+
+        const blocks = _TIME_OPTIONS_VALUES[id] / blockAverage;
+        return `${_TIME_OPTIONS_LABELS[id]} ~ ${Math.round(blocks)} blocks`;
     };
 
     return (
         <div className="decrease-interval-options">
             <Form.Check
                 type="radio"
-                id="eachMinute"
-                label="Each minute"
-                checked={selectedOption === "Each minute"}
-                onChange={() => handleCheckboxChange("Each minute")}
+                id={_TIME_OPTIONS_IDS.Every10Minutes}
+                label={getLabel(_TIME_OPTIONS_IDS.Every10Minutes)}
+                checked={selectedOption === _TIME_OPTIONS_IDS.Every10Minutes}
+                onChange={() => handleCheckboxChange(_TIME_OPTIONS_IDS.Every10Minutes)}
                 className="d-inline"
             />
             <Form.Check
                 type="radio"
-                id="eachHour"
-                label="Each hour"
-                checked={selectedOption === "Each hour"}
-                onChange={() => handleCheckboxChange("Each hour")}
+                id={_TIME_OPTIONS_IDS.EveryHour}
+                label={getLabel(_TIME_OPTIONS_IDS.EveryHour)}
+                checked={selectedOption === _TIME_OPTIONS_IDS.EveryHour}
+                onChange={() => handleCheckboxChange(_TIME_OPTIONS_IDS.EveryHour)}
                 className="d-inline"
             />
             <Form.Check
                 type="radio"
-                id="eachDay"
-                label="Each day"
-                checked={selectedOption === "Each day"}
-                onChange={() => handleCheckboxChange("Each day")}
+                id={_TIME_OPTIONS_IDS.EveryDay}
+                label={getLabel(_TIME_OPTIONS_IDS.EveryDay)}
+                checked={selectedOption === _TIME_OPTIONS_IDS.EveryDay}
+                onChange={() => handleCheckboxChange(_TIME_OPTIONS_IDS.EveryDay)}
+                className="d-inline"
+            />
+            <Form.Check
+                type="radio"
+                id={_TIME_OPTIONS_IDS.Custom}
+                label={_TIME_OPTIONS_LABELS[_TIME_OPTIONS_IDS.Custom]}
+                checked={selectedOption === _TIME_OPTIONS_IDS.Custom}
+                onChange={() => handleCheckboxChange(_TIME_OPTIONS_IDS.Custom)}
                 className="d-inline"
             />
         </div>
@@ -77,31 +118,15 @@ function calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption,
     };
 
     pushResult(time, remainingValue, 0); // Start by pushing the initial price
-
-    switch (selectedOption) {
-        case "Each minute":
-            while (remainingValue > reservePrice) {
-                remainingValue -= decreaseAmount;
-                time += 60; // Increase time by 60 seconds
-                pushResult(time, remainingValue);
-            }
-            break;
-        case "Each hour":
-            while (remainingValue > reservePrice) {
-                remainingValue -= decreaseAmount;
-                time += 3600; // Increase time by 3600 seconds
-                pushResult(time, remainingValue);
-            }
-            break;
-        case "Each day":
-            while (remainingValue > reservePrice) {
-                remainingValue -= decreaseAmount;
-                time += 86400; // Increase time by 86400 seconds
-                pushResult(time, remainingValue);
-            }
-            break;
-        default:
-            console.log("Invalid option");
+    if (!_TIME_OPTIONS_VALUES[selectedOption]) {
+        console.log("Invalid option");
+    } else {
+        const timeStep = _TIME_OPTIONS_VALUES[selectedOption];
+        while (remainingValue > reservePrice) {
+            remainingValue -= decreaseAmount;
+            time += timeStep;
+            pushResult(time, remainingValue);
+        }
     }
 
     return results;
@@ -122,8 +147,10 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
     const [step, setStep] = useState(0);
     const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 60 * 1000)); // Add 5 minutes to the start date
-    const [selectedOption, setSelectedOption] = useState("Each minute");
+    const [selectedOption, setSelectedOption] = useState(_TIME_OPTIONS_IDS.Every10Minutes);
     const [signedEvents, setSignedEvents] = useState(0);
+    const [blockAverage, setBlockAverage] = useState(0);
+    const [blocksDecrease, setBlocksDecrease] = useState(144);
 
     const schedule = useMemo(() => {
         return calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate });
@@ -134,16 +161,12 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     });
 
     const timeBetweenEachDecrease = useMemo(() => {
-        switch (selectedOption) {
-            case "10 min":
-                return 60 * 10;
-            case "1 hour":
-                return 3600;
-            case "3 hours":
-                return 3600 * 3;
-            default:
-                return 3600;
+        if (_TIME_OPTIONS_VALUES[selectedOption]) {
+            return _TIME_OPTIONS_VALUES[selectedOption];
         }
+
+        // By default uses one day
+        return duration.days(1);
     }, [selectedOption]);
 
     const handleOptionChange = (option) => {
@@ -156,8 +179,16 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             setBitcoinPrice(btcPrice);
         };
 
+        const getBlockAverage = async () => {
+            const blockAverage = await fetchBlockAverage();
+            if (blockAverage) {
+                setBlockAverage(Number(blockAverage));
+            }
+        };
+
         setDestinationBtcAddress(nostrAddress);
 
+        getBlockAverage();
         getPrice();
     }, [nostrAddress]);
 
@@ -278,6 +309,19 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             return;
         }
         setDestinationBtcAddress(newaddr);
+    };
+
+    const customTimeOnChange = (evt) => {
+        const newValue = evt.target.value;
+        if (!newValue) {
+            setBlocksDecrease(144);
+            return;
+        }
+
+        _TIME_OPTIONS_VALUES.Custom = Number(newValue) * blockAverage;
+        setBlocksDecrease(Number(newValue));
+
+        handleOptionChange(_TIME_OPTIONS_VALUES.Custom);
     };
 
     const action = step === 0 || step === 1 ? "Next" : "Create Auction";
@@ -431,8 +475,27 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
 
                                     <InputGroup className="mb-lg-5 schedule-options">
                                         <Form.Label>How long between each decrease?</Form.Label>
-                                        <RoundOptions selectedOption={selectedOption} onChange={handleOptionChange} />
+                                        <RoundOptions
+                                            selectedOption={selectedOption}
+                                            onChange={handleOptionChange}
+                                            blockAverage={blockAverage}
+                                        />
                                     </InputGroup>
+
+                                    {selectedOption === _TIME_OPTIONS_IDS.Custom && (
+                                        <InputGroup className="mb-lg-5 omg">
+                                            <Form.Label>Enter amount of blocks</Form.Label>
+                                            <Form.Control
+                                                defaultValue={blocksDecrease}
+                                                onChange={customTimeOnChange}
+                                                placeholder="How many blocks between each decrease?"
+                                                aria-label="How many blocks between each decrease?"
+                                                aria-describedby="basic-addon2"
+                                                type="number"
+                                                autoFocus
+                                            />
+                                        </InputGroup>
+                                    )}
                                 </div>
                             </div>
 
@@ -523,7 +586,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                         <Button
                             size="medium"
                             fullwidth
-                            disabled={!destinationBtcAddress}
+                            disabled={!destinationBtcAddress || schedule[0].scheduledTime * 1000 < Date.now()}
                             autoFocus
                             className={isOnSale ? "btn-loading" : ""}
                             onClick={submit}

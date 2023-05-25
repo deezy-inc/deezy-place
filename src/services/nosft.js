@@ -49,6 +49,7 @@ const {
     calculateFee,
     getTxHexById,
     tweakSigner,
+    fetchBlockAverage,
 } = nosft.crypto;
 
 const { config } = nosft;
@@ -99,6 +100,7 @@ export {
     calculateFee,
     getTxHexById,
     tweakSigner,
+    fetchBlockAverage,
 
     // utxo
     doesUtxoContainInscription,

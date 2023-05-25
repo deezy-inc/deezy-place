@@ -271,30 +271,38 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
         }
 
         setOrdinalValue(Number(newValue));
+        updateDecreaseAmount({ highValue: Number(newValue) });
     };
 
     const minPriceOnChange = (evt) => {
-        const newValue = evt.target.value;
+        const newValue = Number(evt.target.value);
         if (!newValue) {
             setIsLowerPriceInvalid(false);
             setReservePrice(0);
             return;
         }
 
-        if (reservePrice > ordinalValue) {
+        if (newValue > ordinalValue) {
             setIsLowerPriceInvalid(true);
             return;
         }
 
         setIsLowerPriceInvalid(false);
-        setReservePrice(Number(newValue));
+        setReservePrice(newValue);
+        updateDecreaseAmount({ lowValue: Number(newValue) });
     };
 
-    const feeRateOnChange = (evt) => {
+    const priceDecreaseOnChange = (evt) => {
         const decreases = Number(evt.target.value);
         setPriceDecreases(decreases);
         // Calculate the decrease amount between initial and end value
-        const decreaseAmount = (Number(ordinalValue) - Number(reservePrice)) / decreases;
+        updateDecreaseAmount();
+    };
+
+    const updateDecreaseAmount = ({ highValue, lowValue } = {}) => {
+        const high = highValue || ordinalValue;
+        const low = lowValue || reservePrice;
+        const decreaseAmount = (Number(high) - Number(low)) / priceDecreases;
         setDecreaseAmount(decreaseAmount);
     };
 
@@ -421,7 +429,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                             min="1"
                                             max="10"
                                             defaultValue={priceDecreases}
-                                            onChange={feeRateOnChange}
+                                            onChange={priceDecreaseOnChange}
                                         />
                                     </InputGroup>
                                 </div>

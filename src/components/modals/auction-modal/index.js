@@ -235,7 +235,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
             await createAuction(dutchAuction);
             toast.info(`Order successfully scheduled to be published to Nostr!`);
         } catch (e) {
-            toast.error(e.message);
+            toast.error(e.response.data.message || e.message);
         }
 
         setIsOnSale(false);

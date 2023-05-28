@@ -3,7 +3,7 @@ import * as ecc from "tiny-secp256k1";
 
 import { ethers } from "ethers";
 import BIP32Factory from "bip32";
-import { DEFAULT_DERIV_PATH } from "@lib/constants.config";
+import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
 import { toXOnly } from "@utils/crypto";
 
 bitcoin.initEccLib(ecc);
@@ -35,6 +35,7 @@ export const connectWallet = async (metamask) => {
         const taprootChild = root.derivePath(DEFAULT_DERIV_PATH);
         const taprootAddress = bitcoin.payments.p2tr({
             internalPubkey: toXOnly(taprootChild.publicKey),
+            network: NETWORK,
         });
         return taprootAddress.pubkey.toString("hex");
     }

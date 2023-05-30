@@ -7,22 +7,31 @@ const CountdownTimer = ({ date }) => {
         if (completed) return <div>Completed</div>;
         return (
             <div className="countdown">
-                <div className="countdown-container days">
-                    <span className="countdown-value">{days}</span>
-                    <span className="countdown-heading">Days</span>
-                </div>
-                <div className="countdown-container hours">
-                    <span className="countdown-value">{zeroPad(hours)}</span>
-                    <span className="countdown-heading">Hours</span>
-                </div>
-                <div className="countdown-container minutes">
-                    <span className="countdown-value">{zeroPad(minutes)}</span>
-                    <span className="countdown-heading">Minutes</span>
-                </div>
-                <div className="countdown-container seconds">
-                    <span className="countdown-value">{zeroPad(seconds)}</span>
-                    <span className="countdown-heading">Seconds</span>
-                </div>
+                {days > 0 && (
+                    <div className="countdown-container days">
+                        <span className="countdown-value">{days}</span>
+                        <span className="countdown-heading">Days</span>
+                    </div>
+                )}
+                {hours > 0 && (
+                    <div className="countdown-container days">
+                        <span className="countdown-value">{days}</span>
+                        <span className="countdown-heading">Days</span>
+                    </div>
+                )}
+                {minutes > 0 && (
+                    <div className="countdown-container minutes">
+                        <span className="countdown-value">{zeroPad(minutes)}</span>
+                        <span className="countdown-heading">Minutes</span>
+                    </div>
+                )}
+
+                {seconds && (
+                    <div className="countdown-container seconds">
+                        <span className="countdown-value">{zeroPad(seconds)}</span>
+                        <span className="countdown-heading">Seconds</span>
+                    </div>
+                )}
             </div>
         );
     };

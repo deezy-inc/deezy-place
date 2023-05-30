@@ -167,7 +167,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             <div className="price-box">
                                                 <p className="title">Next price</p>
                                                 <p className="price">
-                                                    {auction.next.price}{" "}
+                                                    {auction.next.price} Sats{" "}
                                                     <span>
                                                         ${satsToFormattedDollarString(auction.next.price, bitcoinPrice)}
                                                     </span>

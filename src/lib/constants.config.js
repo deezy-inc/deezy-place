@@ -3,6 +3,7 @@ import * as bitcoin from "bitcoinjs-lib";
 
 // export const NOSTR_RELAY_URL = "ws://localhost:7006";
 export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
+export const NOSTR_DEEZY_RELAY_URL = "wss://relay.deezy.io";
 
 export const NOSTR_KIND_INSCRIPTION = 802;
 export const INSCRIPTION_SEARCH_DEPTH = 5;
@@ -12,7 +13,7 @@ export const SENDS_ENABLED = true;
 export const TESTNET = false;
 export const ASSUMED_TX_BYTES = 111;
 export const ORDINALS_EXPLORER_URL = "https://ordinals-api.deezy.io";
-export const RELAYS = [NOSTR_RELAY_URL];
+export const RELAYS = [NOSTR_RELAY_URL, NOSTR_DEEZY_RELAY_URL];
 export const MAX_LIMIT_ONSALE = 15;
 export const MAX_FETCH_LIMIT = 200;
 export const MAX_ONSALE = 15;

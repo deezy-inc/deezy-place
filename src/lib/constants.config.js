@@ -41,3 +41,10 @@ export const HIDE_TEXT_UTXO_OPTION = "hide .txt";
 export const OTHER_UTXO_OPTION = "other";
 
 export const DEFAULT_UTXO_OPTIONS = [HIDE_TEXT_UTXO_OPTION, ...DEFAULT_UTXO_TYPES, OTHER_UTXO_OPTION];
+
+export const RELAYS = [
+    "wss://relay.deezy.io",
+    "wss://relay.damus.io",
+    "wss://nostr-pub.wellorder.net",
+    "wss://nostr.bitcoiner.social",
+];

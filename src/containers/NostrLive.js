@@ -6,7 +6,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription, isTextInscription } from "@utils/inscriptions";
+import { getInscription, isTextInscription, shouldReplaceInscription } from "@utils/inscriptions";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@services/nostr-relay";
 import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
@@ -25,6 +25,20 @@ const collectionAuthor = [
         },
     },
 ];
+
+export const updateInscriptions = (acc, curr) => {
+    const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
+
+    if (existingIndex !== -1) {
+        if (shouldReplaceInscription(acc[existingIndex], curr)) {
+            acc[existingIndex] = curr;
+        }
+    } else {
+        acc.push(curr);
+    }
+
+    return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+};
 
 const SliderOptions = {
     infinite: true,
@@ -66,16 +80,13 @@ const SliderOptions = {
 
 const useOpenOrdersSubscription = (observable, setter, initialData) => {
     useEffect(() => {
-        const subscription = observable
-            .pipe(
-                scan(
-                    (acc, curr) => [...acc, curr].sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE),
-                    initialData
-                )
-            )
-            .subscribe(setter);
-
-        return () => subscription.unsubscribe();
+        const subscription = observable.pipe(scan(updateInscriptions, initialData)).subscribe(setter);
+        return () => {
+            try {
+                subscription.unsubscribe();
+                // eslint-disable-next-line no-empty
+            } catch (error) {}
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 };

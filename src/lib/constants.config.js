@@ -1,9 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 // import * as env from "env-var"; // TODO: enable env vars
 
-// export const NOSTR_RELAY_URL = "ws://localhost:7006";
-export const NOSTR_RELAY_URL = "wss://nostr.openordex.org";
-
 export const NOSTR_KIND_INSCRIPTION = 802;
 export const INSCRIPTION_SEARCH_DEPTH = 5;
 export const GITHUB_URL = "https://github.cosm/dannydeezy/nosft";
@@ -12,7 +9,12 @@ export const SENDS_ENABLED = true;
 export const TESTNET = false;
 export const ASSUMED_TX_BYTES = 111;
 export const ORDINALS_EXPLORER_URL = "https://ordinals-api.deezy.io";
-export const RELAYS = [NOSTR_RELAY_URL];
+export const RELAYS = [
+    "wss://relay.deezy.io",
+    "wss://relay.damus.io",
+    "wss://nostr-pub.wellorder.net",
+    "wss://nostr.bitcoiner.social",
+];
 export const MAX_LIMIT_ONSALE = 15;
 export const MAX_FETCH_LIMIT = 200;
 export const MAX_ONSALE = 15;

@@ -180,7 +180,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                                 </InputGroup>
 
                                 <InputGroup className="mb-lg-5 notDummy">
-                                    <Form.Label>Refund LN Address</Form.Label>
+                                    <Form.Label>Refund Lightning Address</Form.Label>
                                     <Form.Control
                                         defaultValue={refundLightningAddress}
                                         onChange={onChangeLNAddress}

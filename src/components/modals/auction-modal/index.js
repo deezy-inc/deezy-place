@@ -227,7 +227,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                 initialPrice: ordinalValue,
                 reservePrice,
                 metadata: newSchedule,
-                nostrAddress,
+                btcAddress: nostrAddress,
                 output: utxo.output,
                 inscriptionId: utxo.inscriptionId,
             };

@@ -146,7 +146,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [priceDecreases, setPriceDecreases] = useState(1);
     const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
     const [step, setStep] = useState(0);
-    const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 60 * 1000)); // Add 5 minutes to the start date
+    const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 5 * 1000)); // Add 5 minutes to the start date
     const [selectedOption, setSelectedOption] = useState(_TIME_OPTIONS_IDS.Every10Minutes);
     const [signedEvents, setSignedEvents] = useState(0);
     const [blockAverage, setBlockAverage] = useState(0);
@@ -470,6 +470,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                         <DatePicker
                                             selected={startDate}
                                             showTimeSelect
+                                            timeInputLabel="Time:"
+                                            showTimeInput
                                             timeFormat="HH:mm"
                                             dateFormat="MMMM d, yyyy h:mm aa"
                                             onChange={(date) => setStartDate(date)}
@@ -478,6 +480,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                             minTime={new Date()}
                                             maxTime={new Date().setHours(23, 59)}
                                             injectTimes={[startDate]}
+                                            timeIntervals={5}
                                         />
                                     </InputGroup>
 

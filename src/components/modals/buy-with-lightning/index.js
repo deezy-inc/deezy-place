@@ -22,14 +22,14 @@ import { buyOrdinalWithLightning } from "@services/deezy";
 
 bitcoin.initEccLib(ecc);
 
-const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
+const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     const { nostrAddress } = useWallet();
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
     const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
-    const [refundLightingAddress, setRefundLightingAddress] = useState("");
+    const [refundLightningAddress, setRefundLightningAddress] = useState("");
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [isOnBuy, setIsOnBuy] = useState(false);
     const [bitcoinPrice, setBitcoinPrice] = useState();
@@ -75,7 +75,7 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             return;
         }
 
-        setRefundLightingAddress(newaddr);
+        setRefundLightningAddress(newaddr);
     };
 
     useEffect(() => {
@@ -87,7 +87,7 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         //         amount: 1000,
         //         defaultMemo: "This invoice will be used to create the receive address for the payment.",
         //     });
-        //     setRefundLightingAddress(paymentRequest);
+        //     setRefundLightningAddress(paymentRequest);
         // };
 
         // getLnAddress();
@@ -109,7 +109,7 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 psbt: sellerSignedPsbt.toBase64(),
                 receive_address: destinationBtcAddress,
                 on_chain_fee_rate: sendFeeRate,
-                refund_lightning_address: refundLightingAddress,
+                refund_lightning_address: refundLightningAddress,
             });
 
             if (window.webln) {
@@ -182,17 +182,17 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                                 <InputGroup className="mb-lg-5 notDummy">
                                     <Form.Label>Refund LN Address</Form.Label>
                                     <Form.Control
-                                        defaultValue={refundLightingAddress}
+                                        defaultValue={refundLightningAddress}
                                         onChange={onChangeLNAddress}
-                                        placeholder="Refund lighting address"
-                                        aria-label="Refund lighting address"
+                                        placeholder="pepe@deezy.io"
+                                        aria-label="Refund lightning address"
                                         aria-describedby="basic-addon2"
                                         isInvalid={!isLNInputAddressValid}
                                     />
 
                                     <Form.Control.Feedback type="invalid">
                                         <br />
-                                        That is not a valid Lighting Address
+                                        That is not a valid Lightning Address
                                     </Form.Control.Feedback>
                                 </InputGroup>
 
@@ -211,14 +211,14 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                         <div className="bid-content-mid">
                             <div className="bid-content-left">
                                 {Boolean(destinationBtcAddress) && <span>Payment Receive Address</span>}
-                                {Boolean(refundLightingAddress) && <span>Refund Lighting Address</span>}
+                                {Boolean(refundLightningAddress) && <span>Refund Lightning Address</span>}
 
                                 {Boolean(nostr.value) && <span>Price</span>}
                                 <span>Fee rate</span>
                             </div>
                             <div className="bid-constent-right">
                                 {Boolean(destinationBtcAddress) && <span>{shortenStr(destinationBtcAddress)}</span>}
-                                {Boolean(refundLightingAddress) && <span>{shortenStr(refundLightingAddress)}</span>}
+                                {Boolean(refundLightningAddress) && <span>{shortenStr(refundLightningAddress)}</span>}
                                 {Boolean(nostr.value) && bitcoinPrice && (
                                     <span>{`$${satsToFormattedDollarString(nostr.value, bitcoinPrice)}`}</span>
                                 )}
@@ -231,7 +231,7 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                         <Button
                             size="medium"
                             fullwidth
-                            disabled={!destinationBtcAddress || !refundLightingAddress}
+                            disabled={!destinationBtcAddress || !refundLightningAddress}
                             autoFocus
                             className={isOnBuy ? "btn-loading" : ""}
                             onClick={submit}
@@ -263,11 +263,11 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     );
 };
 
-BuyLightingModal.propTypes = {
+BuyLightningModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
     onSale: PropTypes.func,
     nostr: NostrEvenType,
 };
-export default BuyLightingModal;
+export default BuyLightningModal;

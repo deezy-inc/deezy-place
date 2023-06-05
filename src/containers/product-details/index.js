@@ -7,7 +7,7 @@ import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import BuyModal from "@components/modals/buy-modal";
-import BuyLightingModal from "@components/modals/buy-with-lighting";
+import BuyLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
@@ -18,7 +18,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
-    const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
+    const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
     const [isUtxoSpent, setIsSpent] = useState(false);
 
     const handleSendModal = () => {
@@ -33,8 +33,8 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
         setShowBuyModal((prev) => !prev);
     };
 
-    const handleBuyLightingModal = () => {
-        setShowBuyLigthingModal((prev) => !prev);
+    const handleBuyLightningModal = () => {
+        setShowBuyLightningModal((prev) => !prev);
     };
 
     const [isOwner, setIsOwner] = useState(false);
@@ -183,11 +183,11 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
-                                                onClick={handleBuyLightingModal}
+                                                onClick={handleBuyLightningModal}
                                             >
                                                 <div className="action">
                                                     <i className="feather-zap" />
-                                                    <span>Buy with lighting</span>
+                                                    <span>Buy with lightning</span>
                                                 </div>
                                             </button>
                                         )}
@@ -235,10 +235,10 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                 />
             )}
 
-            {showBuyLigthingModal && (
-                <BuyLightingModal
-                    show={showBuyLigthingModal}
-                    handleModal={handleBuyLightingModal}
+            {showBuyLightningModal && (
+                <BuyLightningModal
+                    show={showBuyLightningModal}
+                    handleModal={handleBuyLightningModal}
                     utxo={inscription}
                     onSale={onSend}
                     nostr={nostr}

@@ -2,7 +2,7 @@
 
 bitcoin web wallet connected to your nostr key, designed to hold ordinal inscription NFTs
 
-live at [nosft.xyz](https://nosft.xyz)
+live at [deezy.place](https://deezy.place)
 
 Use node > 17
 

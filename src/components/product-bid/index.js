@@ -7,7 +7,7 @@ import SendModal from "@components/modals/send-modal";
 import { useWallet } from "@context/wallet-context";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-    const { nostrAddress, isExperimental } = useWallet();
+    const { nostrOrdinalsAddress, isExperimental } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -60,7 +60,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
                 <span className="minted">{` ${minted}`}</span>
             </div>
 
-            {Boolean(nostrAddress) && renderMainAction(type)}
+            {Boolean(nostrOrdinalsAddress) && renderMainAction(type)}
 
             {showSendModal && (
                 <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />

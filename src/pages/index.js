@@ -21,7 +21,7 @@ export async function getStaticProps() {
 
 const App = () => {
     const walletState = useWalletState();
-    const { nostrPublicKey, nostrAddress } = walletState;
+    const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
     const elementRef = useRef(null);
     const headerHeight = useHeaderHeight(elementRef);
 
@@ -33,10 +33,9 @@ const App = () => {
                 <SEO pageTitle="Deezy" />
                 <Header ref={elementRef} />
                 <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}
-
-                    {nostrPublicKey && nostrAddress && <NostrLive />}
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
+                    {!ordinalsPublicKey && <HeroArea data={content["hero-section"]} />}
+                    {ordinalsPublicKey && nostrOrdinalsAddress && <NostrLive />}
+                    {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
                 </main>
 
                 <Footer />

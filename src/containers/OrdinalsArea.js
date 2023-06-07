@@ -15,7 +15,7 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 
 const OrdinalsArea = ({ className, space }) => {
-    const { nostrAddress } = useWallet();
+    const { nostrOrdinalsAddress } = useWallet();
 
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
@@ -30,7 +30,7 @@ const OrdinalsArea = ({ className, space }) => {
     };
 
     const onCopyAddress = () => {
-        navigator.clipboard.writeText(nostrAddress);
+        navigator.clipboard.writeText(nostrOrdinalsAddress);
         toast("Receive Address copied to clipboard!");
     };
 
@@ -50,7 +50,7 @@ const OrdinalsArea = ({ className, space }) => {
     };
 
     useEffect(() => {
-        if (!nostrAddress) {
+        if (!nostrOrdinalsAddress) {
             resetUtxos();
             return;
         }
@@ -61,7 +61,7 @@ const OrdinalsArea = ({ className, space }) => {
             let utxosWithInscriptionData = [];
 
             try {
-                utxosWithInscriptionData = await getInscriptions(nostrAddress);
+                utxosWithInscriptionData = await getInscriptions(nostrOrdinalsAddress);
             } catch (error) {
                 console.error(error);
                 // TODO: handle error
@@ -73,7 +73,7 @@ const OrdinalsArea = ({ className, space }) => {
         };
 
         loadUtxos();
-    }, [refreshHack, nostrAddress]);
+    }, [refreshHack, nostrOrdinalsAddress]);
 
     return (
         <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
@@ -93,7 +93,7 @@ const OrdinalsArea = ({ className, space }) => {
                             />
                             <button type="button" className="btn-transparent" onClick={onCopyAddress}>
                                 {" "}
-                                {shortenStr(nostrAddress)}
+                                {shortenStr(nostrOrdinalsAddress)}
                             </button>
                         </span>
                     </div>

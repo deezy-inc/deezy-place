@@ -14,7 +14,7 @@ import { NostrEvenType } from "@utils/types";
 import { isSpent } from "@utils/utxos";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
-    const { nostrAddress, nostrPublicKey } = useWallet();
+    const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
@@ -40,14 +40,14 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
-        setIsOwner(nostrAddress && inscription.owner && nostrAddress === inscription.owner);
+        setIsOwner(nostrOrdinalsAddress && inscription.owner && nostrOrdinalsAddress === inscription.owner);
         const checkIfIsSpent = async () => {
             const isSpentUtxo = await isSpent(inscription);
             setIsSpent(isSpentUtxo.spent);
         };
 
         checkIfIsSpent();
-    }, [nostrAddress, inscription]);
+    }, [nostrOrdinalsAddress, inscription]);
 
     const minted = new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
 
@@ -135,7 +135,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                 </div>
                             </div>
 
-                            {nostrPublicKey && nostrAddress && isActionsAvailable() && (
+                            {ordinalsPublicKey && nostrOrdinalsAddress && isActionsAvailable() && (
                                 <div className="rn-pd-sm-property-wrapper">
                                     <h6 className="pd-property-title">Actions</h6>
 

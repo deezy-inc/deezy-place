@@ -31,3 +31,7 @@
 @import "elements/product-details";
 @import "elements/tx-success";
 @import "elements/sign-message";
+
+.nostrAddress {
+  color: var(--color-primary) !important;
+}

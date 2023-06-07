@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { useWallet } from "@context/wallet-context";
 
 const Sign = ({ className, space }) => {
-    const { nostrPublicKey, onShowConnectModal } = useWallet();
+    const { ordinalsPublicKey, onShowConnectModal } = useWallet();
 
     const [signedMessage, setSignedMessage] = useState(null);
     const [message, setMessage] = useState(null);
@@ -35,10 +35,10 @@ const Sign = ({ className, space }) => {
     };
 
     useEffect(() => {
-        if (nostrPublicKey && message && !signedMessage) {
+        if (ordinalsPublicKey && message && !signedMessage) {
             sign();
         }
-    }, [nostrPublicKey]);
+    }, [ordinalsPublicKey]);
 
     const messageOnChange = (evt) => {
         setMessage(evt.target.value);
@@ -47,7 +47,7 @@ const Sign = ({ className, space }) => {
     };
 
     const submit = async () => {
-        if (!nostrPublicKey) {
+        if (!ordinalsPublicKey) {
             onShowConnectModal();
             return;
         }
@@ -116,7 +116,7 @@ const Sign = ({ className, space }) => {
                     </div>
                 </div>
 
-                {!nostrPublicKey && <ConnectWallet />}
+                {!ordinalsPublicKey && <ConnectWallet />}
             </div>
         </div>
     );

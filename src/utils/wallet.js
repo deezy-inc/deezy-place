@@ -1,9 +1,10 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
+import { getAddress } from "sats-connect";
 
 import { ethers } from "ethers";
 import BIP32Factory from "bip32";
-import { DEFAULT_DERIV_PATH, NETWORK } from "@lib/constants.config";
+import { DEFAULT_DERIV_PATH, NETWORK, TESTNET } from "@lib/constants.config";
 import { toXOnly } from "@utils/crypto";
 
 bitcoin.initEccLib(ecc);
@@ -18,8 +19,11 @@ export const TAPROOT_MESSAGE = (domain) =>
 // Used to prove ownership of address and associated ordinals
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 
-export const connectWallet = async (metamask) => {
+export const connectWallet = async ({ metamask, xverse }) => {
     const { ethereum } = window;
+    let pubKey = "";
+    let ordinalsAddress = "";
+    let paymentAddress = "";
 
     if (ethereum && metamask) {
         let ethAddress = ethereum.selectedAddress;
@@ -37,7 +41,39 @@ export const connectWallet = async (metamask) => {
             internalPubkey: toXOnly(taprootChild.publicKey),
             network: NETWORK,
         });
-        return taprootAddress.pubkey.toString("hex");
+        return {
+            pubKey: taprootAddress.pubkey.toString("hex"),
+            wallet: "metamask",
+            ordinalsAddress: "",
+            paymentAddress: "",
+        };
+    }
+    if (xverse) {
+        const getAddressOptions = {
+            payload: {
+                purposes: ["ordinals", "payment"],
+                message: "Address for receiving Ordinals",
+                network: {
+                    type: TESTNET ? "Testnet" : "Mainnet",
+                },
+            },
+            onFinish: (response) => {
+                console.log("[xverse]", response);
+                const { publicKey, address: walletOrdinalAddress } = response.addresses.find(
+                    (address) => address.purpose === "ordinals"
+                );
+                pubKey = publicKey.toString("hex");
+                const { address: walletPaymentAddress } = response.addresses.find(
+                    (address) => address.purpose === "payment"
+                );
+                paymentAddress = walletPaymentAddress;
+                ordinalsAddress = walletOrdinalAddress;
+            },
+            onCancel: () => alert("Request canceled."),
+        };
+
+        await getAddress(getAddressOptions);
+        return { pubKey, wallet: "xverse", ordinalsAddress, paymentAddress };
     }
 
     if (window.nostr && window.nostr.enable) {
@@ -49,5 +85,11 @@ export const connectWallet = async (metamask) => {
         );
         return undefined;
     }
-    return window.nostr.getPublicKey();
+    pubKey = await window.nostr.getPublicKey();
+    return {
+        pubKey,
+        wallet: "alby",
+        ordinalsAddress: "",
+        paymentAddress: "",
+    };
 };

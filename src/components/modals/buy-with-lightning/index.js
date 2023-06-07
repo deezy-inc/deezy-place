@@ -23,12 +23,12 @@ import { buyOrdinalWithLightning } from "@services/deezy";
 bitcoin.initEccLib(ecc);
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-    const { nostrAddress } = useWallet();
+    const { nostrOrdinalsAddress } = useWallet();
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
+    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrOrdinalsAddress);
     const [refundLightningAddress, setRefundLightningAddress] = useState("");
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [isOnBuy, setIsOnBuy] = useState(false);
@@ -51,7 +51,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
         fetchFee();
         getPrice();
-    }, [nostrAddress]);
+    }, [nostrOrdinalsAddress]);
 
     const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
@@ -91,8 +91,8 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         // };
 
         // getLnAddress();
-        setDestinationBtcAddress(nostrAddress);
-    }, [nostrAddress]);
+        setDestinationBtcAddress(nostrOrdinalsAddress);
+    }, [nostrOrdinalsAddress]);
 
     const closeModal = () => {
         onSale();
@@ -103,7 +103,9 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         setIsOnBuy(true);
 
         try {
-            const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, { network: NETWORK });
+            const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
+                network: NETWORK,
+            });
 
             const bolt11_invoice = await buyOrdinalWithLightning({
                 psbt: sellerSignedPsbt.toBase64(),
@@ -164,7 +166,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                                 <InputGroup className="mb-lg-5 notDummy">
                                     <Form.Label>Address to receive payment</Form.Label>
                                     <Form.Control
-                                        defaultValue={nostrAddress}
+                                        defaultValue={nostrOrdinalsAddress}
                                         onChange={onChangeAddress}
                                         placeholder="Buyer address"
                                         aria-label="Buyer address"

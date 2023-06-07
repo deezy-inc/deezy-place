@@ -34,7 +34,7 @@ function hashBip322Message(message) {
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 export async function signBip322MessageSimple(message) {
     // const message = await prompt("Please enter BIP322 message to sign", "");
-    const publicKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+    const publicKey = SessionStorage.get(SessionsStorageKeys.ORDINALS_PUBLIC_KEY);
 
     const nostrScript = getAddressInfo(toXOnly(publicKey.toString()));
     const scriptPubkey = nostrScript.output;
@@ -95,6 +95,10 @@ export async function signBip322MessageSimple(message) {
     const len = encode(toSignTx.ins[0].witness.length);
     const result = Buffer.concat([len, ...toSignTx.ins[0].witness.map((w) => encodeVarString(w))]);
 
-    const { signature } = { virtualToSpend, virtualToSign: toSignTx, signature: base64.encode(result) };
+    const { signature } = {
+        virtualToSpend,
+        virtualToSign: toSignTx,
+        signature: base64.encode(result),
+    };
     return signature;
 }

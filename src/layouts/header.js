@@ -17,7 +17,7 @@ import headerData from "../data/general/header.json";
 import menuData from "../data/general/menu.json";
 
 const Header = React.forwardRef(({ className }, ref) => {
-    const { nostrPublicKey, nostrAddress, onDisconnectHandler, onShowConnectModal } = useWallet();
+    const { ordinalsPublicKey, nostrOrdinalsAddress, onShowConnectModal } = useWallet();
 
     const { offcanvas, offcanvasHandler } = useOffcanvas();
 
@@ -41,7 +41,7 @@ const Header = React.forwardRef(({ className }, ref) => {
                             </div>
                         </div>
                         <div className="header-right">
-                            {!Boolean(nostrPublicKey) && (
+                            {!Boolean(ordinalsPublicKey) && (
                                 <div className="setting-option header-btn">
                                     <div className="setting-option rn-icon-list user-account">
                                         <Button
@@ -57,13 +57,9 @@ const Header = React.forwardRef(({ className }, ref) => {
                                     </div>
                                 </div>
                             )}
-                            {nostrPublicKey && nostrAddress && (
+                            {ordinalsPublicKey && nostrOrdinalsAddress && (
                                 <div className="setting-option rn-icon-list user-account">
-                                    <UserDropdown
-                                        onDisconnect={onDisconnectHandler}
-                                        pubKey={nostrPublicKey}
-                                        receiveAddress={nostrAddress}
-                                    />
+                                    <UserDropdown />
                                 </div>
                             )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">

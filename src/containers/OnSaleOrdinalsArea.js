@@ -22,7 +22,7 @@ const collectionAuthor = [
 ];
 
 const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
-    const { nostrAddress, isExperimental } = useWallet();
+    const { nostrOrdinalsAddress, isExperimental } = useWallet();
     const [openOrders, setOpenOrders] = useState([]);
     const [isLoadingOpenOrders, setIsLoadingOpenOrders] = useState(true);
 
@@ -78,7 +78,7 @@ const OnSaleOrdinalsArea = ({ className, space, onConnectHandler, onSale }) => {
                             isLoading={isLoadingOpenOrders}
                             {...{ title: "On sale" }}
                         />
-                        {!Boolean(nostrAddress) && isExperimental && (
+                        {!Boolean(nostrOrdinalsAddress) && isExperimental && (
                             <span>
                                 <button type="button" className="btn-transparent" onClick={onConnectHandler}>
                                     Connect

@@ -14,7 +14,7 @@ const ConnectWallet = () => {
             ethereum: true,
 
             onClick: () => {
-                onConnect("nosft.xyz");
+                onConnect({ metamask: "nosft.xyz" });
             },
         },
         {
@@ -23,7 +23,7 @@ const ConnectWallet = () => {
             ethereum: true,
 
             onClick: () => {
-                onConnect("ordswap.io");
+                onConnect({ metamask: "ordswap.io" });
             },
         },
         {
@@ -32,7 +32,7 @@ const ConnectWallet = () => {
             ethereum: true,
 
             onClick: () => {
-                onConnect("generative.xyz");
+                onConnect({ metamask: "generative.xyz" });
             },
         },
         {
@@ -40,7 +40,15 @@ const ConnectWallet = () => {
             image: "/images/logo/alby.svg",
 
             onClick: () => {
-                onConnect();
+                onConnect({});
+            },
+        },
+        {
+            name: "Xverse",
+            image: "/images/logo/xverse.png",
+
+            onClick: () => {
+                onConnect({ xverse: true });
             },
         },
     ];

@@ -22,11 +22,11 @@ import { generatePSBTListingInscriptionForSale } from "@utils/openOrdex";
 bitcoin.initEccLib(ecc);
 
 const SellModal = ({ show, handleModal, utxo, onSale }) => {
-    const { nostrAddress, nostrPublicKey } = useWallet();
+    const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
-    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
+    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrOrdinalsAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [isOnSale, setIsOnSale] = useState(false);
@@ -37,10 +37,10 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
             setBitcoinPrice(btcPrice);
         };
 
-        setDestinationBtcAddress(nostrAddress);
+        setDestinationBtcAddress(nostrOrdinalsAddress);
 
         getPrice();
-    }, [nostrAddress]);
+    }, [nostrOrdinalsAddress]);
 
     const sale = async () => {
         setIsOnSale(true);
@@ -59,7 +59,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                 utxo,
                 ordinalValue,
                 signedPsbt: signedPsbt.toBase64(),
-                pubkey: nostrPublicKey,
+                pubkey: ordinalsPublicKey,
             });
 
             toast.info(`Order successfully published to Nostr!`);
@@ -131,7 +131,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                                 <InputGroup className="mb-lg-5 omg">
                                     <Form.Label>Address to receive payment</Form.Label>
                                     <Form.Control
-                                        defaultValue={nostrAddress}
+                                        defaultValue={nostrOrdinalsAddress}
                                         onChange={addressOnChange}
                                         placeholder="Paste BTC address to receive your payment here"
                                         aria-label="Paste BTC address to receive your payment here"

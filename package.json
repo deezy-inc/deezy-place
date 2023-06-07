@@ -21,6 +21,7 @@
         "next": "^13.1.6",
         "next-themes": "^0.1.1",
         "nextjs-google-analytics": "^2.3.3",
+        "nosft-core": "^1.0.20",
         "nostr-tools": "^1.6.0",
         "npm": "^9.6.5",
         "prop-types": "^15.8.1",
@@ -43,6 +44,7 @@
         "redis": "^4.6.5",
         "rxjs": "^7.8.0",
         "sal.js": "^0.8.5",
+        "sats-connect": "^0.2.0",
         "tiny-secp256k1": "^2.2.1",
         "varuint-bitcoin": "^1.1.2"
     },

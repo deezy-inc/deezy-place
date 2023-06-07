@@ -7,82 +7,104 @@ import SendModal from "@components/modals/send-modal";
 import { useWallet } from "@context/wallet-context";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-    const { nostrAddress, isExperimental } = useWallet();
-    const [showSendModal, setShowSendModal] = useState(false);
-    const handleSendModal = () => {
-        setShowSendModal((prev) => !prev);
-    };
+  const { nostrOrdinalsAddress, isExperimental } = useWallet();
+  const [showSendModal, setShowSendModal] = useState(false);
+  const handleSendModal = () => {
+    setShowSendModal((prev) => !prev);
+  };
 
-    const [showSellModal, setShowSellModal] = useState(false);
-    const handleSellModal = () => {
-        setShowSellModal((prev) => !prev);
-    };
+  const [showSellModal, setShowSellModal] = useState(false);
+  const handleSellModal = () => {
+    setShowSellModal((prev) => !prev);
+  };
 
-    const [showBuyModal, setShowBuyModal] = useState(false);
-    const handleBuyModal = () => {
-        setShowBuyModal((prev) => !prev);
-    };
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
 
-    function renderMainAction(actionType) {
-        switch (actionType) {
-            case "buy":
-                if (!isExperimental) return <span />;
-                return (
-                    <button type="button" className="btn btn-small" onClick={handleBuyModal} disabled={!confirmed}>
-                        Buy
-                    </button>
-                );
-            case "sell":
-                if (!isExperimental) return <span />;
-                return (
-                    <button type="button" className="btn btn-small" onClick={handleSellModal} disabled={!confirmed}>
-                        Sell
-                    </button>
-                );
-            case "send":
-                return (
-                    <button type="button" className="btn btn-small" onClick={handleSendModal} disabled={!confirmed}>
-                        Send
-                    </button>
-                );
-            default:
-                return <span />;
-        }
+  function renderMainAction(actionType) {
+    switch (actionType) {
+      case "buy":
+        if (!isExperimental) return <span />;
+        return (
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={handleBuyModal}
+            disabled={!confirmed}
+          >
+            Buy
+          </button>
+        );
+      case "sell":
+        if (!isExperimental) return <span />;
+        return (
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={handleSellModal}
+            disabled={!confirmed}
+          >
+            Sell
+          </button>
+        );
+      case "send":
+        return (
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={handleSendModal}
+            disabled={!confirmed}
+          >
+            Send
+          </button>
+        );
+      default:
+        return <span />;
     }
-    const minted = !confirmed ? "Unconfirmed" : new Date(date * 1000).toLocaleString();
-    const sats = `${price.amount} ${price.currency}`;
-    const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
+  }
+  const minted = !confirmed
+    ? "Unconfirmed"
+    : new Date(date * 1000).toLocaleString();
+  const sats = `${price.amount} ${price.currency}`;
+  const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
 
-    return (
-        <div className="bid-react-area">
-            <div className="last-bid">
-                {textPrice}
-                <span className="minted">{` ${minted}`}</span>
-            </div>
+  return (
+    <div className="bid-react-area">
+      <div className="last-bid">
+        {textPrice}
+        <span className="minted">{` ${minted}`}</span>
+      </div>
 
-            {Boolean(nostrAddress) && renderMainAction(type)}
+      {Boolean(nostrOrdinalsAddress) && renderMainAction(type)}
 
-            {showSendModal && (
-                <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
-            )}
+      {showSendModal && (
+        <SendModal
+          show={showSendModal}
+          handleModal={handleSendModal}
+          utxo={utxo}
+          onSale={onSale}
+        />
+      )}
 
-            {/* <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} /> */}
+      {/* <SellModal show={showSellModal} handleModal={handleSellModal} utxo={utxo} onSale={onSale} /> */}
 
-            {/* <BuyModal show={showBuyModal} handleModal={handleBuyModal} utxo={utxo} onSale={onSale} /> */}
-        </div>
-    );
+      {/* <BuyModal show={showBuyModal} handleModal={handleBuyModal} utxo={utxo} onSale={onSale} /> */}
+    </div>
+  );
 };
 
 ProductBid.propTypes = {
-    price: PropTypes.shape({
-        amount: PropTypes.string.isRequired,
-        currency: PropTypes.string.isRequired,
-    }).isRequired,
-    utxo: PropTypes.object,
-    confirmed: PropTypes.bool,
-    date: PropTypes.number,
-    type: PropTypes.oneOf(["buy", "sell", "send"]).isRequired,
-    onSale: PropTypes.func,
+  price: PropTypes.shape({
+    amount: PropTypes.string.isRequired,
+    currency: PropTypes.string.isRequired,
+  }).isRequired,
+  utxo: PropTypes.object,
+  confirmed: PropTypes.bool,
+  date: PropTypes.number,
+  type: PropTypes.oneOf(["buy", "sell", "send"]).isRequired,
+  onSale: PropTypes.func,
 };
 
 export default ProductBid;

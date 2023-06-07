@@ -5,11 +5,11 @@ import { TESTNET } from "@lib/constants.config";
 bitcoin.initEccLib(ecc);
 
 export const getAddressInfo = (publicKey) => {
-    console.log(`Pubkey: ${publicKey.toString()}`);
-    const pubkeyBuffer = Buffer.from(publicKey, "hex");
-    const addrInfo = bitcoin.payments.p2tr({
-        pubkey: pubkeyBuffer,
-        network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
-    });
-    return addrInfo;
+  console.log(`Pubkey: ${publicKey.toString()}`);
+  const pubkeyBuffer = Buffer.from(publicKey, "hex");
+  const addrInfo = bitcoin.payments.p2tr({
+    pubkey: pubkeyBuffer,
+    network: TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin,
+  });
+  return addrInfo;
 };

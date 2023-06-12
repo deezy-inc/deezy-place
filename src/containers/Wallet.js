@@ -97,9 +97,6 @@ const OrdinalsArea = ({ className, space }) => {
                 utxosWithInscriptionData = await getInscriptions(nostrAddress);
                 utxosWithInscriptionData = utxosWithInscriptionData.filter((utxo) => !!!utxo.inscriptionId);
                 setBalance(utxosWithInscriptionData.reduce((acc, utxo) => acc + utxo.value, 0));
-                console.log(utxosWithInscriptionData);
-
-                console.log(utxosWithInscriptionData);
             } catch (error) {
                 console.error(error);
                 // TODO: handle error

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { InscriptionPreview } from "@components/inscription-preview";
@@ -8,12 +8,12 @@ import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import AuctionModal from "@components/modals/auction-modal";
 import BuyModal from "@components/modals/buy-modal";
-import BuyLightingModal from "@components/modals/buy-with-lighting";
+import BuyLightingModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
 import dynamic from "next/dynamic";
-import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr } from "@services/nosft";
+import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr, cancelAuction } from "@services/nosft";
 
 const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
     ssr: false,
@@ -23,7 +23,7 @@ const CountdownTimerText = dynamic(() => import("@components/countdown-timer/cou
     ssr: false,
 });
 
-const ProductDetailsArea = ({ space, className, inscription, collection, nostr, auction }) => {
+const ProductDetailsArea = ({ space, className, inscription, collection, nostr, auction, onAction, isSpent }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
@@ -51,6 +51,12 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
 
     const handleAuctionModal = () => {
         setShowAuctionModal((prev) => !prev);
+        onAction(true);
+    };
+
+    const handleCancelAuction = async () => {
+        await cancelAuction(auction.id);
+        onAction(false);
     };
 
     const handleBuyModal = () => {
@@ -117,6 +123,33 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
     const onSend = () => {};
     const onAuction = () => {};
 
+    const { title: auctionTitle, nextPriceDrop: auctionNextPriceDrop } = useMemo(() => {
+        let title = "";
+        let nextPriceDrop = null;
+        if (!auction) return { title, nextPriceDrop };
+
+        switch (auction.status) {
+            case "PENDING": {
+                title = "Dutch Auction Start Soon";
+                nextPriceDrop = auction.metadata.find((m) => !m.nostrEventId);
+                break;
+            }
+            case "RUNNING": {
+                title = "Dutch Auction";
+                nextPriceDrop = auction.metadata.find((m) => !m.nostrEventId && m.price !== auction.currentPrice);
+                break;
+            }
+            case "SPENT": {
+                title = "Dutch Auction Ended";
+                break;
+            }
+            default: {
+                return { title, nextPriceDrop };
+            }
+        }
+        return { title, nextPriceDrop };
+    }, [auction]);
+
     return (
         <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
@@ -124,7 +157,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                     <div className="product-details">
                         <div className="rn-pd-thumbnail">
                             <InscriptionPreview utxo={inscription} />
-                            {auction && <CountdownTimer date={auction.endDate} />}
+                            {auctionNextPriceDrop && <CountdownTimer time={auctionNextPriceDrop.scheduledTime} />}
                         </div>
                     </div>
 
@@ -150,9 +183,9 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                 </div>
                             )}
 
-                            {auction && nostr?.value && (
+                            {auctionTitle && nostr?.value && (
                                 <div className="dutchAuction">
-                                    <h6 className="title-name live-title">Dutch Auction</h6>
+                                    <h6 className="title-name live-title">{auctionTitle}</h6>
 
                                     <div className="auction-prices">
                                         <div className="price-box">
@@ -163,23 +196,27 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             </p>
                                         </div>
 
-                                        {auction?.next?.price && (
+                                        {auctionNextPriceDrop && (
                                             <div className="price-box">
                                                 <p className="title">Next price</p>
                                                 <p className="price">
-                                                    {auction.next.price} Sats{" "}
+                                                    {auctionNextPriceDrop.price} Sats{" "}
                                                     <span>
-                                                        ${satsToFormattedDollarString(auction.next.price, bitcoinPrice)}
+                                                        $
+                                                        {satsToFormattedDollarString(
+                                                            auctionNextPriceDrop.price,
+                                                            bitcoinPrice
+                                                        )}
                                                     </span>
                                                 </p>
                                             </div>
                                         )}
                                     </div>
-                                    {auction?.next?.price && (
+                                    {auctionNextPriceDrop && (
                                         <div className="bid mt--10 mb--20">
                                             Next price in{" "}
                                             <span className="price">
-                                                <CountdownTimerText date={auction.endDate} />
+                                                <CountdownTimerText time={auctionNextPriceDrop.scheduledTime} />
                                             </span>
                                         </div>
                                     )}
@@ -206,7 +243,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             </button>
                                         )}
 
-                                        {isOwner && (
+                                        {isOwner && !isSpent && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -219,7 +256,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             </button>
                                         )}
 
-                                        {isOwner && (
+                                        {isOwner && !isSpent && !auctionNextPriceDrop && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -228,6 +265,19 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                                 <div className="action">
                                                     <i className="feather-book-open" />
                                                     <span>Auction</span>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {isOwner && !isSpent && auctionNextPriceDrop && (
+                                            <button
+                                                className="pd-react-area btn-transparent"
+                                                type="button"
+                                                onClick={handleCancelAuction}
+                                            >
+                                                <div className="action">
+                                                    <i className="feather-book-open" />
+                                                    <span>Cancel Auction</span>
                                                 </div>
                                             </button>
                                         )}
@@ -253,7 +303,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                             >
                                                 <div className="action">
                                                     <i className="feather-zap" />
-                                                    <span>Buy with lighting</span>
+                                                    <span>Buy with lightning</span>
                                                 </div>
                                             </button>
                                         )}
@@ -287,7 +337,10 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                 <div className="rn-pd-sm-property-wrapper">
                                     <div className="property-wrapper">
                                         {properties.map((property) => (
-                                            <div key={property.id} className="pd-property-inner">
+                                            <div
+                                                key={`${property.id}-${property.type}-${property.value}`}
+                                                className="pd-property-inner"
+                                            >
                                                 <span className="color-body type">{property.type}</span>
                                                 <span className="color-white value">{`${property.value}`}</span>
                                             </div>
@@ -310,7 +363,8 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                 <AuctionModal
                     show={showAuctionModal}
                     handleModal={handleAuctionModal}
-                    utxo={inscription}
+                    utxo={{ ...inscription, value: nostr.value || inscription.value }}
+                    isSpent={isSpent}
                     onSale={onAuction}
                 />
             )}
@@ -343,12 +397,9 @@ ProductDetailsArea.propTypes = {
     inscription: PropTypes.any,
     collection: PropTypes.any,
     nostr: NostrEvenType,
-    auction: PropTypes.shape({
-        endDate: PropTypes.any,
-        next: PropTypes.shape({
-            price: PropTypes.number,
-        }),
-    }),
+    auction: PropTypes.any,
+    isSpent: PropTypes.bool,
+    onAction: PropTypes.func,
 };
 
 ProductDetailsArea.defaultProps = {

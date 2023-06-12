@@ -103,36 +103,39 @@ const RoundOptions = ({ selectedOption, onChange, blockAverage }) => {
     );
 };
 
-function calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate }) {
-    const unixTime = Math.floor(startDate.getTime() / 1000);
-    let remainingValue = ordinalValue;
-    let time = 0;
-    let results = [];
+function calculateExpectedPrices({
+    ordinalValue: initialOrdinalPrice,
+    decreaseAmount,
+    selectedOption,
+    reservePrice,
+    startDate,
+}) {
+    const startTime = startDate.getTime();
+    const results = [];
+    const timeStep = _TIME_OPTIONS_VALUES[selectedOption];
 
-    const pushResult = (time, value) => {
-        const scheduledTime = unixTime + time;
-        results.push({
-            scheduledTime,
-            price: Math.max(value, reservePrice),
-        });
-    };
-
-    pushResult(time, remainingValue, 0); // Start by pushing the initial price
-    if (!_TIME_OPTIONS_VALUES[selectedOption]) {
+    if (!timeStep) {
         console.log("Invalid option");
-    } else {
-        const timeStep = _TIME_OPTIONS_VALUES[selectedOption];
-        while (remainingValue > reservePrice) {
-            remainingValue -= decreaseAmount;
-            time += timeStep;
-            pushResult(time, remainingValue);
+        return results;
+    }
+
+    for (let time = 0, remainingAmount = initialOrdinalPrice; remainingAmount >= reservePrice; time += timeStep) {
+        results.push({
+            scheduledTime: startTime + time,
+            price: remainingAmount,
+        });
+
+        if (remainingAmount === reservePrice) {
+            break;
         }
+
+        remainingAmount = Math.max(remainingAmount - decreaseAmount, reservePrice);
     }
 
     return results;
 }
 
-const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
+const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
@@ -142,7 +145,6 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [reservePrice, setReservePrice] = useState(Math.round(utxo.value / 2));
     const [bitcoinPrice, setBitcoinPrice] = useState("-");
     const [isOnSale, setIsOnSale] = useState(false);
-    const [decreaseAmount, setDecreaseAmount] = useState(Math.round(utxo.value / 2));
     const [priceDecreases, setPriceDecreases] = useState(1);
     const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
     const [step, setStep] = useState(0);
@@ -152,15 +154,29 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     const [blockAverage, setBlockAverage] = useState(0);
     const [blocksDecrease, setBlocksDecrease] = useState(144);
 
-    const schedule = useMemo(() => {
+    const decreaseAmount = useMemo(() => {
+        const defaultAmount = Math.round(utxo.value / 2);
+        return priceDecreases > 0 && ordinalValue > 0 && reservePrice > 0
+            ? Math.floor((ordinalValue - reservePrice) / priceDecreases)
+            : defaultAmount;
+    }, [priceDecreases, utxo.value, ordinalValue, reservePrice]);
+
+    const auctionSchedule = useMemo(() => {
         return calculateExpectedPrices({ ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate });
     }, [ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate]);
+
+    const validAuction =
+        ordinalValue > 0 &&
+        ordinalValue > reservePrice &&
+        destinationBtcAddress &&
+        !isLowerPriceInvalid &&
+        decreaseAmount > 0;
 
     const CountdownTimerText = dynamic(() => import("@components/countdown-timer/countdown-timer-text"), {
         ssr: false,
     });
 
-    const timeBetweenEachDecrease = useMemo(() => {
+    const secondsBetweenEachDecrease = useMemo(() => {
         if (_TIME_OPTIONS_VALUES[selectedOption]) {
             return _TIME_OPTIONS_VALUES[selectedOption];
         }
@@ -192,11 +208,11 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
         getPrice();
     }, [nostrAddress]);
 
-    const createEvents = async ({ schedule, utxo, destinationBtcAddress }) => {
+    const createEvents = async ({ auctionSchedule, utxo, destinationBtcAddress }) => {
         let events = [];
         try {
             setSignedEvents(0);
-            for (const event of schedule) {
+            for (const event of auctionSchedule) {
                 const { price, ...props } = event;
                 const psbt = await generatePSBTListingInscriptionForSale({
                     utxo,
@@ -218,27 +234,32 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
         setIsOnSale(true);
 
         try {
-            const newSchedule = await createEvents({ schedule, utxo, destinationBtcAddress, nostrPublicKey });
-            const unixTime = Math.floor(startDate.getTime() / 1000);
+            if (isSpent) {
+                toast.error("The UTXO is already spent. Please, select another one.");
+                handleModal();
+                return;
+            }
+
+            const newSchedule = await createEvents({ auctionSchedule, utxo, destinationBtcAddress, nostrPublicKey });
+
             const dutchAuction = {
-                startTime: unixTime,
+                startTime: startDate.getTime(),
                 decreaseAmount,
-                timeBetweenEachDecrease,
+                secondsBetweenEachDecrease,
                 initialPrice: ordinalValue,
                 reservePrice,
                 metadata: newSchedule,
                 btcAddress: nostrAddress,
-                output: utxo.output,
+                output: utxo.output || `${utxo.txid}:${utxo.vout}`, // TODO: should I need it?
                 inscriptionId: utxo.inscriptionId,
             };
-            console.log(dutchAuction);
-            await createAuction(dutchAuction);
+            const auction = await createAuction(dutchAuction);
+            console.log({ auction });
             toast.info(`Order successfully scheduled to be published to Nostr!`);
         } catch (e) {
             toast.error(e.response?.data?.message || e.message);
+            setIsOnSale(false);
         }
-
-        setIsOnSale(false);
         onSale();
         handleModal();
     };
@@ -264,14 +285,13 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
     };
 
     const priceOnChange = (evt) => {
-        const newValue = evt.target.value;
+        const newValue = Number(evt.target.value);
         if (!newValue) {
             setOrdinalValue(0);
             return;
         }
 
         setOrdinalValue(Number(newValue));
-        updateDecreaseAmount({ highValue: Number(newValue) });
     };
 
     const minPriceOnChange = (evt) => {
@@ -289,21 +309,14 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
 
         setIsLowerPriceInvalid(false);
         setReservePrice(newValue);
-        updateDecreaseAmount({ lowValue: Number(newValue) });
     };
 
     const priceDecreaseOnChange = (evt) => {
         const decreases = Number(evt.target.value);
+        if (decreases < 1) {
+            return;
+        }
         setPriceDecreases(decreases);
-        // Calculate the decrease amount between initial and end value
-        updateDecreaseAmount();
-    };
-
-    const updateDecreaseAmount = ({ highValue, lowValue } = {}) => {
-        const high = highValue || ordinalValue;
-        const low = lowValue || reservePrice;
-        const decreaseAmount = (Number(high) - Number(low)) / priceDecreases;
-        setDecreaseAmount(decreaseAmount);
     };
 
     const addressOnChange = (evt) => {
@@ -401,6 +414,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                             placeholder="Price (in Sats)"
                                             aria-label="Price (in Sats)"
                                             aria-describedby="basic-addon2"
+                                            isInvalid={isLowerPriceInvalid}
                                             autoFocus
                                         />
                                     </InputGroup>
@@ -440,7 +454,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                     {!!destinationBtcAddress && <span>Payment Receive Address</span>}
                                     {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
                                     {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
-                                    {decreaseAmount && <span>Decrease Amount</span>}
+                                    {decreaseAmount > 0 && <span>Decrease Amount</span>}
                                 </div>
 
                                 <div className="bid-content-right">
@@ -484,7 +498,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                         />
                                     </InputGroup>
 
-                                    <InputGroup className="mb-lg-5 schedule-options">
+                                    <InputGroup className="mb-lg-5 auctionSchedule-options">
                                         <Form.Label>How long between each decrease?</Form.Label>
                                         <RoundOptions
                                             selectedOption={selectedOption}
@@ -515,8 +529,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                     {!!destinationBtcAddress && <span>Payment Receive Address</span>}
                                     {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
                                     {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
-                                    {decreaseAmount && <span>Decrease Amount</span>}
-                                    {schedule?.[0]?.scheduledTime && <span>Starts in</span>}
+                                    {decreaseAmount > 0 && <span>Decrease Amount</span>}
+                                    {auctionSchedule?.[0]?.scheduledTime && <span>Starts in</span>}
                                 </div>
 
                                 <div className="bid-content-right">
@@ -533,12 +547,12 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                         <span>{`$${satsToFormattedDollarString(decreaseAmount, bitcoinPrice)}`}</span>
                                     )}
 
-                                    {!!schedule?.[0]?.scheduledTime && (
+                                    {!!auctionSchedule?.[0]?.scheduledTime && (
                                         <span>
                                             {
                                                 <CountdownTimerText
                                                     className="countdown-text-small"
-                                                    date={new Date(schedule[0].scheduledTime * 1000)}
+                                                    time={auctionSchedule[0].scheduledTime}
                                                 />
                                             }
                                         </span>
@@ -555,8 +569,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                     {!!destinationBtcAddress && <span>Payment Receive Address</span>}
                                     {Boolean(ordinalValue) && bitcoinPrice && <span>Initial Price</span>}
                                     {Boolean(reservePrice) && bitcoinPrice && <span>Lowest Price</span>}
-                                    {decreaseAmount && <span>Decrease Amount</span>}
-                                    {schedule?.[0]?.scheduledTime && <span>Starts in</span>}
+                                    {decreaseAmount > 0 && <span>Decrease Amount</span>}
+                                    {auctionSchedule?.[0]?.scheduledTime && <span>Starts in</span>}
                                     <span>Signed Events</span>
                                 </div>
 
@@ -574,19 +588,19 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                                         <span>{`$${satsToFormattedDollarString(decreaseAmount, bitcoinPrice)}`}</span>
                                     )}
 
-                                    {!!schedule?.[0]?.scheduledTime && (
+                                    {!!auctionSchedule?.[0]?.scheduledTime && (
                                         <span>
                                             {
                                                 <CountdownTimerText
                                                     className="countdown-text-small"
-                                                    date={new Date(schedule[0].scheduledTime * 1000)}
+                                                    time={auctionSchedule[0].scheduledTime}
                                                 />
                                             }
                                         </span>
                                     )}
 
                                     <span>
-                                        {signedEvents} / {schedule.length}
+                                        {signedEvents} / {auctionSchedule.length}
                                     </span>
                                 </div>
                             </div>
@@ -597,7 +611,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale }) => {
                         <Button
                             size="medium"
                             fullwidth
-                            disabled={!destinationBtcAddress || schedule[0].scheduledTime * 1000 < Date.now()}
+                            disabled={!validAuction || (step > 1 && auctionSchedule[0]?.scheduledTime < Date.now())}
                             autoFocus
                             className={isOnSale ? "btn-loading" : ""}
                             onClick={submit}
@@ -616,5 +630,6 @@ AuctionModal.propTypes = {
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
     onSale: PropTypes.func,
+    isSpent: PropTypes.bool,
 };
 export default AuctionModal;

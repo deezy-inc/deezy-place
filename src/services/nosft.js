@@ -10,7 +10,7 @@ const nosft = Nosft({ ...localConfig });
 
 const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
-const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
+const { doesUtxoContainInscription, getAddressUtxos, isSpent } = nosft.utxo;
 const { getInscription, getInscriptions, isTextInscription, isImageInscription, shouldReplaceInscription } =
     nosft.inscriptions;
 const {
@@ -26,6 +26,7 @@ const {
     subscribeOrders: subscribeAuctionOrders,
     getAuctionByInscription,
     createAuction,
+    cancelAuction,
     subscribeMyAuctions,
 } = nosft.auction;
 
@@ -105,6 +106,7 @@ export {
     // utxo
     doesUtxoContainInscription,
     getAddressUtxos,
+    isSpent,
 
     // inscriptions
     getInscription,
@@ -137,6 +139,7 @@ export {
     subscribeAuctionOrders,
     getAuctionByInscription,
     createAuction,
+    cancelAuction,
     subscribeMyAuctions,
 
     // Config variables

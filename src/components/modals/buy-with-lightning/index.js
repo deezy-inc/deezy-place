@@ -184,8 +184,8 @@ const BuyLightingModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                                     <Form.Control
                                         defaultValue={refundLightingAddress}
                                         onChange={onChangeLNAddress}
-                                        placeholder="Refund lighting address"
-                                        aria-label="Refund lighting address"
+                                        placeholder="Refund lightning address"
+                                        aria-label="Refund lightning address"
                                         aria-describedby="basic-addon2"
                                         isInvalid={!isLNInputAddressValid}
                                     />

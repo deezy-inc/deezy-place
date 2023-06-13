@@ -33,9 +33,9 @@ const App = () => {
         <SEO pageTitle="Deezy" />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {!ordinalsPublicKey && <HeroArea data={content["hero-section"]} />}
+          {/* {!ordinalsPublicKey && <HeroArea data={content["hero-section"]} />}
 
-          {ordinalsPublicKey && nostrOrdinalsAddress && <NostrLive />}
+          {ordinalsPublicKey && nostrOrdinalsAddress && <NostrLive />} */}
           {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
         </main>
 

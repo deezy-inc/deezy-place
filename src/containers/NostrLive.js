@@ -10,6 +10,7 @@ import {
   getInscription,
   isTextInscription,
   shouldReplaceInscription,
+  isSpent,
 } from "@services/nosft";
 
 import "react-loading-skeleton/dist/skeleton.css";
@@ -25,7 +26,6 @@ import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
-import { isSpent } from "@utils/utxos";
 
 const collectionAuthor = [
   {

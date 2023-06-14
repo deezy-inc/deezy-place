@@ -77,6 +77,7 @@ export async function signBip322MessageSimple(message) {
         bitcoin.Transaction.SIGHASH_DEFAULT
     );
 
+    // TODO: Support with unisat.
     const sign = await signSigHash({ sigHash });
 
     virtualToSign.updateInput(0, {

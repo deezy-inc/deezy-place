@@ -8,7 +8,7 @@ const localConfig = {
 
 const nosft = Nosft({ ...localConfig });
 
-const { connectWallet } = nosft.wallet;
+const { connectWallet, onAccountChange } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos } = nosft.utxo;
 const { getInscription, getInscriptions, isTextInscription, isImageInscription, shouldReplaceInscription } =
@@ -78,7 +78,10 @@ const {
 export default nosft;
 export {
     getAddressInfo,
+
+    // Wallet
     connectWallet,
+    onAccountChange,
 
     // Crypto
     shortenStr,

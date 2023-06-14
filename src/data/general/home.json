@@ -6,13 +6,13 @@
             "headings": [
                 {
                     "id": 1,
-                    "content": "Keep your Ordinals secure and accessible with our Bitcoin web wallet."
+                    "content": "Discover, Buy, Sell and Manage Your Ordinals"
                 }
             ],
             "texts": [
                 {
                     "id": 1,
-                    "content": "Manage your ordinals in a safe and convenient way with our wallet. Fully open source and integrated with Nostr, Alby, (and soon OpenOrdex)."
+                    "content": "The Deezy Marketplace is fully open source with a decentralized PSBT based order book."
                 }
             ],
             "buttons": [
@@ -30,7 +30,7 @@
             ],
             "images": [
                 {
-                    "src": "/images/slider/astralbabe.png"
+                    "src": "/images/slider/bitcoinfrog.webp"
                 }
             ]
         },

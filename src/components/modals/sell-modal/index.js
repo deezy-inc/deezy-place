@@ -25,7 +25,7 @@ import { InscriptionPreview } from "@components/inscription-preview";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo, onSale }) => {
+const SellModal = ({ show, handleModal, utxo, onSale }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
@@ -195,7 +195,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                             className={isOnSale ? "btn-loading" : ""}
                             onClick={submit}
                         >
-                            {isOnSale ? <TailSpin stroke="#fec823" speed={0.75} /> : "Sale"}
+                            {isOnSale ? <TailSpin stroke="#fec823" speed={0.75} /> : "Sell"}
                         </Button>
                     </div>
                 </div>
@@ -204,10 +204,10 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     );
 };
 
-SendModal.propTypes = {
+SellModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
     onSale: PropTypes.func,
 };
-export default SendModal;
+export default SellModal;

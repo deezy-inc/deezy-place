@@ -3,7 +3,7 @@ import Head from "next/head";
 import PropTypes from "prop-types";
 
 const SEO = ({ pageTitle }) => {
-    const title = `${pageTitle} | Nosft`;
+    const title = `${pageTitle} Marketplace`;
     return (
         <Head>
             <title>{title}</title>

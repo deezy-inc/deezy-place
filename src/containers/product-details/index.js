@@ -7,17 +7,19 @@ import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import BuyModal from "@components/modals/buy-modal";
-import BuyLightingModal from "@components/modals/buy-with-lighting";
+import BuyLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
+import { isSpent } from "@utils/utxos";
 
 const ProductDetailsArea = ({ space, className, inscription, collection, nostr }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
-    const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
+    const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
+    const [isUtxoSpent, setIsSpent] = useState(false);
 
     const handleSendModal = () => {
         setShowSendModal((prev) => !prev);
@@ -31,14 +33,20 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
         setShowBuyModal((prev) => !prev);
     };
 
-    const handleBuyLightingModal = () => {
-        setShowBuyLigthingModal((prev) => !prev);
+    const handleBuyLightningModal = () => {
+        setShowBuyLightningModal((prev) => !prev);
     };
 
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
         setIsOwner(nostrAddress && inscription.owner && nostrAddress === inscription.owner);
+        const checkIfIsSpent = async () => {
+            const isSpentUtxo = await isSpent(inscription);
+            setIsSpent(isSpentUtxo.spent);
+        };
+
+        checkIfIsSpent();
     }, [nostrAddress, inscription]);
 
     const minted = new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
@@ -79,6 +87,14 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
 
     const onSend = () => {};
 
+    const isActionsAvailable = () => {
+        if (isOwner) {
+            return true;
+        }
+
+        return !isOwner && nostr && nostr.value && !isUtxoSpent;
+    };
+
     return (
         <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
             <div className="container">
@@ -94,7 +110,8 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
 
                             {nostr && nostr.value && (
                                 <div className="bid mb--10">
-                                    Listed for <span className="price">{nostr.value} Sats</span>
+                                    {isUtxoSpent ? "Bought" : "Listed"} for{" "}
+                                    <span className="price">{nostr.value} Sats</span>
                                 </div>
                             )}
 
@@ -118,7 +135,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                 </div>
                             </div>
 
-                            {nostrPublicKey && nostrAddress && (
+                            {nostrPublicKey && nostrAddress && isActionsAvailable() && (
                                 <div className="rn-pd-sm-property-wrapper">
                                     <h6 className="pd-property-title">Actions</h6>
 
@@ -149,7 +166,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                             </button>
                                         )}
 
-                                        {!isOwner && nostr && nostr.value && (
+                                        {/* {!isOwner && nostr && nostr.value && !isUtxoSpent && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
@@ -160,17 +177,17 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                                                     <span>Buy with bitcoin</span>
                                                 </div>
                                             </button>
-                                        )}
+                                        )} */}
 
-                                        {!isOwner && nostr && nostr.value && (
+                                        {!isOwner && nostr && nostr.value && !isUtxoSpent && (
                                             <button
                                                 className="pd-react-area btn-transparent"
                                                 type="button"
-                                                onClick={handleBuyLightingModal}
+                                                onClick={handleBuyLightningModal}
                                             >
                                                 <div className="action">
                                                     <i className="feather-zap" />
-                                                    <span>Buy with lighting</span>
+                                                    <span>Buy with lightning</span>
                                                 </div>
                                             </button>
                                         )}
@@ -218,10 +235,10 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr }
                 />
             )}
 
-            {showBuyLigthingModal && (
-                <BuyLightingModal
-                    show={showBuyLigthingModal}
-                    handleModal={handleBuyLightingModal}
+            {showBuyLightningModal && (
+                <BuyLightningModal
+                    show={showBuyLightningModal}
+                    handleModal={handleBuyLightningModal}
                     utxo={inscription}
                     onSale={onSend}
                     nostr={nostr}

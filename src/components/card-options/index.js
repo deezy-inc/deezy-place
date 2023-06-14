@@ -32,7 +32,9 @@ const CardOptions = ({ utxo, onSale }) => {
                     </button>
                 </Dropdown.Menu>
             </Dropdown>
-            <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
+            {showSendModal && (
+                <SendModal show={showSendModal} handleModal={handleSendModal} utxo={utxo} onSale={onSale} />
+            )}
         </>
     );
 };

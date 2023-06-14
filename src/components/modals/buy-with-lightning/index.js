@@ -7,15 +7,13 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  getAvailableUtxosWithoutInscription,
-  generatePSBTListingInscriptionForBuy,
-  signPsbtMessage,
-  broadcastTx,
-  TESTNET,
-  NETWORK,
   shortenStr,
   satsToFormattedDollarString,
   fetchBitcoinPrice,
+  fetchRecommendedFee,
+  TESTNET,
+  NETWORK,
+  DEFAULT_FEE_RATE,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -27,19 +25,21 @@ import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
+import { buyOrdinalWithLightning } from "@services/deezy";
 
 bitcoin.initEccLib(ecc);
 
-const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
+const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const { nostrAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
+  const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
+  const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [destinationBtcAddress, setDestinationBtcAddress] =
     useState(nostrAddress);
+  const [refundLightningAddress, setRefundLightningAddress] = useState("");
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
-  const [selectedUtxos, setSelectedUtxos] = useState([]);
-  const [dummyUtxos, setDummyUtxos] = useState([]);
   const [bitcoinPrice, setBitcoinPrice] = useState();
   const [buyTxId, setBuyTxId] = useState(null);
 
@@ -52,30 +52,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       setBitcoinPrice(btcPrice);
     };
 
+    const fetchFee = async () => {
+      const fee = await fetchRecommendedFee();
+      setSendFeeRate(fee);
+    };
+
+    fetchFee();
     getPrice();
   }, [nostrAddress]);
 
-  const updatePayerAddress = async (address) => {
-    try {
-      const { selectedUtxos: _selectedUtxos, dummyUtxos: _dummyUtxos } =
-        await getAvailableUtxosWithoutInscription({
-          address,
-          price: utxo.value,
-        });
-
-      if (_dummyUtxos.length < 2) {
-        throw new Error(
-          "No dummy UTXOs found. Please create them before continuing."
-        );
-      }
-
-      setSelectedUtxos(_selectedUtxos);
-      setDummyUtxos(_dummyUtxos);
-    } catch (e) {
-      setSelectedUtxos([]);
-      throw e;
-    }
-  };
+  const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
   const onChangeAddress = async (evt) => {
     const newaddr = evt.target.value;
@@ -90,74 +76,73 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setDestinationBtcAddress(newaddr);
   };
 
+  const onChangeLNAddress = async (evt) => {
+    const newaddr = evt.target.value;
+    if (newaddr === "") {
+      setIsLNInputAddressValid(true);
+      return;
+    }
+
+    setRefundLightningAddress(newaddr);
+  };
+
   useEffect(() => {
+    // const getLnAddress = async function () {
+    //     if (window.webln) {
+    //         if (!window.webln.enabled) await window.webln.enable();
+    //     }
+    //     const { paymentRequest } = await window.webln.makeInvoice({
+    //         amount: 1000,
+    //         defaultMemo: "This invoice will be used to create the receive address for the payment.",
+    //     });
+    //     setRefundLightningAddress(paymentRequest);
+    // };
+
+    // getLnAddress();
     setDestinationBtcAddress(nostrAddress);
-
-    const updateAddress = async () => {
-      setIsOnBuy(true);
-      try {
-        await updatePayerAddress(nostrAddress);
-      } catch (e) {
-        if (e.message.includes("Not enough cardinal spendable funds")) {
-          toast.error(e.message);
-          return;
-        }
-
-        setIsBtcInputAddressValid(false);
-        toast.error(e.message);
-        return;
-      }
-
-      setIsOnBuy(false);
-    };
-
-    updateAddress();
   }, [nostrAddress]);
+
+  const closeModal = () => {
+    onSale();
+    handleModal();
+  };
 
   const buy = async () => {
     setIsOnBuy(true);
-
-    try {
-      await updatePayerAddress(destinationBtcAddress);
-    } catch (e) {
-      setIsBtcInputAddressValid(false);
-      toast.error(e.message);
-      return;
-    }
 
     try {
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
       });
 
-      const psbt = await generatePSBTListingInscriptionForBuy({
-        payerAddress: destinationBtcAddress,
-        receiverAddress: destinationBtcAddress,
-        price: nostr.value,
-        paymentUtxos: selectedUtxos,
-        dummyUtxos,
-        sellerSignedPsbt,
-        inscription: utxo,
+      const bolt11_invoice = await buyOrdinalWithLightning({
+        psbt: sellerSignedPsbt.toBase64(),
+        receive_address: destinationBtcAddress,
+        on_chain_fee_rate: sendFeeRate,
+        refund_lightning_address: refundLightningAddress,
       });
 
-      const tx = await signPsbtMessage(psbt);
-      const txId = await broadcastTx(tx);
-      setBuyTxId(txId);
-      toast.info(`Order successfully signed! ${txId}`);
-      navigator.clipboard.writeText(txId);
+      if (window.webln) {
+        if (!window.webln.enabled) await window.webln.enable();
+        const result = await window.webln.sendPayment(bolt11_invoice);
+        toast.success(
+          `Transaction sent: ${result.paymentHash}, copied to clipboard`
+        );
 
-      // Display confirmation component
-      setIsMounted(!isMounted);
+        navigator.clipboard.writeText(result.paymentHash);
+      } else {
+        navigator.clipboard.writeText(bolt11_invoice);
+        toast.success(
+          `Please pay the following LN invoice to complete your payment: ${bolt11_invoice}, copied to clipboard`
+        );
+      }
+
+      closeModal();
     } catch (e) {
       toast.error(e.message);
     } finally {
       setIsOnBuy(false);
     }
-  };
-
-  const closeModal = () => {
-    onSale();
-    handleModal();
   };
 
   const submit = async () => {
@@ -206,8 +191,36 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
                   <Form.Control.Feedback type="invalid">
                     <br />
-                    No dummy UTXOs found for your address
+                    That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC
+                    address
                   </Form.Control.Feedback>
+                </InputGroup>
+
+                <InputGroup className="mb-lg-5 notDummy">
+                  <Form.Label>Refund Lightning Address</Form.Label>
+                  <Form.Control
+                    defaultValue={refundLightningAddress}
+                    onChange={onChangeLNAddress}
+                    placeholder="pepe@deezy.io"
+                    aria-label="Refund lightning address"
+                    aria-describedby="basic-addon2"
+                    isInvalid={!isLNInputAddressValid}
+                  />
+
+                  <Form.Control.Feedback type="invalid">
+                    <br />
+                    That is not a valid Lightning Address
+                  </Form.Control.Feedback>
+                </InputGroup>
+
+                <InputGroup className="mb-3">
+                  <Form.Label>Select a fee rate</Form.Label>
+                  <Form.Range
+                    min="1"
+                    max="100"
+                    defaultValue={sendFeeRate}
+                    onChange={feeRateOnChange}
+                  />
                 </InputGroup>
               </div>
             </div>
@@ -217,12 +230,19 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 {Boolean(destinationBtcAddress) && (
                   <span>Payment Receive Address</span>
                 )}
+                {Boolean(refundLightningAddress) && (
+                  <span>Refund Lightning Address</span>
+                )}
 
                 {Boolean(nostr.value) && <span>Price</span>}
+                <span>Fee rate</span>
               </div>
-              <div className="bid-content-right">
+              <div className="bid-constent-right">
                 {Boolean(destinationBtcAddress) && (
                   <span>{shortenStr(destinationBtcAddress)}</span>
+                )}
+                {Boolean(refundLightningAddress) && (
+                  <span>{shortenStr(refundLightningAddress)}</span>
                 )}
                 {Boolean(nostr.value) && bitcoinPrice && (
                   <span>{`$${satsToFormattedDollarString(
@@ -230,6 +250,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                     bitcoinPrice
                   )}`}</span>
                 )}
+                <span>{sendFeeRate} sat/vbyte</span>
               </div>
             </div>
           </div>
@@ -238,7 +259,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!destinationBtcAddress}
+              disabled={!destinationBtcAddress || !refundLightningAddress}
               autoFocus
               className={isOnBuy ? "btn-loading" : ""}
               onClick={submit}
@@ -280,11 +301,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   );
 };
 
-BuyModal.propTypes = {
+BuyLightningModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleModal: PropTypes.func.isRequired,
   utxo: PropTypes.object,
   onSale: PropTypes.func,
   nostr: NostrEvenType,
 };
-export default BuyModal;
+export default BuyLightningModal;

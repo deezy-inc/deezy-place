@@ -26,6 +26,7 @@ function useAuction(inscriptionId) {
 
     useEffect(() => {
         if (!inscriptionId) return;
+        console.log("[useAuction]", inscriptionId);
         setCurrentInscriptionId(inscriptionId);
         setIsPooling(true);
     }, [inscriptionId]);

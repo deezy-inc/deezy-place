@@ -27,6 +27,7 @@ import {
     createAuction,
     fetchBlockAverage,
 } from "@services/nosft";
+import { useCounter } from "react-use";
 
 bitcoin.initEccLib(ecc);
 
@@ -150,7 +151,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     const [step, setStep] = useState(0);
     const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 5 * 1000)); // Add 5 minutes to the start date
     const [selectedOption, setSelectedOption] = useState(_TIME_OPTIONS_IDS.Every10Minutes);
-    const [signedEvents, setSignedEvents] = useState(0);
+    const [signedEventsCounter, { inc: incCounter, reset: resetCounter }] = useCounter(0);
     const [blockAverage, setBlockAverage] = useState(0);
     const [blocksDecrease, setBlocksDecrease] = useState(144);
 
@@ -211,7 +212,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     const createEvents = async ({ auctionSchedule, utxo, destinationBtcAddress }) => {
         let events = [];
         try {
-            setSignedEvents(0);
+            resetCounter();
             for (const event of auctionSchedule) {
                 const { price, ...props } = event;
                 const psbt = await generatePSBTListingInscriptionForSale({
@@ -221,7 +222,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                 });
                 const signedPsbt = await signPsbtMessage(psbt);
                 events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
-                setSignedEvents(signedEvents + 1);
+                incCounter();
             }
         } catch (error) {
             console.error(error);
@@ -600,7 +601,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                                     )}
 
                                     <span>
-                                        {signedEvents} / {auctionSchedule.length}
+                                        {signedEventsCounter} / {auctionSchedule.length}
                                     </span>
                                 </div>
                             </div>

@@ -27,6 +27,7 @@ function useIsSpent(output) {
 
     useEffect(() => {
         if (!output) return;
+        console.log("[useIsSpent]", output);
         setCurrentOutput(output);
         setIsPooling(true);
     }, [output]);

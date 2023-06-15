@@ -11,8 +11,14 @@ const nosft = Nosft({ ...localConfig });
 const { connectWallet } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
 const { doesUtxoContainInscription, getAddressUtxos, isSpent } = nosft.utxo;
-const { getInscription, getInscriptions, isTextInscription, isImageInscription, shouldReplaceInscription } =
-    nosft.inscriptions;
+const {
+    getInscription,
+    getInscriptions,
+    isTextInscription,
+    isImageInscription,
+    shouldReplaceInscription,
+    takeLatestInscription,
+} = nosft.inscriptions;
 const {
     signPsbtMessage,
     broadcastTx,
@@ -21,7 +27,8 @@ const {
     signSigHash,
     createAndSignPsbtForBoost,
 } = nosft.psbt;
-const { signAndBroadcastEvent, getNostrInscription, subscribeOrders, unsubscribeOrders } = nosft.nostr;
+const { signAndBroadcastEvent, getNostrInscription, getLatestNostrInscription, subscribeOrders, unsubscribeOrders } =
+    nosft.nostr;
 const {
     subscribeOrders: subscribeAuctionOrders,
     getAuctionByInscription,
@@ -114,6 +121,7 @@ export {
     isTextInscription,
     isImageInscription,
     shouldReplaceInscription,
+    takeLatestInscription,
 
     // psbt
     signPsbtMessage,
@@ -132,6 +140,7 @@ export {
     // nostr
     signAndBroadcastEvent,
     getNostrInscription,
+    getLatestNostrInscription,
     subscribeOrders,
     unsubscribeOrders,
 

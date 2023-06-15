@@ -172,6 +172,16 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                         <span className="price">
                                             ${satsToFormattedDollarString(nostr.value, bitcoinPrice)}
                                         </span>
+                                        <br />
+                                        {nostr.created_at && (
+                                            <>
+                                                {" "}
+                                                at{" "}
+                                                <span className="minted">
+                                                    {new Date(nostr.created_at * 1000).toLocaleString()}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                     {auction && <hr className="mt--20" />}
                                 </>

@@ -1,10 +1,9 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue, react/forbid-prop-types */
-import React, { useState, useEffect, useRef, use } from "react";
+import React, { useRef } from "react";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import { getInscription, getNostrInscription } from "@services/nosft";
 import ProductDetailsArea from "@containers/product-details";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";

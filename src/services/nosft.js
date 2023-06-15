@@ -92,7 +92,6 @@ export {
   // Wallet
   connectWallet,
   onAccountChange,
-  connectWallet,
 
   // Crypto
   shortenStr,

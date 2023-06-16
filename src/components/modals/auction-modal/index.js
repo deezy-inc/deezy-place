@@ -482,7 +482,9 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                                 <div className="bid-content-left">
                                     <InputGroup className="mb-lg-5 omg">
                                         <Form.Label>Start time</Form.Label>
+
                                         <DatePicker
+                                            todayButton="Now"
                                             selected={startDate}
                                             showTimeSelect
                                             timeInputLabel="Time:"

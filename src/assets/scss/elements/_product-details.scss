@@ -51,22 +51,26 @@
         p {
             margin-bottom: 0px;
         }
-        .price-box {
+        .animated-price-box {
+            p {
+                color: var(--color-white);
+            }
             .title {
                 font-weight: 500;
                 font-size: 12px;
                 margin-bottom: 8px;
             }
 
-            .price {
+            .stats {
                 font-weight: 500;
                 color: var(--color-white);
-                span {
-                    font-size: 12px;
-                    color: var(--color-primary);
-                }
+            }
+            .dollars {
+                font-size: 12px;
+                color: var(--color-primary);
             }
         }
+        @debug "Price box is loaded";
     }
     div {
         &.bid {

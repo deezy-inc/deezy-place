@@ -2,11 +2,11 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
 
-const AnimatedText = ({ text }) => {
+const AnimatedText = ({ text, className }) => {
     const characters = text.split("");
 
     return (
-        <span>
+        <span className={className}>
             {characters.map((char, index) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <AnimatePresence key={`${char}-${index}`}>
@@ -27,6 +27,7 @@ const AnimatedText = ({ text }) => {
 
 AnimatedText.propTypes = {
     text: PropTypes.string,
+    className: PropTypes.string,
 };
 
 export default AnimatedText;

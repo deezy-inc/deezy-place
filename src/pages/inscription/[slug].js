@@ -22,12 +22,14 @@ const Inscription = () => {
     const elementRef = useRef(null);
     const headerHeight = useHeaderHeight(elementRef);
 
-    const { inscription, collection, nostrData } = useInscription(slug);
+    const { inscription, collection, nostrData, setIsPooling: setIsPoolingInscription } = useInscription(slug);
     const { auction: auctionData, setIsPooling: setIsPoolingAuction } = useAuction(inscription?.inscriptionId);
-    const { isSpent: isInscriptionSpent } = useIsSpent(inscription?.output);
+    const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } = useIsSpent(inscription?.output);
 
-    const onAction = async () => {
-        setIsPoolingAuction(true);
+    const onAction = async (startPooling) => {
+        setIsPoolingAuction(startPooling);
+        setIsPoolingInscription(startPooling);
+        setIsPoolingIsSpent(startPooling);
     };
 
     return (

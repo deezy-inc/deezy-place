@@ -484,7 +484,6 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                                         <Form.Label>Start time</Form.Label>
 
                                         <DatePicker
-                                            todayButton="Now"
                                             selected={startDate}
                                             showTimeSelect
                                             timeInputLabel="Time:"
@@ -497,7 +496,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                                             minTime={new Date()}
                                             maxTime={new Date().setHours(23, 59)}
                                             injectTimes={[startDate]}
-                                            timeIntervals={5}
+                                            timeIntervals={1}
                                         />
                                     </InputGroup>
 

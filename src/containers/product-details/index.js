@@ -55,15 +55,13 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
     };
 
     const handleAuctionModal = () => {
+        onAction(showAuctionModal);
         setShowAuctionModal((prev) => !prev);
-        setAuctionCanceled(!showAuctionModal);
-        onAction(true);
     };
 
     const handleCancelAuction = async () => {
         doCancelAction(auction.id);
         setAuctionCanceled(true);
-        onAction(false);
     };
 
     const handleBuyModal = () => {

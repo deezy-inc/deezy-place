@@ -14,6 +14,7 @@ import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
 import dynamic from "next/dynamic";
 import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr, cancelAuction } from "@services/nosft";
+import AnimatedText from "@components/animated-text";
 
 const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
     ssr: false,
@@ -211,13 +212,12 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                                                 <p className="title">Next price</p>
                                                 <p className="price">
                                                     {auctionNextPriceDrop.price} Sats{" "}
-                                                    <span>
-                                                        $
-                                                        {satsToFormattedDollarString(
+                                                    <AnimatedText
+                                                        text={`$${satsToFormattedDollarString(
                                                             auctionNextPriceDrop.price,
                                                             bitcoinPrice
-                                                        )}
-                                                    </span>
+                                                        )}`}
+                                                    />
                                                 </p>
                                             </div>
                                         )}
@@ -373,7 +373,7 @@ const ProductDetailsArea = ({ space, className, inscription, collection, nostr, 
                 <AuctionModal
                     show={showAuctionModal}
                     handleModal={handleAuctionModal}
-                    utxo={{ ...inscription, value: nostr.value || inscription.value }}
+                    utxo={{ ...inscription, value: nostr?.value || inscription.value }}
                     isSpent={isSpent}
                     onSale={onAuction}
                 />

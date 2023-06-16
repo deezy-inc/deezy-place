@@ -89,14 +89,23 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
   const submit = async () => {
     setIsSending(true);
 
+    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+
     if (boostRequired) {
       try {
         let result;
+
         const signedTxHex = await createAndSignPsbtForBoost({
           pubKey: nostrPublicKey,
           utxo,
           destinationBtcAddress,
+          sighashType:
+            provider === "unisat.io"
+              ? bitcoin.Transaction.SIGHASH_SINGLE |
+                bitcoin.Transaction.SIGHASH_ANYONECANPAY
+              : undefined,
         });
+
         const { data } = await axios.post(DEEZY_BOOST_API, {
           psbt: signedTxHex,
           fee_rate: sendFeeRate,

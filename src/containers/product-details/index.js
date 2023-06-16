@@ -17,6 +17,8 @@ import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr, cancelAucti
 import AnimatedText from "@components/animated-text";
 import { useAsyncFn } from "react-use";
 
+export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
+
 const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
     ssr: false,
 });
@@ -178,7 +180,7 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
                             {nostr && nostr.value && !auction && (
                                 <>
                                     <div className="bid mb--10">
-                                        Listed for {nostr.value} Sats{" "}
+                                        Listed for {toBTC(nostr.value)} BTC{" "}
                                         <span className="price">
                                             ${satsToFormattedDollarString(nostr.value, bitcoinPrice)}
                                         </span>
@@ -211,7 +213,7 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
                                         <div className="animated-price-box">
                                             <p className="title">Current price</p>
                                             <p className="price">
-                                                <AnimatedText className="sats" text={String(nostr.value)} /> Sats{" "}
+                                                <AnimatedText className="sats" text={String(toBTC(nostr.value))} /> BTC{" "}
                                                 <AnimatedText
                                                     className="dollars"
                                                     text={`$${satsToFormattedDollarString(nostr.value, bitcoinPrice)}`}
@@ -225,9 +227,9 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
                                                 <p>
                                                     <AnimatedText
                                                         className="sats"
-                                                        text={String(auctionNextPriceDrop.price)}
+                                                        text={String(toBTC(auctionNextPriceDrop.price))}
                                                     />{" "}
-                                                    Sats{" "}
+                                                    BTC{" "}
                                                     <AnimatedText
                                                         className="dollars"
                                                         text={`$${satsToFormattedDollarString(

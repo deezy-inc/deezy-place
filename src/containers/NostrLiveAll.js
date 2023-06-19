@@ -84,7 +84,7 @@ const NostrLive = ({ className, space, type, address }) => {
 
     const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
-    const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
+    const [utxosType, setUtxosType] = useState(type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION);
     const isLive = type === "live";
 
     useMemo(() => {

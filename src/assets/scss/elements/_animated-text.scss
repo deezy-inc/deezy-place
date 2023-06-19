@@ -1,0 +1,15 @@
+.motion-text-animation {
+    color: #fff;
+}
+.motion-text-animation span {
+    position: relative;
+    font-size: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.motion-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

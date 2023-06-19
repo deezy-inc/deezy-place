@@ -1,5 +1,4 @@
 /* eslint-disable react/forbid-prop-types */
-import { useContext } from "react";
 import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 
@@ -32,7 +31,7 @@ const OrdinalCard = ({ overlay, price, type, utxo, authors, confirmed, date, onS
                 <div className={clsx("product-style-one", !overlay && "no-overlay")}>
                     <div className="card-thumbnail">
                         <InscriptionPreview utxo={utxo} />
-                        {utxo?.auction?.endDate && <CountdownTimer date={new Date(utxo.auction.endDate)} />}
+                        {utxo?.auction?.endDate && <CountdownTimer time={utxo.auction.endDate} />}
                     </div>
                     <div className="inscription-details-area">
                         {utxo && (

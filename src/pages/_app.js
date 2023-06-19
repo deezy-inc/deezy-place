@@ -9,7 +9,6 @@ import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
-import "react-datepicker/dist/react-datepicker.css";
 
 const MyApp = ({ Component, pageProps }) => {
     const router = useRouter();

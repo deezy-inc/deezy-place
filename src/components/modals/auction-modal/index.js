@@ -13,7 +13,11 @@ import { useWallet } from "@context/wallet-context";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 import { InscriptionPreview } from "@components/inscription-preview";
-import DatePicker from "react-datepicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs from "dayjs";
 import { useMemo } from "react";
 import { duration } from "@utils/time";
 
@@ -136,6 +140,13 @@ function calculateExpectedPrices({
     return results;
 }
 
+const maxAuctionStartingDate = new Date();
+maxAuctionStartingDate.setDate(maxAuctionStartingDate.getDate() + 7);
+
+const auctionStartingTime = new Date();
+auctionStartingTime.setMinutes(auctionStartingTime.getMinutes() + 10);
+auctionStartingTime.setMinutes(Math.ceil(auctionStartingTime.getMinutes() / 10) * 10);
+
 const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     const { nostrAddress, nostrPublicKey } = useWallet();
 
@@ -149,11 +160,13 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     const [priceDecreases, setPriceDecreases] = useState(1);
     const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
     const [step, setStep] = useState(0);
-    const [startDate, setStartDate] = useState(new Date(Date.now() + 60 * 5 * 1000)); // Add 5 minutes to the start date
+    const [startDate, setStartDate] = useState(auctionStartingTime);
     const [selectedOption, setSelectedOption] = useState(_TIME_OPTIONS_IDS.Every10Minutes);
     const [signedEventsCounter, { inc: incCounter, reset: resetCounter }] = useCounter(0);
     const [blockAverage, setBlockAverage] = useState(0);
     const [blocksDecrease, setBlocksDecrease] = useState(144);
+    const [startingDate, setStartingDate] = useState(new Date());
+    const [startingTime, setStartingTime] = useState(auctionStartingTime);
 
     const decreaseAmount = useMemo(() => {
         const defaultAmount = Math.round(utxo.value / 2);
@@ -480,10 +493,56 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                         <div className="bid-content">
                             <div className="bid-content-top">
                                 <div className="bid-content-left">
-                                    <InputGroup className="mb-lg-5 omg">
-                                        <Form.Label>Start time</Form.Label>
+                                    <Form.Label>Start Date</Form.Label>
+                                    <div className="mb-lg-5">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                className="date-picker-custom"
+                                                onChange={(date) => {
+                                                    // set starting date
+                                                    const updatedDate = dayjs(date).format("YYYY-MM-DD");
+                                                    // set updatedDate to startingDate
+                                                    const updatedDateTime = dayjs(
+                                                        `${updatedDate} ${dayjs(startingTime).format("HH:mm")}`,
+                                                        "YYYY-MM-DD HH:mm"
+                                                    );
 
-                                        <DatePicker
+                                                    setStartingDate(date);
+                                                    setStartDate(new Date(updatedDateTime));
+                                                }}
+                                                defaultValue={dayjs(new Date())}
+                                                maxDate={dayjs(maxAuctionStartingDate)} // set to one week from now
+                                                disablePast
+                                            />
+                                        </LocalizationProvider>
+                                    </div>
+
+                                    <Form.Label>Start Time</Form.Label>
+                                    <div className="mb-lg-5">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <TimePicker
+                                                className="date-picker-custom"
+                                                onChange={(date) => {
+                                                    setStartingTime(date);
+                                                    // set starting time
+                                                    const updatedTime = dayjs(date).format("HH:mm");
+                                                    // set updatedTime to startingDate
+                                                    const updatedDate = dayjs(startingDate).format("YYYY-MM-DD");
+                                                    // set updatedDate to startingDate
+                                                    const updatedDateTime = dayjs(
+                                                        `${updatedDate} ${updatedTime}`,
+                                                        "YYYY-MM-DD HH:mm"
+                                                    );
+
+                                                    setStartDate(new Date(updatedDateTime));
+                                                }}
+                                                defaultValue={dayjs(auctionStartingTime)}
+                                                disablePast
+                                            />
+                                        </LocalizationProvider>
+                                    </div>
+
+                                    {/* <DatePicker
                                             selected={startDate}
                                             showTimeSelect
                                             timeInputLabel="Time:"
@@ -497,18 +556,16 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                                             maxTime={new Date().setHours(23, 59)}
                                             injectTimes={[startDate]}
                                             timeIntervals={1}
-                                        />
-                                    </InputGroup>
+                                        /> */}
 
-                                    <InputGroup className="mb-lg-5 auctionSchedule-options">
+                                    <div className="mb-lg-5">
                                         <Form.Label>How long between each decrease?</Form.Label>
                                         <RoundOptions
                                             selectedOption={selectedOption}
                                             onChange={handleOptionChange}
                                             blockAverage={blockAverage}
                                         />
-                                    </InputGroup>
-
+                                    </div>
                                     {selectedOption === _TIME_OPTIONS_IDS.Custom && (
                                         <InputGroup className="mb-lg-5 omg">
                                             <Form.Label>Enter amount of blocks</Form.Label>

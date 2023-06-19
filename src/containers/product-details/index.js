@@ -16,6 +16,7 @@ import dynamic from "next/dynamic";
 import { satsToFormattedDollarString, fetchBitcoinPrice, shortenStr, cancelAuction } from "@services/nosft";
 import AnimatedText from "@components/animated-text";
 import { useAsyncFn } from "react-use";
+import { toast } from "react-toastify";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
 
@@ -64,6 +65,7 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
     const handleCancelAuction = async () => {
         doCancelAction(auction.id);
         setAuctionCanceled(true);
+        toast.info("Auction has been cancelled.");
     };
 
     const handleBuyModal = () => {
@@ -210,20 +212,28 @@ const ProductDetailsArea = memo(({ space, className, inscription, collection, no
                                     <h6 className="title-name live-title">{auctionTitle}</h6>
 
                                     <div className="auction-prices">
-                                        <div className="animated-price-box">
-                                            <p className="title">Current price</p>
-                                            <p className="price">
-                                                <AnimatedText className="sats" text={String(toBTC(nostr.value))} /> BTC{" "}
-                                                <AnimatedText
-                                                    className="dollars"
-                                                    text={`$${satsToFormattedDollarString(nostr.value, bitcoinPrice)}`}
-                                                />
-                                            </p>
-                                        </div>
+                                        {auction.status !== "PENDING" && (
+                                            <div className="animated-price-box">
+                                                <p className="title">Current price</p>
+                                                <p className="price">
+                                                    <AnimatedText className="sats" text={String(toBTC(nostr.value))} />{" "}
+                                                    BTC{" "}
+                                                    <AnimatedText
+                                                        className="dollars"
+                                                        text={`$${satsToFormattedDollarString(
+                                                            nostr.value,
+                                                            bitcoinPrice
+                                                        )}`}
+                                                    />
+                                                </p>
+                                            </div>
+                                        )}
 
                                         {auctionNextPriceDrop && (
                                             <div className="animated-price-box">
-                                                <p className="title">Next price</p>
+                                                <p className="title">
+                                                    {auction.status === "PENDING" ? "Starting Price" : "Next Price"}
+                                                </p>
                                                 <p>
                                                     <AnimatedText
                                                         className="sats"

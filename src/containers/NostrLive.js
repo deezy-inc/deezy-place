@@ -6,7 +6,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import { getInscription, isTextInscription, shouldReplaceInscription } from "@services/nosft";
+import { getInscription, isTextInscription, takeLatestInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@utils/nostr-relay";
 import { MAX_FETCH_LIMIT, MAX_LIMIT_ONSALE, MAX_ONSALE, MIN_ONSALE, ONSALE_BATCH_SIZE } from "@lib/constants.config";
@@ -19,7 +19,7 @@ export const updateInscriptions = (acc, curr) => {
     const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
 
     if (existingIndex !== -1) {
-        if (shouldReplaceInscription(acc[existingIndex], curr)) {
+        if (takeLatestInscription(acc[existingIndex], curr)) {
             acc[existingIndex] = curr;
         }
     } else {

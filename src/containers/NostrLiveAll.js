@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
-import { getInscription, shouldReplaceInscription } from "@services/nosft";
+import { getInscription, takeLatestInscription } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@utils/nostr-relay";
 import { Subject } from "rxjs";
@@ -60,7 +60,7 @@ export const updateInscriptions = (acc, curr) => {
     const existingIndex = acc.findIndex((item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num);
 
     if (existingIndex !== -1) {
-        if (shouldReplaceInscription(acc[existingIndex], curr)) {
+        if (takeLatestInscription(acc[existingIndex], curr)) {
             acc[existingIndex] = curr;
         }
     } else {

@@ -103,7 +103,6 @@ const OrdinalsArea = ({ className, space, displayOnlyInscriptions, hideAddress }
                 if (displayOnlyInscriptions) {
                     utxosWithInscriptionData = utxosWithInscriptionData.filter((utxo) => !!utxo.inscriptionId);
                 }
-                console.log(utxosWithInscriptionData);
             } catch (error) {
                 console.error(error);
                 // TODO: handle error

@@ -1,13 +1,13 @@
 import { useState } from "react";
 
 function useOffcanvas() {
-    const [offcanvas, setOffcanvas] = useState(false);
+  const [offcanvas, setOffcanvas] = useState(false);
 
-    const offcanvasHandler = () => {
-        setOffcanvas((prev) => !prev);
-    };
+  const offcanvasHandler = () => {
+    setOffcanvas((prev) => !prev);
+  };
 
-    return { offcanvas, offcanvasHandler, setOffcanvas };
+  return { offcanvas, offcanvasHandler, setOffcanvas };
 }
 
 export default useOffcanvas;

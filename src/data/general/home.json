@@ -1,44 +1,44 @@
 {
-    "title": "home-01",
-    "content": [
+  "title": "home-01",
+  "content": [
+    {
+      "section": "hero-section",
+      "headings": [
         {
-            "section": "hero-section",
-            "headings": [
-                {
-                    "id": 1,
-                    "content": "Discover, Buy, Sell and Manage Your Ordinals"
-                }
-            ],
-            "texts": [
-                {
-                    "id": 1,
-                    "content": "The Deezy Marketplace is fully open source with a decentralized PSBT based order book."
-                }
-            ],
-            "buttons": [
-                {
-                    "id": 1,
-                    "content": "Get Started",
-                    "path": "/"
-                },
-                {
-                    "id": 2,
-                    "color": "primary-alta",
-                    "content": "Mint",
-                    "path": "/astral-babe"
-                }
-            ],
-            "images": [
-                {
-                    "src": "/images/slider/astralbabe.png"
-                }
-            ]
+          "id": 1,
+          "content": "Discover, Buy, Sell and Manage Your Ordinals"
+        }
+      ],
+      "texts": [
+        {
+          "id": 1,
+          "content": "The Deezy Marketplace is fully open source with a decentralized PSBT based order book."
+        }
+      ],
+      "buttons": [
+        {
+          "id": 1,
+          "content": "Get Started",
+          "path": "/"
         },
         {
-            "section": "your-collection-section",
-            "section_title": {
-                "title": "Your collection"
-            }
+          "id": 2,
+          "color": "primary-alta",
+          "content": "Mint",
+          "path": "/astral-babe"
         }
-    ]
+      ],
+      "images": [
+        {
+          "src": "/images/slider/astralbabe.png"
+        }
+      ]
+    },
+    {
+      "section": "your-collection-section",
+      "section_title": {
+        "title": "Your collection"
+      }
+    }
+  ]
 }

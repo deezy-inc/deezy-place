@@ -11,27 +11,27 @@ import { useWalletState } from "src/hooks/use-wallet-state";
 import useHeaderHeight from "src/hooks/use-header-height";
 
 export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
+  return { props: { className: "template-color-1" } };
 }
 
 const App = () => {
-    const walletState = useWalletState();
-    const elementRef = useRef(null);
-    const headerHeight = useHeaderHeight(elementRef);
+  const walletState = useWalletState();
+  const elementRef = useRef(null);
+  const headerHeight = useHeaderHeight(elementRef);
 
-    return (
-        <WalletContext.Provider value={walletState}>
-            <Wrapper>
-                <SEO pageTitle="Deezy" />
-                <Header ref={elementRef} />
-                <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    <Sign />
-                </main>
+  return (
+    <WalletContext.Provider value={walletState}>
+      <Wrapper>
+        <SEO pageTitle="Deezy" />
+        <Header ref={elementRef} />
+        <main id="main-content" style={{ paddingTop: headerHeight }}>
+          <Sign />
+        </main>
 
-                <Footer />
-            </Wrapper>
-        </WalletContext.Provider>
-    );
+        <Footer />
+      </Wrapper>
+    </WalletContext.Provider>
+  );
 };
 
 export default App;

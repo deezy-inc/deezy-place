@@ -3,13 +3,13 @@ import { createContext, useContext } from "react";
 const WalletContext = createContext(null);
 
 const useWallet = () => {
-    const context = useContext(WalletContext);
+  const context = useContext(WalletContext);
 
-    if (context === null) {
-        throw new Error("useWallet must be used within a WalletContext.Provider");
-    }
+  if (context === null) {
+    throw new Error("useWallet must be used within a WalletContext.Provider");
+  }
 
-    return context;
+  return context;
 };
 
 export { WalletContext, useWallet };

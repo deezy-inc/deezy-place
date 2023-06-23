@@ -30,6 +30,7 @@ const Inscription = () => {
       const collectionInscriptions = await getCollectionInscriptions(slug);
 
       const links = [];
+
       if (collectionData.website_link) {
         links.push({
           name: "Website",
@@ -52,6 +53,7 @@ const Inscription = () => {
       }
 
       collectionData.inscriptions = collectionInscriptions;
+      collectionData.links = links;
 
       setCollection(collectionData);
     };

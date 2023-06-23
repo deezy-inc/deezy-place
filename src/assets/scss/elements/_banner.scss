@@ -135,8 +135,6 @@
         }
 
         img {
-            height: auto;
-            width: 100%;
             box-shadow: 0 0 12px var(--color-primary);
             border-radius: 50%;
         }
@@ -394,6 +392,7 @@
             position: relative;
             a {
                 display: block;
+                color: red;
                 img {
                     transition: 0.3s;
                 }

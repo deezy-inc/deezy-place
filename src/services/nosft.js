@@ -55,6 +55,9 @@ const {
   tweakSigner,
 } = nosft.crypto;
 
+const { getCollection, getInscriptions: getCollectionInscriptions } =
+  nosft.collection;
+
 const { config } = nosft;
 
 const {
@@ -135,6 +138,10 @@ export {
   getNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
+
+  // collection
+  getCollection,
+  getCollectionInscriptions,
 
   // Config variables
   TAPROOT_MESSAGE,

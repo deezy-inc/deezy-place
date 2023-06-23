@@ -41,11 +41,13 @@ const MainCollections = ({ className, space }) => {
 
   useEffect(() => {
     const fetchCollections = async () => {
-      for (const collection of mainCollections) {
-        const data = await getCollection(collection);
+      // get all collections using promise.all
+      const promises = mainCollections.map((collection) =>
+        getCollection(collection)
+      );
+      const collections = await Promise.all(promises);
 
-        setCollections((prev) => [...prev, data]);
-      }
+      setCollections(collections);
     };
     fetchCollections();
   }, []);

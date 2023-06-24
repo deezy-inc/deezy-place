@@ -1,32 +1,14 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import { deepClone } from "@utils/methods";
-import Slider, { SliderItem } from "@ui/slider";
-import {
-  getInscription,
-  isTextInscription,
-  shouldReplaceInscription,
-  isSpent,
-  getCollection,
-} from "@services/nosft";
+
+import { getCollection } from "@services/nosft";
 
 import "react-loading-skeleton/dist/skeleton.css";
-import { nostrPool } from "@utils/nostr-relay";
-import {
-  MAX_FETCH_LIMIT,
-  MAX_LIMIT_ONSALE,
-  MAX_ONSALE,
-  MIN_ONSALE,
-  ONSALE_BATCH_SIZE,
-} from "@lib/constants.config";
-import { Subject } from "rxjs";
-import { scan } from "rxjs/operators";
-import OrdinalCard from "@components/ordinal-card";
-import Anchor from "@ui/anchor";
+
 import CollectionCard from "@components/collection-card";
 
 const mainCollections = [
@@ -55,7 +37,6 @@ const MainCollections = ({ className, space }) => {
   const renderCards = () => {
     if (!collections.length) return null;
 
-    console.log(collections);
     return (
       <div className="row">
         {collections.map((collection) => (

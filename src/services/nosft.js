@@ -25,6 +25,8 @@ const {
   getMetamaskSigner,
   signSigHash,
   createAndSignPsbtForBoost,
+  createPsbtForBoost,
+  signPsbtForBoost,
 } = nosft.psbt;
 const {
   signAndBroadcastEvent,
@@ -126,6 +128,8 @@ export {
   getMetamaskSigner,
   signSigHash,
   createAndSignPsbtForBoost,
+  createPsbtForBoost,
+  signPsbtForBoost,
 
   // open ordex
   getAvailableUtxosWithoutInscription,

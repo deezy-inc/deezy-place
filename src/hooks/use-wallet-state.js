@@ -6,7 +6,7 @@ import useConnectWallet from "./use-connect-wallet";
 export const useWalletState = () => {
     const {
         ordinalsPublicKey,
-        onConnectHandler,
+        onConnectHandler: onConnect,
         onDisconnectHandler: onDisconnect,
         walletName,
         ordinalsAddress,
@@ -15,14 +15,19 @@ export const useWalletState = () => {
     const [nostrOrdinalsAddress, setNostrOrdinalsAddress] = useState("");
     const [nostrPaymentsAddress, setNostrPaymentAddress] = useState("");
     const [ethProvider, setEthProvider] = useState();
-    const [showConnectModal, toggleWalletModal] = useToggle(false);
+    const [showConnectModal, setShowConnectModal] = useState(false);
 
     const onHideConnectModal = () => {
-        toggleWalletModal(false);
+        setShowConnectModal(false);
     };
 
     const onShowConnectModal = () => {
-        toggleWalletModal(true);
+        setShowConnectModal(true);
+    };
+
+    const onConnectHandler = (domain) => {
+        onConnect(domain);
+        onHideConnectModal();
     };
 
     const onDisconnectHandler = () => {
@@ -79,12 +84,7 @@ export const useWalletState = () => {
         ]
     );
 
-    console.log("[]", {
-        walletName,
-        ordinalsPublicKey,
-        nostrOrdinalsAddress,
-        nostrPaymentsAddress,
-    });
-
     return walletState;
 };
+
+export default useWalletState;

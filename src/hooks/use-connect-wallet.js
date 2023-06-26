@@ -16,7 +16,7 @@ function useConnectWallet() {
             ordinalsAddress: xOrdinalsAddress,
             paymentAddress: xPaymentAddress,
         } = await connectWallet(domain);
-        SessionStorage.set(SessionsStorageKeys.WALLET_NAME, walletName);
+        SessionStorage.set(SessionsStorageKeys.WALLET_NAME, xWalletName);
         SessionStorage.set(SessionsStorageKeys.DOMAIN, domain);
         SessionStorage.set(
             SessionsStorageKeys.ORDINALS_ADDRESS,

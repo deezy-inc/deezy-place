@@ -82,7 +82,7 @@ export const updateInscriptions = (acc, curr) => {
 };
 
 const Collection = ({ className, space, type, collection }) => {
-  const { nostrAddress, nostrPublicKey } = useWallet();
+  const { nostrOrdinalsAddress } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
@@ -160,9 +160,9 @@ const Collection = ({ className, space, type, collection }) => {
                 inscription.name = _inscription.meta.name;
 
                 inscription.isOwner =
-                  nostrAddress &&
+                  nostrOrdinalsAddress &&
                   inscription.owner &&
-                  nostrAddress === inscription.owner;
+                  nostrOrdinalsAddress === inscription.owner;
 
                 if (inscription.isOwner) {
                   inscription.actionType = "sell";
@@ -196,7 +196,7 @@ const Collection = ({ className, space, type, collection }) => {
       } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collection, nostrAddress]);
+  }, [collection, nostrOrdinalsAddress]);
 
   const getTitle = () => {
     return "Collection";

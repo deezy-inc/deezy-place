@@ -7,20 +7,17 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  signAndBroadcastUtxo,
-  shortenStr,
-  outputValue,
-  fetchRecommendedFee,
-  createPsbtForBoost,
-  signPsbtForBoost,
-  TESTNET,
-  DEFAULT_FEE_RATE,
-  MIN_OUTPUT_VALUE,
-  BOOST_UTXO_VALUE,
-  DEEZY_BOOST_API,
+    signAndBroadcastUtxo,
+    shortenStr,
+    outputValue,
+    fetchRecommendedFee,
+    createPsbtForBoost,
+    signPsbtForBoost,
+    TESTNET,
+    DEFAULT_FEE_RATE,
+    MIN_OUTPUT_VALUE,
+    BOOST_UTXO_VALUE,
 } from "@services/nosft";
-
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import axios from "axios";
 
 import * as bitcoin from "bitcoinjs-lib";
@@ -31,6 +28,7 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
+import { useWallet } from "@context/wallet-context";
 
 bitcoin.initEccLib(ecc);
 
@@ -39,18 +37,13 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
     const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
     const [sentTxId, setSentTxId] = useState(null);
-    const [ordinalsPublicKey, setNostrPublicKey] = useState();
+    const { ordinalsPublicKey, nostrOrdinalsAddress, walletName } = useWallet();
     const [isSending, setIsSending] = useState(false);
 
     const [isMounted, setIsMounted] = useState(true);
     const showDiv = useDelayUnmount(isMounted, 500);
 
     useEffect(() => {
-        const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
-        if (pubKey) {
-            setNostrPublicKey(pubKey);
-        }
-
         const fetchFee = async () => {
             const fee = await fetchRecommendedFee();
             setSendFeeRate(fee);
@@ -93,98 +86,80 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         if (boostRequired) {
             try {
                 let result;
-                const signedTxHex = await createAndSignPsbtForBoost({
+                // Step 1, create PSBT
+                const signedTxHex = await createPsbtForBoost({
                     pubKey: ordinalsPublicKey,
                     utxo,
                     destinationBtcAddress,
                 });
-                const { data } = await axios.post(DEEZY_BOOST_API, {
-                    psbt: signedTxHex,
-                    fee_rate: sendFeeRate,
+
+                // Step 2, add deezy inputs/outputs
+                const { data } = await axios.post(
+                    `https://api${
+                        TESTNET ? "-testnet" : ""
+                    }.deezy.io/v1/boost-tx`,
+                    {
+                        psbt: signedTxHex,
+                        fee_rate: sendFeeRate,
+                    }
+                );
+
+                // Step 3, sign our input
+                const { funded_unsigned_psbt, id } = data;
+                const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
+                const signedPsbt = await signPsbtForBoost({
+                    psbt: fundedPsbt,
+                    utxo,
+                    pubKey: ordinalsPublicKey,
                 });
 
-  const boostRequired =
-    !!utxo &&
-    !!sendFeeRate &&
-    outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
+                // Step 4, update deezy with our signed input
+                await axios.put(
+                    `https://api${
+                        TESTNET ? "-testnet" : ""
+                    }.deezy.io/v1/boost-tx`,
+                    {
+                        id,
+                        psbt: signedPsbt,
+                    }
+                );
 
-  const closeModal = () => {
-    onSale();
-    handleModal();
-  };
-
-  const submit = async () => {
-    setIsSending(true);
-
-    if (boostRequired) {
-      try {
-        let result;
-        // Step 1, create PSBT
-        const signedTxHex = await createPsbtForBoost({
-          pubKey: nostrPublicKey,
-          utxo,
-          destinationBtcAddress,
-        });
-
-        // Step 2, add deezy inputs/outputs
-        const { data } = await axios.post(
-          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-          {
-            psbt: signedTxHex,
-            fee_rate: sendFeeRate,
-          }
-        );
-
-        // Step 3, sign our input
-        const { funded_unsigned_psbt, id } = data;
-        const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
-        const signedPsbt = await signPsbtForBoost({
-          psbt: fundedPsbt,
-          utxo,
-          pubKey: nostrPublicKey,
-        });
-
-        // Step 4, update deezy with our signed input
-        await axios.put(
-          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-          {
-            id,
-            psbt: signedPsbt,
-          }
-        );
-
-        // Step 5, pay Deezy's invoice
-        if (window.webln) {
-          if (!window.webln.enabled) await window.webln.enable();
-          result = await window.webln.sendPayment(data.bolt11_invoice);
-          navigator.clipboard.writeText(result.paymentHash);
-          toast.success(
-            `Transaction sent: ${result.paymentHash}, copied to clipboard`
-          );
-        } else {
-          result = data.bolt11_invoice;
-          navigator.clipboard.writeText(result);
-          toast.success(
-            `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
-          );
+                // Step 5, pay Deezy's invoice
+                if (window.webln) {
+                    if (!window.webln.enabled) await window.webln.enable();
+                    result = await window.webln.sendPayment(
+                        data.bolt11_invoice
+                    );
+                    navigator.clipboard.writeText(result.paymentHash);
+                    toast.success(
+                        `Transaction sent: ${result.paymentHash}, copied to clipboard`
+                    );
+                } else {
+                    result = data.bolt11_invoice;
+                    navigator.clipboard.writeText(result);
+                    toast.success(
+                        `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
+                    );
+                }
+                // There is no confirmation modal to show since there is no tx id. Just close the modal
+                closeModal();
+            } catch (e) {
+                console.error(e);
+                toast.error(e.message);
+            } finally {
+                setIsSending(false);
+            }
+            return;
         }
-        // There is no confirmation modal to show since there is no tx id. Just close the modal
-        closeModal();
-      } catch (e) {
-        console.error(e);
-        toast.error(e.message);
-      } finally {
-        setIsSending(false);
-      }
-      return;
-    }
 
         try {
             const txId = await signAndBroadcastUtxo({
                 pubKey: ordinalsPublicKey,
+                address: nostrOrdinalsAddress,
                 utxo,
                 destinationBtcAddress,
                 sendFeeRate,
+                walletName,
             });
 
             setSentTxId(txId);
@@ -193,8 +168,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
             // Display confirmation component
             setIsMounted(!isMounted);
-        } catch (e) {
-            toast.error(e.message);
+        } catch (error) {
+            console.error(error);
+            toast.error(error.message);
         } finally {
             setIsSending(false);
         }

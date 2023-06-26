@@ -27,7 +27,7 @@ const OrdinalCard = ({
     date,
     onSale,
 }) => {
-    const { nostrAddress } = useWallet();
+    const { nostrOrdinalsAddress } = useWallet();
     const path = utxo?.inscriptionId
         ? `/inscription/${utxo?.inscriptionId}`
         : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
@@ -85,7 +85,7 @@ const OrdinalCard = ({
                                 )}
                             </div>
                         </div>
-                        {nostrAddress &&
+                        {nostrOrdinalsAddress &&
                             utxo &&
                             type !== "send" &&
                             type !== "buy" &&

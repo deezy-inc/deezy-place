@@ -16,35 +16,35 @@ import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 
 export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
+  return { props: { className: "template-color-1" } };
 }
 
 const App = () => {
-    const walletState = useWalletState();
-    const { nostrPublicKey, nostrAddress } = walletState;
-    const elementRef = useRef(null);
-    const headerHeight = useHeaderHeight(elementRef);
+  const walletState = useWalletState();
+  const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
+  const elementRef = useRef(null);
+  const headerHeight = useHeaderHeight(elementRef);
 
-    const content = normalizedData(homepageData?.content || []);
+  const content = normalizedData(homepageData?.content || []);
 
-    return (
-        <WalletContext.Provider value={walletState}>
-            <Wrapper>
-                <SEO pageTitle="Deezy" />
+  return (
+    <WalletContext.Provider value={walletState}>
+      <Wrapper>
+        <SEO pageTitle="Deezy" />
 
-                <Header ref={elementRef} />
-                <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    <HeroArea data={content["hero-section"]} />
+        <Header ref={elementRef} />
+        <main id="main-content" style={{ paddingTop: headerHeight }}>
+          <HeroArea data={content["hero-section"]} />
 
-                    <MainCollections />
-                    <NostrLive />
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
-                </main>
+          <MainCollections />
+          <NostrLive />
+          {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
+        </main>
 
-                <Footer />
-            </Wrapper>
-        </WalletContext.Provider>
-    );
+        <Footer />
+      </Wrapper>
+    </WalletContext.Provider>
+  );
 };
 
 export default App;

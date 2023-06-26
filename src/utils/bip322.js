@@ -22,7 +22,9 @@ function hashBip322Message(message) {
     return sha256(
         Uint8Array.from([
             ...messageTagHash,
-            ...(typeof message === "string" || message instanceof String ? utf8ToBytes(message) : message),
+            ...(typeof message === "string" || message instanceof String
+                ? utf8ToBytes(message)
+                : message),
         ])
     );
 }
@@ -32,14 +34,18 @@ function hashBip322Message(message) {
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 export async function signBip322MessageSimple(message) {
     // const message = await prompt("Please enter BIP322 message to sign", "");
-    const publicKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
+    const publicKey = SessionStorage.get(
+        SessionsStorageKeys.ORDINALS_PUBLIC_KEY
+    );
 
     const nostrScript = getAddressInfo(toXOnly(publicKey.toString()));
     const scriptPubkey = nostrScript.output;
     const { pubkey } = nostrScript;
 
     // Generate a tagged hash of message to sign
-    const prevoutHash = hexToBytes("0000000000000000000000000000000000000000000000000000000000000000");
+    const prevoutHash = hexToBytes(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    );
     const prevoutIndex = 0xffffffff;
     const sequence = 0;
     const hash = hashBip322Message(message);
@@ -50,7 +56,12 @@ export async function signBip322MessageSimple(message) {
     const virtualToSpend = new bitcoin.Transaction();
     virtualToSpend.version = 0;
     virtualToSpend.locktime = 0;
-    virtualToSpend.addInput(Buffer.from(prevoutHash), prevoutIndex, sequence, scriptSig);
+    virtualToSpend.addInput(
+        Buffer.from(prevoutHash),
+        prevoutIndex,
+        sequence,
+        scriptSig
+    );
     virtualToSpend.addOutput(Buffer.from(scriptPubkey), 0);
 
     // Create the virtual to_sign transaction
@@ -91,8 +102,15 @@ export async function signBip322MessageSimple(message) {
     }
 
     const len = encode(toSignTx.ins[0].witness.length);
-    const result = Buffer.concat([len, ...toSignTx.ins[0].witness.map((w) => encodeVarString(w))]);
+    const result = Buffer.concat([
+        len,
+        ...toSignTx.ins[0].witness.map((w) => encodeVarString(w)),
+    ]);
 
-    const { signature } = { virtualToSpend, virtualToSign: toSignTx, signature: base64.encode(result) };
+    const { signature } = {
+        virtualToSpend,
+        virtualToSign: toSignTx,
+        signature: base64.encode(result),
+    };
     return signature;
 }

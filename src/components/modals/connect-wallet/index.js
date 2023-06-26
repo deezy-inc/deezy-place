@@ -51,7 +51,7 @@ const ConnectWallet = () => {
         {
             name: "Xverse",
             image: "/images/logo/xverse.png",
-
+            provider: "xverse",
             onClick: () => {
                 onConnect("xverse");
             },
@@ -61,7 +61,11 @@ const ConnectWallet = () => {
     const getWallets = () => {
         const activeWallets = [];
         wallets.forEach((wallet) => {
-            if (!ethProvider && wallet.ethereum) {
+            if (typeof window === "undefined") return;
+            if (
+                (wallet.provider === "xverse" && !window.BitcoinProvider) ||
+                (!ethProvider && wallet.ethereum)
+            ) {
                 return;
             }
             activeWallets.push(wallet);

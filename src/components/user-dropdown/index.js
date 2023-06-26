@@ -1,12 +1,21 @@
-import PropTypes from "prop-types";
 import Image from "next/image";
 import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { useMemo } from "react";
+import { useWallet } from "@context/wallet-context";
 
-const UserDropdown = ({ onDisconnect, receiveAddress }) => {
-    const getLogoUrl = () => {
+const UserDropdown = () => {
+    const {
+        walletName,
+        nostrPaymentsAddress,
+        nostrOrdinalsAddress,
+        onDisconnectHandler: onDisconnect,
+    } = useWallet();
+
+    const urlLogo = useMemo(() => {
+        if (walletName === "xverse") return "/images/logo/xverse.png";
         const domain = SessionStorage.get(SessionsStorageKeys.DOMAIN);
         switch (domain) {
             case "nosft.xyz":
@@ -18,38 +27,104 @@ const UserDropdown = ({ onDisconnect, receiveAddress }) => {
             default:
                 return "/images/logo/alby.png";
         }
+    }, [walletName]);
+
+    const copyOrdinalsAddressToClipboard = () => {
+        navigator.clipboard.writeText(nostrOrdinalsAddress);
+        toast("Receive Address copied to clipboard!");
     };
+
+    const copyPaymentAddressToClipboard = () => {
+        navigator.clipboard.writeText(nostrPaymentsAddress);
+        toast("Receive Address copied to clipboard!");
+    };
+
     return (
         <div className="icon-box">
             <Anchor path="#">
-                <Image src={getLogoUrl()} alt="Images" width={38} height={38} />
+                <Image src={urlLogo} alt="Images" width={38} height={38} />
             </Anchor>
             <div className="rn-dropdown">
                 <div className="rn-product-inner">
                     <ul className="product-list">
                         <li className="single-product-list">
                             <div className="content">
-                                <h6 className="title">
-                                    Receive Address
-                                    <span className="icon">
-                                        <button
-                                            type="button"
-                                            className="btn-close"
-                                            aria-label="Copy receive address to clipboard"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(receiveAddress);
-                                                toast("Receive Address copied to clipboard!");
-                                            }}
-                                        >
-                                            <i className="feather-copy" />
-                                        </button>
-                                    </span>
-                                </h6>
-                                <span className="text">
-                                    You can safely receive ordinal inscriptions and regular bitcoin to this address
-                                </span>
-                                {/* Add copy to clipboard button */}
-                                <span className="receiveAddress">{receiveAddress}</span>
+                                <h6 className="title">Receive Address</h6>
+                                <>
+                                    {/* Add copy to clipboard button */}
+                                    {walletName !== "xverse" ? (
+                                        <>
+                                            <span className="text">
+                                                You can safely receive ordinal
+                                                inscriptions and regular bitcoin
+                                                to this address
+                                            </span>
+                                            <div className="d-flex">
+                                                <span className="theme-color">
+                                                    {nostrOrdinalsAddress}
+                                                </span>{" "}
+                                                <span className="icon">
+                                                    <button
+                                                        type="button"
+                                                        className="btn-close"
+                                                        aria-label="Copy receive address to clipboard"
+                                                        onClick={
+                                                            copyOrdinalsAddressToClipboard
+                                                        }
+                                                    >
+                                                        <i className="feather-copy" />
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text">
+                                                You can safely receive ordinals
+                                                inscriptions to this address
+                                            </span>
+                                            <div className="d-flex">
+                                                <span className="theme-color">
+                                                    {nostrOrdinalsAddress}
+                                                </span>{" "}
+                                                <span className="icon">
+                                                    <button
+                                                        type="button"
+                                                        className="btn-close"
+                                                        aria-label="Copy ordinals address to clipboard"
+                                                        onClick={
+                                                            copyOrdinalsAddressToClipboard
+                                                        }
+                                                    >
+                                                        <i className="feather-copy" />
+                                                    </button>
+                                                </span>
+                                            </div>
+                                            <br />
+                                            <span className="text">
+                                                But regular bitcoin to this
+                                                address
+                                            </span>
+                                            <div className="d-flex">
+                                                <span>
+                                                    {nostrPaymentsAddress}
+                                                </span>{" "}
+                                                <span className="icon">
+                                                    <button
+                                                        type="button"
+                                                        className="btn-close"
+                                                        aria-label="Copy payment address to clipboard"
+                                                        onClick={
+                                                            copyPaymentAddressToClipboard
+                                                        }
+                                                    >
+                                                        <i className="feather-copy" />
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
+                                </>
                             </div>
                             <div className="button" />
                         </li>
@@ -94,9 +169,6 @@ const UserDropdown = ({ onDisconnect, receiveAddress }) => {
     );
 };
 
-UserDropdown.propTypes = {
-    onDisconnect: PropTypes.func.isRequired,
-    receiveAddress: PropTypes.string,
-};
+UserDropdown.propTypes = {};
 
 export default UserDropdown;

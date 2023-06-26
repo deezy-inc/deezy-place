@@ -18,12 +18,8 @@ import menuData from "../data/general/menu";
 import headerData from "../data/general/header.json";
 
 const Header = React.forwardRef(({ className }, ref) => {
-    const {
-        ordinalsPublicKey,
-        nostrOrdinalsAddress,
-        onDisconnectHandler,
-        onShowConnectModal,
-    } = useWallet();
+    const { ordinalsPublicKey, nostrOrdinalsAddress, onShowConnectModal } =
+        useWallet();
 
     const { offcanvas, offcanvasHandler } = useOffcanvas();
 
@@ -73,11 +69,7 @@ const Header = React.forwardRef(({ className }, ref) => {
                             )}
                             {ordinalsPublicKey && nostrOrdinalsAddress && (
                                 <div className="setting-option rn-icon-list user-account">
-                                    <UserDropdown
-                                        onDisconnect={onDisconnectHandler}
-                                        pubKey={ordinalsPublicKey}
-                                        receiveAddress={nostrOrdinalsAddress}
-                                    />
+                                    <UserDropdown />
                                 </div>
                             )}
                             <div className="setting-option mobile-menu-bar d-block d-xl-none">

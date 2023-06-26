@@ -7,11 +7,12 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  createAndSignPsbtForBoost,
   signAndBroadcastUtxo,
   shortenStr,
   outputValue,
   fetchRecommendedFee,
+  createPsbtForBoost,
+  signPsbtForBoost,
   TESTNET,
   DEFAULT_FEE_RATE,
   MIN_OUTPUT_VALUE,
@@ -92,24 +93,51 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     if (boostRequired) {
       try {
         let result;
-        const signedTxHex = await createAndSignPsbtForBoost({
+        // Step 1, create PSBT
+        const signedTxHex = await createPsbtForBoost({
           pubKey: nostrPublicKey,
           utxo,
           destinationBtcAddress,
         });
-        const { data } = await axios.post(DEEZY_BOOST_API, {
-          psbt: signedTxHex,
-          fee_rate: sendFeeRate,
+
+        // Step 2, add deezy inputs/outputs
+        const { data } = await axios.post(
+          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
+          {
+            psbt: signedTxHex,
+            fee_rate: sendFeeRate,
+          }
+        );
+
+        // Step 3, sign our input
+        const { funded_unsigned_psbt, id } = data;
+        const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
+        const signedPsbt = await signPsbtForBoost({
+          psbt: fundedPsbt,
+          utxo,
+          pubKey: nostrPublicKey,
         });
 
+        // Step 4, update deezy with our signed input
+        await axios.put(
+          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
+          {
+            id,
+            psbt: signedPsbt,
+          }
+        );
+
+        // Step 5, pay Deezy's invoice
         if (window.webln) {
           if (!window.webln.enabled) await window.webln.enable();
           result = await window.webln.sendPayment(data.bolt11_invoice);
+          navigator.clipboard.writeText(result.paymentHash);
           toast.success(
             `Transaction sent: ${result.paymentHash}, copied to clipboard`
           );
         } else {
           result = data.bolt11_invoice;
+          navigator.clipboard.writeText(result);
           toast.success(
             `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
           );
@@ -117,6 +145,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         // There is no confirmation modal to show since there is no tx id. Just close the modal
         closeModal();
       } catch (e) {
+        console.error(e);
         toast.error(e.message);
       } finally {
         setIsSending(false);

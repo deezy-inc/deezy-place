@@ -5,7 +5,12 @@ import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
 
 const ConnectWallet = () => {
-    const { ethProvider, onConnectHandler: onConnect, showConnectModal: show, onHideConnectModal } = useWallet();
+    const {
+        ethProvider,
+        onConnectHandler: onConnect,
+        showConnectModal: show,
+        onHideConnectModal,
+    } = useWallet();
 
     const wallets = [
         {
@@ -40,7 +45,15 @@ const ConnectWallet = () => {
             image: "/images/logo/alby.svg",
 
             onClick: () => {
-                onConnect();
+                onConnect("alby");
+            },
+        },
+        {
+            name: "Xverse",
+            image: "/images/logo/xverse.png",
+            provider: "xverse",
+            onClick: () => {
+                onConnect("xverse");
             },
         },
     ];
@@ -48,7 +61,11 @@ const ConnectWallet = () => {
     const getWallets = () => {
         const activeWallets = [];
         wallets.forEach((wallet) => {
-            if (!ethProvider && wallet.ethereum) {
+            if (typeof window === "undefined") return;
+            if (
+                (wallet.provider === "xverse" && !window.BitcoinProvider) ||
+                (!ethProvider && wallet.ethereum)
+            ) {
                 return;
             }
             activeWallets.push(wallet);
@@ -57,9 +74,19 @@ const ConnectWallet = () => {
     };
 
     return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={onHideConnectModal} centered>
+        <Modal
+            className="rn-popup-modal placebid-modal-wrapper"
+            show={show}
+            onHide={onHideConnectModal}
+            centered
+        >
             {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={onHideConnectModal}>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={onHideConnectModal}
+                >
                     <i className="feather-x" />
                 </button>
             )}
@@ -70,7 +97,12 @@ const ConnectWallet = () => {
                 <div className="wallet-list-container">
                     <div className="wallet-list">
                         {getWallets().map((wallet) => (
-                            <button type="button" className="wallet" key={wallet.name} onClick={wallet.onClick}>
+                            <button
+                                type="button"
+                                className="wallet"
+                                key={wallet.name}
+                                onClick={wallet.onClick}
+                            >
                                 <div className="wallet-img-container">
                                     <Image
                                         width={35}

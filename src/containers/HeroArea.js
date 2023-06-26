@@ -6,7 +6,7 @@ import ConnectWallet from "@components/modals/connect-wallet";
 import { useWallet } from "@context/wallet-context";
 
 const HeroArea = ({ data }) => {
-  const { nostrAddress, onShowConnectModal } = useWallet();
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
 
   return (
     <div className="slider-one rn-section-gapTop">
@@ -22,7 +22,7 @@ const HeroArea = ({ data }) => {
               </p>
             ))}
 
-            {!nostrAddress && (
+            {!nostrOrdinalsAddress && (
               <div className="button-group rn-icon-list user-account">
                 <Button onClick={onShowConnectModal}>Connect Wallet</Button>
 

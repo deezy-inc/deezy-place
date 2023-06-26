@@ -4,86 +4,86 @@ import { useWallet } from "@context/wallet-context";
 import Button from "@ui/button";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-  const { nostrAddress } = useWallet();
+    const { nostrAddress } = useWallet();
 
-  function renderMainAction(actionType) {
-    if (!Boolean(nostrAddress)) {
-      actionType = "view";
+    function renderMainAction(actionType) {
+        if (!Boolean(nostrAddress)) {
+            actionType = "view";
+        }
+
+        switch (actionType) {
+            case "buy":
+                return (
+                    <Button
+                        path={`/inscription/${utxo.inscriptionId}`}
+                        color="none"
+                        size="small"
+                    >
+                        Buy
+                    </Button>
+                );
+            case "sell":
+                return (
+                    <Button
+                        path={`/inscription/${utxo.inscriptionId}`}
+                        color="none"
+                        size="small"
+                    >
+                        Sell
+                    </Button>
+                );
+            case "send":
+                return (
+                    <Button
+                        path={`/inscription/${utxo.inscriptionId}`}
+                        color="none"
+                        size="small"
+                    >
+                        Send
+                    </Button>
+                );
+            case "view":
+                return (
+                    <Button
+                        path={`/inscription/${utxo.inscriptionId}`}
+                        color="none"
+                        size="small"
+                    >
+                        View
+                    </Button>
+                );
+            default:
+                return <span />;
+        }
     }
+    const minted = !confirmed
+        ? "Unconfirmed"
+        : new Date(date * 1000).toLocaleString();
+    const sats = `${price.amount} ${price.currency}`;
+    const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
 
-    switch (actionType) {
-      case "buy":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Buy
-          </Button>
-        );
-      case "sell":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Sell
-          </Button>
-        );
-      case "send":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Send
-          </Button>
-        );
-      case "view":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            View
-          </Button>
-        );
-      default:
-        return <span />;
-    }
-  }
-  const minted = !confirmed
-    ? "Unconfirmed"
-    : new Date(date * 1000).toLocaleString();
-  const sats = `${price.amount} ${price.currency}`;
-  const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
+    return (
+        <div className="bid-react-area">
+            <div className="last-bid">
+                {utxo.name || textPrice}
+                <span className="minted">{` ${minted}`}</span>
+            </div>
 
-  return (
-    <div className="bid-react-area">
-      <div className="last-bid">
-        {utxo.name || textPrice}
-        <span className="minted">{` ${minted}`}</span>
-      </div>
-
-      {renderMainAction(type)}
-    </div>
-  );
+            {renderMainAction(type)}
+        </div>
+    );
 };
 
 ProductBid.propTypes = {
-  price: PropTypes.shape({
-    amount: PropTypes.string.isRequired,
-    currency: PropTypes.string.isRequired,
-  }).isRequired,
-  utxo: PropTypes.object,
-  confirmed: PropTypes.bool,
-  date: PropTypes.number,
-  type: PropTypes.oneOf(["buy", "sell", "send", "view"]).isRequired,
-  onSale: PropTypes.func,
+    price: PropTypes.shape({
+        amount: PropTypes.string.isRequired,
+        currency: PropTypes.string.isRequired,
+    }).isRequired,
+    utxo: PropTypes.object,
+    confirmed: PropTypes.bool,
+    date: PropTypes.number,
+    type: PropTypes.oneOf(["buy", "sell", "send", "view"]).isRequired,
+    onSale: PropTypes.func,
 };
 
 export default ProductBid;

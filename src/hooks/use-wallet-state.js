@@ -3,9 +3,17 @@ import { useToggle } from "react-use";
 import { getAddressInfo } from "@services/nosft";
 import useConnectWallet from "./use-connect-wallet";
 
-function useWalletState() {
-    const { nostrPublicKey, onConnectHandler, onDisconnectHandler: onDisconnect } = useConnectWallet();
-    const [nostrAddress, setNostrAddress] = useState();
+export const useWalletState = () => {
+    const {
+        ordinalsPublicKey,
+        onConnectHandler,
+        onDisconnectHandler: onDisconnect,
+        walletName,
+        ordinalsAddress,
+        paymentAddress,
+    } = useConnectWallet();
+    const [nostrOrdinalsAddress, setNostrOrdinalsAddress] = useState("");
+    const [nostrPaymentsAddress, setNostrPaymentAddress] = useState("");
     const [ethProvider, setEthProvider] = useState();
     const [showConnectModal, toggleWalletModal] = useToggle(false);
 
@@ -23,15 +31,21 @@ function useWalletState() {
     };
 
     useEffect(() => {
-        if (!nostrPublicKey) {
-            setNostrAddress(undefined);
+        if (!ordinalsPublicKey) {
+            setNostrOrdinalsAddress("");
             return;
         }
 
-        console.log(getAddressInfo(nostrPublicKey));
-        const { address } = getAddressInfo(nostrPublicKey);
-        setNostrAddress(address);
-    }, [nostrPublicKey]);
+        if (ordinalsAddress && paymentAddress) {
+            setNostrOrdinalsAddress(ordinalsAddress);
+            setNostrPaymentAddress(paymentAddress);
+            return;
+        }
+        const { address: nostrOrdinalsAddress } =
+            getAddressInfo(ordinalsPublicKey);
+        setNostrOrdinalsAddress(nostrOrdinalsAddress);
+        setNostrPaymentAddress(nostrOrdinalsAddress);
+    }, [ordinalsPublicKey, ordinalsAddress]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -42,8 +56,10 @@ function useWalletState() {
 
     const walletState = useMemo(
         () => ({
-            nostrPublicKey,
-            nostrAddress,
+            walletName,
+            ordinalsPublicKey,
+            nostrOrdinalsAddress,
+            nostrPaymentsAddress,
             ethProvider,
             showConnectModal,
             onConnectHandler,
@@ -51,10 +67,24 @@ function useWalletState() {
             onHideConnectModal,
             onShowConnectModal,
         }),
-        [nostrPublicKey, nostrAddress, ethProvider, showConnectModal, onConnectHandler, onDisconnectHandler]
+        [
+            walletName,
+            ordinalsPublicKey,
+            nostrOrdinalsAddress,
+            nostrPaymentsAddress,
+            ethProvider,
+            showConnectModal,
+            onConnectHandler,
+            onDisconnectHandler,
+        ]
     );
 
-    return walletState;
-}
+    console.log("[]", {
+        walletName,
+        ordinalsPublicKey,
+        nostrOrdinalsAddress,
+        nostrPaymentsAddress,
+    });
 
-export default useWalletState;
+    return walletState;
+};

@@ -83,6 +83,8 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
   const submit = async () => {
     setIsSending(true);
 
+    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+
     if (boostRequired) {
       try {
         let result;
@@ -91,6 +93,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
           pubKey: ordinalsPublicKey,
           utxo,
           destinationBtcAddress,
+          sighashType:
+            provider === "unisat.io"
+              ? bitcoin.Transaction.SIGHASH_SINGLE |
+                bitcoin.Transaction.SIGHASH_ANYONECANPAY
+              : undefined,
         });
         const decodedSignedTxHex = bitcoin.Psbt.fromHex(signedTxHex);
         // Step 2, add deezy inputs/outputs

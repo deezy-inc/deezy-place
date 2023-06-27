@@ -99,7 +99,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 bitcoin.Transaction.SIGHASH_ANYONECANPAY
               : undefined,
         });
-        const decodedSignedTxHex = bitcoin.Psbt.fromHex(signedTxHex);
+
         // Step 2, add deezy inputs/outputs
         const { data } = await axios.post(
           `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,

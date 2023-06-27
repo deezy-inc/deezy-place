@@ -31,11 +31,11 @@ import { useWallet } from "@context/wallet-context";
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrAddress } = useWallet();
+  const { nostrOrdinalsAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrAddress);
+    useState(nostrOrdinalsAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
@@ -53,7 +53,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     };
 
     getPrice();
-  }, [nostrAddress]);
+  }, [nostrOrdinalsAddress]);
 
   const updatePayerAddress = async (address) => {
     try {
@@ -91,12 +91,12 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   useEffect(() => {
-    setDestinationBtcAddress(nostrAddress);
+    setDestinationBtcAddress(nostrOrdinalsAddress);
 
     const updateAddress = async () => {
       setIsOnBuy(true);
       try {
-        await updatePayerAddress(nostrAddress);
+        await updatePayerAddress(nostrOrdinalsAddress);
       } catch (e) {
         if (e.message.includes("Not enough cardinal spendable funds")) {
           toast.error(e.message);
@@ -112,7 +112,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     };
 
     updateAddress();
-  }, [nostrAddress]);
+  }, [nostrOrdinalsAddress]);
 
   const buy = async () => {
     setIsOnBuy(true);
@@ -195,7 +195,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 <InputGroup className="mb-lg-5 notDummy">
                   <Form.Label>Address to receive payment</Form.Label>
                   <Form.Control
-                    defaultValue={nostrAddress}
+                    defaultValue={nostrOrdinalsAddress}
                     onChange={onChangeAddress}
                     placeholder="Buyer address"
                     aria-label="Buyer address"

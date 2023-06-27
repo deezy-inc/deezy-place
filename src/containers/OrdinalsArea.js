@@ -14,7 +14,7 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 
 const OrdinalsArea = ({ className, space }) => {
-    const { nostrAddress } = useWallet();
+    const { nostrOrdinalsAddress } = useWallet();
 
     const [utxosReady, setUtxosReady] = useState(false);
     const [ownedUtxos, setOwnedUtxos] = useState([]);
@@ -29,7 +29,7 @@ const OrdinalsArea = ({ className, space }) => {
     };
 
     const onCopyAddress = () => {
-        navigator.clipboard.writeText(nostrAddress);
+        navigator.clipboard.writeText(nostrOrdinalsAddress);
         toast("Receive Address copied to clipboard!");
     };
 
@@ -49,7 +49,7 @@ const OrdinalsArea = ({ className, space }) => {
     };
 
     useEffect(() => {
-        if (!nostrAddress) {
+        if (!nostrOrdinalsAddress) {
             resetUtxos();
             return;
         }
@@ -60,7 +60,9 @@ const OrdinalsArea = ({ className, space }) => {
             let utxosWithInscriptionData = [];
 
             try {
-                utxosWithInscriptionData = await getInscriptions(nostrAddress);
+                utxosWithInscriptionData = await getInscriptions(
+                    nostrOrdinalsAddress
+                );
             } catch (error) {
                 console.error(error);
                 // TODO: handle error
@@ -72,14 +74,25 @@ const OrdinalsArea = ({ className, space }) => {
         };
 
         loadUtxos();
-    }, [refreshHack, nostrAddress]);
+    }, [refreshHack, nostrOrdinalsAddress]);
 
     return (
-        <div id="your-collection" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
+        <div
+            id="your-collection"
+            className={clsx(
+                "rn-product-area",
+                space === 1 && "rn-section-gapTop",
+                className
+            )}
+        >
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-4 col-md-6 col-sm-6 col-12">
-                        <SectionTitle className="mb--0" {...{ title: "Your collection" }} isLoading={!utxosReady} />
+                        <SectionTitle
+                            className="mb--0"
+                            {...{ title: "Your collection" }}
+                            isLoading={!utxosReady}
+                        />
                         <br />
                         <span>
                             <Image
@@ -90,9 +103,13 @@ const OrdinalsArea = ({ className, space }) => {
                                 className="mb-1"
                                 priority
                             />
-                            <button type="button" className="btn-transparent" onClick={onCopyAddress}>
+                            <button
+                                type="button"
+                                className="btn-transparent"
+                                onClick={onCopyAddress}
+                            >
                                 {" "}
-                                {shortenStr(nostrAddress)}
+                                {shortenStr(nostrOrdinalsAddress)}
                             </button>
                         </span>
                     </div>
@@ -112,11 +129,16 @@ const OrdinalsArea = ({ className, space }) => {
                     {utxosReady && ownedUtxos.length > 0 && (
                         <>
                             {filteredOwnedUtxos.map((inscription) => (
-                                <div key={inscription.txid} className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                                <div
+                                    key={inscription.txid}
+                                    className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
+                                >
                                     <OrdinalCard
                                         overlay
                                         price={{
-                                            amount: inscription.value.toLocaleString("en-US"),
+                                            amount: inscription.value.toLocaleString(
+                                                "en-US"
+                                            ),
                                             currency: "Sats",
                                         }}
                                         type="send"

@@ -4,10 +4,10 @@ import { useWallet } from "@context/wallet-context";
 import Button from "@ui/button";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-  const { nostrAddress } = useWallet();
+  const { nostrOrdinalsAddress } = useWallet();
 
   function renderMainAction(actionType) {
-    if (!Boolean(nostrAddress)) {
+    if (!Boolean(nostrOrdinalsAddress)) {
       actionType = "view";
     }
 

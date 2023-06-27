@@ -21,7 +21,7 @@ export async function getStaticProps() {
 
 const App = () => {
   const walletState = useWalletState();
-  const { nostrPublicKey, nostrAddress } = walletState;
+  const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
@@ -38,7 +38,7 @@ const App = () => {
 
           <MainCollections />
           <NostrLive />
-          {nostrPublicKey && nostrAddress && <OrdinalsArea />}
+          {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
         </main>
 
         <Footer />

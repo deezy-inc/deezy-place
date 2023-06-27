@@ -25,6 +25,8 @@ const {
   getMetamaskSigner,
   signSigHash,
   createAndSignPsbtForBoost,
+  createPsbtForBoost,
+  signPsbtForBoost,
 } = nosft.psbt;
 const {
   signAndBroadcastEvent,
@@ -54,6 +56,9 @@ const {
   getTxHexById,
   tweakSigner,
 } = nosft.crypto;
+
+const { getCollection, getInscriptions: getCollectionInscriptions } =
+  nosft.collection;
 
 const { config } = nosft;
 
@@ -126,6 +131,8 @@ export {
   getMetamaskSigner,
   signSigHash,
   createAndSignPsbtForBoost,
+  createPsbtForBoost,
+  signPsbtForBoost,
 
   // open ordex
   getAvailableUtxosWithoutInscription,
@@ -138,6 +145,10 @@ export {
   getNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
+
+  // collection
+  getCollection,
+  getCollectionInscriptions,
 
   // Config variables
   TAPROOT_MESSAGE,

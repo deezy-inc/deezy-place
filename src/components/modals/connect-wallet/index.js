@@ -36,6 +36,15 @@ const ConnectWallet = () => {
             },
         },
         {
+            name: "UniSat",
+            image: "/images/logo/unisat.png",
+            ethereum: true,
+
+            onClick: () => {
+                onConnect("unisat.io");
+            },
+        },
+        {
             name: "Alby",
             image: "/images/logo/alby.svg",
 

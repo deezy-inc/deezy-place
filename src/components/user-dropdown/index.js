@@ -15,6 +15,8 @@ const UserDropdown = ({ onDisconnect, receiveAddress }) => {
                 return "/images/logo/ordswap.svg";
             case "generative.xyz":
                 return "/images/logo/generative.png";
+            case "unisat.io":
+                return "/images/logo/unisat.png";
             default:
                 return "/images/logo/alby.png";
         }

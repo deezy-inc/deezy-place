@@ -1,22 +1,28 @@
 import { useState, useEffect } from "react";
-import { connectWallet } from "@services/nosft";
+import { connectWallet, onAccountChange } from "@services/nosft";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import LocalStorage from "@services/local-storage";
 
 function useConnectWallet() {
     const [nostrPublicKey, setNostrPublicKey] = useState();
 
-    const onConnectHandler = async (metamask) => {
-        const pubKey = await connectWallet(metamask);
-        SessionStorage.set(SessionsStorageKeys.DOMAIN, metamask);
-        SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, pubKey);
-        setNostrPublicKey(pubKey);
-    };
-
     const onDisconnectHandler = async () => {
         SessionStorage.clear();
         LocalStorage.clear();
         setNostrPublicKey(undefined);
+    };
+
+    const onConnectHandler = async (provider) => {
+        const pubKey = await connectWallet(provider);
+        SessionStorage.set(SessionsStorageKeys.DOMAIN, provider);
+        SessionStorage.set(SessionsStorageKeys.NOSTR_PUBLIC_KEY, pubKey);
+        setNostrPublicKey(pubKey);
+
+        onAccountChange(() => {
+            onDisconnectHandler();
+            // Reconnect with new address
+            onConnectHandler(SessionStorage.get(SessionsStorageKeys.DOMAIN));
+        });
     };
 
     useEffect(() => {

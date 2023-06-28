@@ -8,7 +8,7 @@ import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import AuctionModal from "@components/modals/auction-modal";
 import BuyModal from "@components/modals/buy-modal";
-import BuyLightingModal from "@components/modals/buy-with-lightning";
+import BuyLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { NostrEvenType } from "@utils/types";
@@ -45,14 +45,14 @@ const ProductDetailsArea = memo(
     nostr,
     auction,
     onAction,
-    isSpent,
+    isSpent: isUtxoSpent,
   }) => {
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
     const [showAuctionModal, setShowAuctionModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
-    const [showBuyLigthingModal, setShowBuyLigthingModal] = useState(false);
+    const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [auctionCanceled, setAuctionCanceled] = useState(false);
 
@@ -103,12 +103,6 @@ const ProductDetailsArea = memo(
           inscription.owner &&
           nostrOrdinalsAddress === inscription.owner
       );
-      const checkIfIsSpent = async () => {
-        const isSpentUtxo = await isSpent(inscription);
-        setIsSpent(isSpentUtxo.spent);
-      };
-
-      checkIfIsSpent();
     }, [nostrOrdinalsAddress, inscription]);
 
     const minted =
@@ -194,7 +188,7 @@ const ProductDetailsArea = memo(
 
     const showCancelAuction =
       isOwner &&
-      !isSpent &&
+      !isUtxoSpent &&
       auctionNextPriceDrop &&
       !isCanceling &&
       !auctionError &&
@@ -346,7 +340,7 @@ const ProductDetailsArea = memo(
                           </button>
                         )}
 
-                        {isOwner && !isSpent && (
+                        {isOwner && !isUtxoSpent && (
                           <button
                             className="pd-react-area btn-transparent"
                             type="button"
@@ -359,7 +353,7 @@ const ProductDetailsArea = memo(
                           </button>
                         )}
 
-                        {isOwner && !isSpent && !auctionNextPriceDrop && (
+                        {isOwner && !isUtxoSpent && !auctionNextPriceDrop && (
                           <button
                             className="pd-react-area btn-transparent"
                             type="button"
@@ -479,7 +473,7 @@ const ProductDetailsArea = memo(
             show={showAuctionModal}
             handleModal={handleAuctionModal}
             utxo={{ ...inscription, value: nostr?.value || inscription.value }}
-            isSpent={isSpent}
+            isSpent={isUtxoSpent}
             onSale={onAuction}
           />
         )}

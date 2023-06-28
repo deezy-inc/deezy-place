@@ -35,8 +35,8 @@ const App = () => {
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           <HeroArea data={content["hero-section"]} />
-
           <MainCollections />
+          <NostrLive type="bidding" />
           <NostrLive />
           {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
         </main>

@@ -1,0 +1,12 @@
+.wallet {
+    .wallet-title {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .balance-info {
+        .price {
+            color: var(--color-primary);
+        }
+    }
+}

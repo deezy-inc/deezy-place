@@ -7,7 +7,7 @@ import SectionTitle from "@components/section-title";
 import { deepClone } from "@utils/methods";
 import {
   getInscription,
-  shouldReplaceInscription,
+  takeLatestInscription,
   isSpent,
 } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -21,16 +21,55 @@ import {
   DEFAULT_UTXO_OPTIONS,
   HIDE_TEXT_UTXO_OPTION,
 } from "@lib/constants.config";
+import Slider, { SliderItem } from "@ui/slider";
 
 const MAX_ONSALE = 200;
 
-const updateInscriptions = (acc, curr) => {
+const SliderOptions = {
+  infinite: true,
+  slidesToShow: 5,
+  slidesToScroll: 1,
+  autoplay: true,
+  speed: 4000,
+  responsive: [
+    {
+      breakpoint: 1399,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 1200,
+      settings: {
+        slidesToShow: 3,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 992,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 576,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+  ],
+};
+
+export const updateInscriptions = (acc, curr) => {
   const existingIndex = acc.findIndex(
     (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
   );
 
   if (existingIndex !== -1) {
-    if (shouldReplaceInscription(acc[existingIndex], curr)) {
+    if (takeLatestInscription(acc[existingIndex], curr)) {
       acc[existingIndex] = curr;
     }
   } else {
@@ -40,7 +79,7 @@ const updateInscriptions = (acc, curr) => {
   return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
 };
 
-const NostrLive = ({ className, space }) => {
+const NostrLive = ({ className, space, type, address }) => {
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
@@ -54,7 +93,10 @@ const NostrLive = ({ className, space }) => {
 
   const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
-  const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
+  const [utxosType, setUtxosType] = useState(
+    type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
+  );
+  const isLive = type === "live";
 
   useMemo(() => {
     const filteredUtxos = applyFilters({
@@ -193,10 +235,13 @@ const NostrLive = ({ className, space }) => {
 NostrLive.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
+  type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
+  address: PropTypes.string,
 };
 
 NostrLive.defaultProps = {
   space: 1,
+  type: "live",
 };
 
 export default NostrLive;

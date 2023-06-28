@@ -151,6 +151,18 @@ body.modal-open {
             }
         }
     }
+
+    .schedule-options {
+        .form-label {
+            width: 100%;
+        }
+    }
+
+    .decrease-interval-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
 }
 
 // report modal area Start

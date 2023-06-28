@@ -1,10 +1,15 @@
 import { Observable } from "rxjs";
-import { subscribeOrders as subscribeNosftOrders, unsubscribeOrders } from "@services/nosft";
+import {
+    subscribeOrders as subscribeNosftOrders,
+    unsubscribeOrders,
+    subscribeAuctionOrders,
+    subscribeMyAuctions,
+} from "@services/nosft";
 
 const Nostr = function () {
     const nostrModule = {
         subscriptionOrders: null,
-        subscribeOrders: ({ limit }) =>
+        subscribeOrders: ({ address, limit, type = "live" }) =>
             new Observable(async (observer) => {
                 try {
                     nostrModule.unsubscribeOrders();
@@ -16,6 +21,16 @@ const Nostr = function () {
                         }
                     };
 
+                    if (type === "bidding") {
+                        nostrModule.subscriptionOrders = subscribeAuctionOrders({ callback: orderEvent, limit });
+                        return;
+                    }
+
+                    if (type === "my-bidding") {
+                        nostrModule.subscriptionOrders = subscribeMyAuctions({ callback: orderEvent, limit, address });
+                        return;
+                    }
+
                     nostrModule.subscriptionOrders = subscribeNosftOrders({ callback: orderEvent, limit });
                 } catch (error) {
                     observer.error(error);
@@ -24,7 +39,9 @@ const Nostr = function () {
         unsubscribeOrders: () => {
             if (nostrModule.subscriptionOrders) {
                 unsubscribeOrders();
-                nostrModule.subscriptionOrders.unsub();
+                if (nostrModule.subscriptionOrders.unsub) {
+                    nostrModule.subscriptionOrders.unsub();
+                }
                 nostrModule.subscriptionOrders = null;
             }
         },

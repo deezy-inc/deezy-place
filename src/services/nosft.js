@@ -17,7 +17,9 @@ const {
   isTextInscription,
   isImageInscription,
   shouldReplaceInscription,
+  takeLatestInscription,
 } = nosft.inscriptions;
+
 const {
   signPsbtMessage,
   broadcastTx,
@@ -31,9 +33,18 @@ const {
 const {
   signAndBroadcastEvent,
   getNostrInscription,
+  getLatestNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
 } = nosft.nostr;
+
+const {
+  subscribeOrders: subscribeAuctionOrders,
+  getAuctionByInscription,
+  createAuction,
+  cancelAuction,
+  subscribeMyAuctions,
+} = nosft.auction;
 
 const {
   getAvailableUtxosWithoutInscription,
@@ -55,6 +66,7 @@ const {
   calculateFee,
   getTxHexById,
   tweakSigner,
+  fetchBlockAverage,
 } = nosft.crypto;
 
 const { getCollection, getInscriptions: getCollectionInscriptions } =
@@ -92,6 +104,7 @@ const {
 
 export default nosft;
 export {
+  // Address
   getAddressInfo,
 
   // Wallet
@@ -111,6 +124,7 @@ export {
   calculateFee,
   getTxHexById,
   tweakSigner,
+  fetchBlockAverage,
 
   // utxo
   doesUtxoContainInscription,
@@ -123,6 +137,7 @@ export {
   isTextInscription,
   isImageInscription,
   shouldReplaceInscription,
+  takeLatestInscription,
 
   // psbt
   signPsbtMessage,
@@ -134,17 +149,25 @@ export {
   createPsbtForBoost,
   signPsbtForBoost,
 
+  // nostr
+  signAndBroadcastEvent,
+  getNostrInscription,
+  getLatestNostrInscription,
+  subscribeOrders,
+  unsubscribeOrders,
+
+  // auction
+  subscribeAuctionOrders,
+  getAuctionByInscription,
+  createAuction,
+  cancelAuction,
+  subscribeMyAuctions,
+
   // open ordex
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
   getOrderInformation,
-
-  // nostr
-  signAndBroadcastEvent,
-  getNostrInscription,
-  subscribeOrders,
-  unsubscribeOrders,
 
   // collection
   getCollection,

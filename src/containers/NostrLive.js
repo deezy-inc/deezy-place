@@ -9,10 +9,10 @@ import Slider, { SliderItem } from "@ui/slider";
 import {
   getInscription,
   isTextInscription,
-  shouldReplaceInscription,
+  takeLatestInscription,
   isSpent,
 } from "@services/nosft";
-
+import { Observable } from "rxjs";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@utils/nostr-relay";
 import {
@@ -27,6 +27,22 @@ import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
 
+export const updateInscriptions = (acc, curr) => {
+  const existingIndex = acc.findIndex(
+    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
+  );
+
+  if (existingIndex !== -1) {
+    if (takeLatestInscription(acc[existingIndex], curr)) {
+      acc[existingIndex] = curr;
+    }
+  } else {
+    acc.push(curr);
+  }
+
+  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+};
+
 const collectionAuthor = [
   {
     name: "Danny Deezy",
@@ -36,22 +52,6 @@ const collectionAuthor = [
     },
   },
 ];
-
-export const updateInscriptions = (acc, curr) => {
-  const existingIndex = acc.findIndex(
-    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
-  );
-
-  if (existingIndex !== -1) {
-    if (shouldReplaceInscription(acc[existingIndex], curr)) {
-      acc[existingIndex] = curr;
-    }
-  } else {
-    acc.push(curr);
-  }
-
-  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
-};
 
 const SliderOptions = {
   infinite: true,
@@ -106,7 +106,7 @@ const useOpenOrdersSubscription = (observable, setter, initialData) => {
   }, []);
 };
 
-const NostrLive = ({ className, space }) => {
+const NostrLive = ({ className, space, type }) => {
   const [openOrders, setOpenOrders] = useState([]);
   const [openTextOrders, setTextOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
@@ -117,6 +117,8 @@ const NostrLive = ({ className, space }) => {
   const fetchLimit = useRef(MAX_LIMIT_ONSALE);
   const processedOrders = useRef(0);
   const fetchIds = useRef([]);
+
+  const [isWindowFocused, setIsWindowFocused] = useState(true);
 
   const handleRefreshHack = () => {
     setRefreshHack(!refreshHack);
@@ -163,9 +165,11 @@ const NostrLive = ({ className, space }) => {
     )
       return;
 
+    // Based on the type, we subscribe to elements that are on sale or in auction.
     const subscription = nostrPool
       .subscribeOrders({
         limit,
+        type,
       })
       .subscribe(async (event) => {
         if (processedEvents.current.has(event.id)) return;
@@ -174,7 +178,6 @@ const NostrLive = ({ className, space }) => {
         try {
           const inscription = await getInscriptionData(event);
 
-          // If utxo is spent, we don't want to show it
           const isSpentUtxo = await isSpent(inscription);
           if (isSpentUtxo.spent) {
             console.log("utxo is spent", inscription);
@@ -209,6 +212,24 @@ const NostrLive = ({ className, space }) => {
     setTextOpenOrders,
     openTextOrders
   );
+
+  useEffect(() => {
+    if (isWindowFocused) {
+      console.log("isWindowFocused: reload");
+      subscribeOrdersWithLimit(fetchLimit.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWindowFocused]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsWindowFocused(!document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     subscribeOrdersWithLimit(fetchLimit.current);
@@ -259,13 +280,16 @@ const NostrLive = ({ className, space }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt_mobile--15">
             <SectionTitle
               className="mb--0 live-title"
-              {...{ title: "On Sale" }}
+              {...{ title: type === "bidding" ? "Live Auction" : "On Sale" }}
             />
           </div>
 
           <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--15">
             <div className="view-more-btn text-start text-sm-end ">
-              <Anchor className="btn-transparent" path="/inscriptions">
+              <Anchor
+                className="btn-transparent"
+                path={type === "live" ? "/inscriptions" : "/auction"}
+              >
                 VIEW ALL
                 <i className="feather-arrow-right mb-md-5" />
               </Anchor>
@@ -284,14 +308,15 @@ const NostrLive = ({ className, space }) => {
     </div>
   );
 };
-
 NostrLive.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
+  type: PropTypes.oneOf(["bidding", "live"]),
 };
 
 NostrLive.defaultProps = {
   space: 1,
+  type: "live",
 };
 
 export default NostrLive;

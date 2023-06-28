@@ -12,7 +12,7 @@ import {
   takeLatestInscription,
   isSpent,
 } from "@services/nosft";
-
+import { Observable } from "rxjs";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@utils/nostr-relay";
 import {
@@ -96,7 +96,12 @@ const useOpenOrdersSubscription = (observable, setter, initialData) => {
     const subscription = observable
       .pipe(scan(updateInscriptions, initialData))
       .subscribe(setter);
-    return () => subscription.unsubscribe();
+    return () => {
+      try {
+        subscription.unsubscribe();
+        // eslint-disable-next-line no-empty
+      } catch (error) {}
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
@@ -114,19 +119,6 @@ const NostrLive = ({ className, space, type }) => {
   const fetchIds = useRef([]);
 
   const [isWindowFocused, setIsWindowFocused] = useState(true);
-
-  useEffect(() => {
-    const subscription = observable
-      .pipe(scan(updateInscriptions, initialData))
-      .subscribe(setter);
-    return () => {
-      try {
-        subscription.unsubscribe();
-        // eslint-disable-next-line no-empty
-      } catch (error) {}
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleRefreshHack = () => {
     setRefreshHack(!refreshHack);

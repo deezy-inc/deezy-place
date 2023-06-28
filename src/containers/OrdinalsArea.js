@@ -158,7 +158,7 @@ const OrdinalsArea = ({
                     onClick={onCopyAddress}
                   >
                     {" "}
-                    {shortenStr(nostrAddress)}
+                    {shortenStr(nostrOrdinalsAddress)}
                   </button>
                 </span>
               </>

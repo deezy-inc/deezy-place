@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { useWallet } from "@context/wallet-context";
 
 const Sign = ({ className, space }) => {
-    const { nostrPublicKey, onShowConnectModal } = useWallet();
+    const { ordinalsPublicKey, onShowConnectModal } = useWallet();
 
     const [signedMessage, setSignedMessage] = useState(null);
     const [message, setMessage] = useState(null);
@@ -35,10 +35,10 @@ const Sign = ({ className, space }) => {
     };
 
     useEffect(() => {
-        if (nostrPublicKey && message && !signedMessage) {
+        if (ordinalsPublicKey && message && !signedMessage) {
             sign();
         }
-    }, [nostrPublicKey]);
+    }, [ordinalsPublicKey]);
 
     const messageOnChange = (evt) => {
         setMessage(evt.target.value);
@@ -47,7 +47,7 @@ const Sign = ({ className, space }) => {
     };
 
     const submit = async () => {
-        if (!nostrPublicKey) {
+        if (!ordinalsPublicKey) {
             onShowConnectModal();
             return;
         }
@@ -56,11 +56,21 @@ const Sign = ({ className, space }) => {
     };
 
     return (
-        <div id="sign-message" className={clsx("rn-product-area", space === 1 && "rn-section-gapTop", className)}>
+        <div
+            id="sign-message"
+            className={clsx(
+                "rn-product-area",
+                space === 1 && "rn-section-gapTop",
+                className
+            )}
+        >
             <div className="container">
                 <div className="row mb--50 align-items-center">
                     <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-                        <SectionTitle className="mb--0" {...{ title: `Sign Message` }} />
+                        <SectionTitle
+                            className="mb--0"
+                            {...{ title: `Sign Message` }}
+                        />
                     </div>
                 </div>
 
@@ -89,8 +99,12 @@ const Sign = ({ className, space }) => {
                                         className="btn-close"
                                         aria-label="Copy signed message to clipboard"
                                         onClick={() => {
-                                            navigator.clipboard.writeText(signedMessage);
-                                            toast("Signature copied to clipboard!");
+                                            navigator.clipboard.writeText(
+                                                signedMessage
+                                            );
+                                            toast(
+                                                "Signature copied to clipboard!"
+                                            );
                                         }}
                                     >
                                         <i className="feather-copy" />
@@ -110,13 +124,17 @@ const Sign = ({ className, space }) => {
                     )}
 
                     <div className="form-action">
-                        <Button size="medium" onClick={submit} disabled={!message}>
+                        <Button
+                            size="medium"
+                            onClick={submit}
+                            disabled={!message}
+                        >
                             Sign
                         </Button>
                     </div>
                 </div>
 
-                {!nostrPublicKey && <ConnectWallet />}
+                {!ordinalsPublicKey && <ConnectWallet />}
             </div>
         </div>
     );

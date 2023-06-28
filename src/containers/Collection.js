@@ -8,7 +8,7 @@ import { deepClone } from "@utils/methods";
 import {
   getInscription,
   takeLatestInscription,
-  isSpent,
+  getNostrInscription,
 } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { nostrPool } from "@utils/nostr-relay";
@@ -22,6 +22,7 @@ import {
   HIDE_TEXT_UTXO_OPTION,
 } from "@lib/constants.config";
 import Slider, { SliderItem } from "@ui/slider";
+import { useWallet } from "@context/wallet-context";
 
 const MAX_ONSALE = 200;
 
@@ -63,6 +64,7 @@ const SliderOptions = {
   ],
 };
 
+// TODO: Make static view, inscriptions shouldn't change position on render
 export const updateInscriptions = (acc, curr) => {
   const existingIndex = acc.findIndex(
     (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
@@ -76,10 +78,11 @@ export const updateInscriptions = (acc, curr) => {
     acc.push(curr);
   }
 
-  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, 1000);
 };
 
-const NostrLive = ({ className, space, type, address }) => {
+const Collection = ({ className, space, type, collection }) => {
+  const { nostrOrdinalsAddress } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
@@ -87,7 +90,7 @@ const NostrLive = ({ className, space, type, address }) => {
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
   const [refreshHack, setRefreshHack] = useState(false);
 
-  const [activeSort, setActiveSort] = useState("date");
+  const [activeSort, setActiveSort] = useState();
   const [sortAsc, setSortAsc] = useState(false);
   const [utxosReady, setUtxosReady] = useState(false);
 
@@ -120,7 +123,7 @@ const NostrLive = ({ className, space, type, address }) => {
   };
 
   const getInscriptionData = useCallback(async (event) => {
-    const { inscription } = await getInscription(event.inscriptionId);
+    const { inscription } = await getInscription(event.id);
 
     const forSaleInscription = deepClone({
       ...inscription,
@@ -131,35 +134,85 @@ const NostrLive = ({ className, space, type, address }) => {
   }, []);
 
   useEffect(() => {
+    if (!collection) {
+      return;
+    }
+
     addSubscriptionRef.current = addOpenOrder$.current
       .pipe(scan(updateInscriptions, openOrders))
       .subscribe(setOpenOrders);
-    orderSubscriptionRef.current = nostrPool
-      .subscribeOrders({ limit: MAX_ONSALE })
-      .subscribe(async (event) => {
-        try {
-          const inscription = await getInscriptionData(event);
 
-          const isSpentUtxo = await isSpent(inscription);
-          if (isSpentUtxo.spent) {
-            console.log("utxo is spent", inscription);
-            return;
-          }
-          addNewOpenOrder(inscription);
-        } catch (error) {
-          console.error(error);
+    const fetchInscriptions = async () => {
+      try {
+        const chunkSize = 10;
+        const totalInscriptions = collection.inscriptions.length;
+
+        for (let i = 0; i < totalInscriptions; i += chunkSize) {
+          const inscriptionChunk = collection.inscriptions.slice(
+            i,
+            i + chunkSize
+          );
+
+          const inscriptionPromises = inscriptionChunk.map(
+            async (_inscription) => {
+              try {
+                const inscription = await getInscriptionData(_inscription);
+                inscription.name = _inscription.meta.name;
+
+                inscription.isOwner =
+                  nostrOrdinalsAddress &&
+                  inscription.owner &&
+                  nostrOrdinalsAddress === inscription.owner;
+
+                if (inscription.isOwner) {
+                  inscription.actionType = "sell";
+                } else if (!inscription.isOwner && inscription.nostr) {
+                  inscription.actionType = "buy";
+                } else {
+                  inscription.actionType = "view";
+                }
+
+                console.log("adding inscription", inscription);
+                addNewOpenOrder(inscription);
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          );
+
+          await Promise.all(inscriptionPromises);
         }
-      });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchInscriptions();
 
     return () => {
       try {
-        orderSubscriptionRef?.current?.unsubscribe();
         addSubscriptionRef?.current?.unsubscribe();
         // eslint-disable-next-line no-empty
       } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [collection, nostrOrdinalsAddress]);
+
+  const getTitle = () => {
+    return "Collection";
+  };
+
+  const title = getTitle();
+  let author = collectionAuthor;
+  if (collection) {
+    author = {
+      name: collection.author,
+      slug: collection.slug,
+      image: {
+        src: collection.icon,
+      },
+    };
+  }
 
   return (
     <div
@@ -174,24 +227,27 @@ const NostrLive = ({ className, space, type, address }) => {
         <div className="row mb--50 align-items-center">
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
-              className="mb--0"
-              {...{ title: `On Sale` }}
+              className="mb--0 live-title"
+              {...{ title }}
               isLoading={!utxosReady}
             />
           </div>
-          <div className="col-lg-6 col-md-6 col-sm-6 col-12">
-            <OrdinalFilter
-              ownedUtxos={openOrders}
-              setFilteredOwnedUtxos={setFilteredOwnedUtxos}
-              setActiveSort={setActiveSort}
-              setSortAsc={setSortAsc}
-              activeSort={activeSort}
-              sortAsc={sortAsc}
-              setUtxosType={setUtxosType}
-              utxosOptions={defaultUtxosTypes}
-              utxosType={utxosType}
-            />
-          </div>
+
+          {openOrders.length > 0 && (
+            <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+              <OrdinalFilter
+                ownedUtxos={openOrders}
+                setFilteredOwnedUtxos={setFilteredOwnedUtxos}
+                setActiveSort={setActiveSort}
+                setSortAsc={setSortAsc}
+                activeSort={activeSort}
+                sortAsc={sortAsc}
+                setUtxosType={setUtxosType}
+                // utxosOptions={defaultUtxosTypes}
+                utxosType={utxosType}
+              />
+            </div>
+          )}
         </div>
 
         <div className="row g-5">
@@ -205,18 +261,29 @@ const NostrLive = ({ className, space, type, address }) => {
                   <OrdinalCard
                     overlay
                     price={{
-                      amount: inscription.value.toLocaleString("en-US"),
+                      amount:
+                        inscription?.nostr?.value?.toLocaleString("en-US") ||
+                        inscription?.value?.toLocaleString("en-US"),
                       currency: "Sats",
                     }}
-                    type="buy"
+                    type={inscription.actionType}
                     confirmed
-                    date={inscription.created_at}
-                    authors={collectionAuthor}
+                    date={inscription.created}
+                    authors={[author]}
                     utxo={inscription}
                     onSale={handleRefreshHack}
+                    collection={collection}
                   />
                 </div>
               ))}
+
+              {utxosReady &&
+                openOrders.length <= collection.inscriptions.length - 1 && (
+                  <div className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
+                    <OrdinalCard overlay />
+                  </div>
+                )}
+
               {filteredOwnedUtxos.length === 0 && (
                 <div className="col-12">
                   <div className="text-center">
@@ -226,22 +293,32 @@ const NostrLive = ({ className, space, type, address }) => {
               )}
             </>
           )}
+
+          {(!utxosReady || openOrders.length === 0) && (
+            <Slider options={SliderOptions} className="slick-gutter-15">
+              {[...Array(5)].map((_, index) => (
+                <SliderItem key={index} className="ordinal-slide">
+                  <OrdinalCard overlay />
+                </SliderItem>
+              ))}
+            </Slider>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-NostrLive.propTypes = {
+Collection.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
   type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
-  address: PropTypes.string,
+  collection: PropTypes.any,
 };
 
-NostrLive.defaultProps = {
+Collection.defaultProps = {
   space: 1,
   type: "live",
 };
 
-export default NostrLive;
+export default Collection;

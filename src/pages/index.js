@@ -37,7 +37,6 @@ const App = () => {
           <HeroArea data={content["hero-section"]} />
           <MainCollections />
           <NostrLive type="bidding" />
-          <NostrLive type="bidding" />
           <NostrLive />
           {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
         </main>

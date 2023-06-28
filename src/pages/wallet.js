@@ -15,34 +15,38 @@ import homepageData from "@data/general/home.json";
 import { normalizedData } from "@utils/methods";
 
 export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
+  return { props: { className: "template-color-1" } };
 }
 
 const App = () => {
-    const walletState = useWalletState();
-    const elementRef = useRef(null);
-    const headerHeight = useHeaderHeight(elementRef);
+  const walletState = useWalletState();
+  const elementRef = useRef(null);
+  const headerHeight = useHeaderHeight(elementRef);
 
-    const { nostrPublicKey, nostrAddress } = walletState;
-    const content = normalizedData(homepageData?.content || []);
+  const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
+  const content = normalizedData(homepageData?.content || []);
 
-    return (
-        <WalletContext.Provider value={walletState}>
-            <Wrapper>
-                <SEO pageTitle="Deezy" />
-                <Header ref={elementRef} />
-                <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}
+  return (
+    <WalletContext.Provider value={walletState}>
+      <Wrapper>
+        <SEO pageTitle="Deezy" />
+        <Header ref={elementRef} />
+        <main id="main-content" style={{ paddingTop: headerHeight }}>
+          {!ordinalsPublicKey && <HeroArea data={content["hero-section"]} />}
 
-                    {nostrPublicKey && nostrAddress && <Wallet />}
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea displayOnlyInscriptions hideAddress />}
-                    {nostrPublicKey && nostrAddress && <NostrLiveAll type="my-bidding" address={nostrAddress} />}
-                </main>
+          {ordinalsPublicKey && nostrOrdinalsAddress && <Wallet />}
+          {ordinalsPublicKey && nostrOrdinalsAddress && (
+            <OrdinalsArea displayOnlyInscriptions hideAddress />
+          )}
+          {ordinalsPublicKey && nostrOrdinalsAddress && (
+            <NostrLiveAll type="my-bidding" address={nostrOrdinalsAddress} />
+          )}
+        </main>
 
-                <Footer />
-            </Wrapper>
-        </WalletContext.Provider>
-    );
+        <Footer />
+      </Wrapper>
+    </WalletContext.Provider>
+  );
 };
 
 export default App;

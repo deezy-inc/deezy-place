@@ -25,12 +25,13 @@ import { InscriptionPreview } from "@components/inscription-preview";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo, onSale }) => {
-    const { nostrAddress, nostrPublicKey } = useWallet();
+const SellModal = ({ show, handleModal, utxo, onSale }) => {
+    const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
 
     const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
     const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
-    const [destinationBtcAddress, setDestinationBtcAddress] = useState(nostrAddress);
+    const [destinationBtcAddress, setDestinationBtcAddress] =
+        useState(nostrOrdinalsAddress);
     const [ordinalValue, setOrdinalValue] = useState(utxo.value);
     const [bitcoinPrice, setBitcoinPrice] = useState();
     const [isOnSale, setIsOnSale] = useState(false);
@@ -41,10 +42,10 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             setBitcoinPrice(btcPrice);
         };
 
-        setDestinationBtcAddress(nostrAddress);
+        setDestinationBtcAddress(nostrOrdinalsAddress);
 
         getPrice();
-    }, [nostrAddress]);
+    }, [nostrOrdinalsAddress]);
 
     const sale = async () => {
         setIsOnSale(true);
@@ -63,7 +64,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                 utxo,
                 ordinalValue,
                 signedPsbt: signedPsbt.toBase64(),
-                pubkey: nostrPublicKey,
+                pubkey: ordinalsPublicKey,
             });
 
             toast.info(`Order successfully published to Nostr!`);
@@ -113,14 +114,26 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     };
 
     return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={handleModal} centered>
+        <Modal
+            className="rn-popup-modal placebid-modal-wrapper"
+            show={show}
+            onHide={handleModal}
+            centered
+        >
             {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleModal}>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={handleModal}
+                >
                     <i className="feather-x" />
                 </button>
             )}
             <Modal.Header>
-                <h3 className="modal-title">Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}</h3>
+                <h3 className="modal-title">
+                    Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}
+                </h3>
             </Modal.Header>
             <Modal.Body>
                 <p>You are about to sell this Ordinal</p>
@@ -133,9 +146,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                         <div className="bid-content-top">
                             <div className="bid-content-left">
                                 <InputGroup className="mb-lg-5 omg">
-                                    <Form.Label>Address to receive payment</Form.Label>
+                                    <Form.Label>
+                                        Address to receive payment
+                                    </Form.Label>
                                     <Form.Control
-                                        defaultValue={nostrAddress}
+                                        defaultValue={nostrOrdinalsAddress}
                                         onChange={addressOnChange}
                                         placeholder="Paste BTC address to receive your payment here"
                                         aria-label="Paste BTC address to receive your payment here"
@@ -146,7 +161,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
                                     <Form.Control.Feedback type="invalid">
                                         <br />
-                                        That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC address
+                                        That is not a valid{" "}
+                                        {TESTNET ? "testnet" : "mainnet"} BTC
+                                        address
                                     </Form.Control.Feedback>
                                 </InputGroup>
 
@@ -173,14 +190,25 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
                         <div className="bid-content-mid">
                             <div className="bid-content-left">
-                                {!!destinationBtcAddress && <span>Payment Receive Address</span>}
-                                {Boolean(ordinalValue) && bitcoinPrice && <span>Price</span>}
+                                {!!destinationBtcAddress && (
+                                    <span>Payment Receive Address</span>
+                                )}
+                                {Boolean(ordinalValue) && bitcoinPrice && (
+                                    <span>Price</span>
+                                )}
                             </div>
                             <div className="bid-content-right">
-                                {!!destinationBtcAddress && <span>{shortenStr(destinationBtcAddress)}</span>}
+                                {!!destinationBtcAddress && (
+                                    <span>
+                                        {shortenStr(destinationBtcAddress)}
+                                    </span>
+                                )}
 
                                 {Boolean(ordinalValue) && bitcoinPrice && (
-                                    <span>{`$${satsToFormattedDollarString(ordinalValue, bitcoinPrice)}`}</span>
+                                    <span>{`$${satsToFormattedDollarString(
+                                        ordinalValue,
+                                        bitcoinPrice
+                                    )}`}</span>
                                 )}
                             </div>
                         </div>
@@ -195,7 +223,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
                             className={isOnSale ? "btn-loading" : ""}
                             onClick={submit}
                         >
-                            {isOnSale ? <TailSpin stroke="#fec823" speed={0.75} /> : "Sale"}
+                            {isOnSale ? (
+                                <TailSpin stroke="#fec823" speed={0.75} />
+                            ) : (
+                                "Sell"
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -204,10 +236,10 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     );
 };
 
-SendModal.propTypes = {
+SellModal.propTypes = {
     show: PropTypes.bool.isRequired,
     handleModal: PropTypes.func.isRequired,
     utxo: PropTypes.object,
     onSale: PropTypes.func,
 };
-export default SendModal;
+export default SellModal;

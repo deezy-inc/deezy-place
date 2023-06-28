@@ -39,30 +39,6 @@ const Inscription = () => {
     setIsPoolingIsSpent(startPooling);
   };
 
-  useEffect(() => {
-    if (!slug) return;
-    const fetchInscription = async () => {
-      const { inscription: _inscription, collection: _collection } =
-        await getInscription(slug);
-      setInscription(_inscription);
-      setCollection(_collection);
-    };
-
-    fetchInscription();
-  }, [slug]);
-
-  useEffect(() => {
-    if (!inscription?.inscriptionId) return;
-    const fetchNostrInscription = async () => {
-      const data = await getNostrInscription(inscription);
-      if (data) {
-        setNostrData(data);
-      }
-    };
-
-    fetchNostrInscription();
-  }, [inscription?.inscriptionId]);
-
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>

@@ -22,6 +22,7 @@ import {
 import AnimatedText from "@components/animated-text";
 import { useAsyncFn } from "react-use";
 import { toast } from "react-toastify";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
 

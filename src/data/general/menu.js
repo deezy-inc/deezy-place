@@ -6,28 +6,28 @@ export default function (inscriborLink) {
       path: "/",
     },
     {
-      id: 1,
+      id: 2,
       text: "Wallet",
       path: "/wallet",
       private: true,
     },
     {
-      id: 2,
+      id: 3,
       text: "Inscriptions",
       path: "/inscriptions",
     },
     {
-      id: 3,
+      id: 4,
       text: "Auctions",
       path: "/auction",
     },
     {
-      id: 4,
+      id: 5,
       text: "Inscribe",
       path: inscriborLink,
     },
     {
-      id: 5,
+      id: 6,
       text: "Sign",
       path: "/tools/sign",
     },

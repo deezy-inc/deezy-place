@@ -20,7 +20,7 @@ import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { InscriptionPreview } from "@components/inscription-preview";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
@@ -52,14 +52,26 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
       price: ordinalValue,
     });
 
+    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+
     try {
-      const signedPsbt = await signPsbtMessage(psbt, nostrOrdinalsAddress);
+      let signedPsbt;
+      if (provider === "unisat.io") {
+        signedPsbt = await window.unisat.signPsbt(psbt.toHex());
+      } else {
+        signedPsbt = await signPsbtMessage(
+          psbt.toBase64(),
+          nostrOrdinalsAddress
+        );
+        signedPsbt = signedPsbt.toBase64();
+      }
+
       console.log(signedPsbt);
 
       await signAndBroadcastEvent({
         utxo,
         ordinalValue,
-        signedPsbt: signedPsbt.toBase64(),
+        signedPsbt,
         pubkey: ordinalsPublicKey,
       });
 

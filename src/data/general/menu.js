@@ -9,6 +9,7 @@ export default function (inscriborLink) {
       id: 1,
       text: "Wallet",
       path: "/wallet",
+      private: true,
     },
     {
       id: 2,

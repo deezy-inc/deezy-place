@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchBitcoinPrice } from "@services/nosft";
 
-const useBitcoinPrice = ({ nostrPaymentsAddress }) => {
+const useBitcoinPrice = ({ nostrOrdinalsAddress }) => {
   const [bitcoinPrice, setBitcoinPrice] = useState("-");
 
   useEffect(() => {
@@ -11,7 +11,7 @@ const useBitcoinPrice = ({ nostrPaymentsAddress }) => {
     };
 
     getPrice();
-  }, [nostrPaymentsAddress]);
+  }, [nostrOrdinalsAddress]);
 
   return { bitcoinPrice };
 };

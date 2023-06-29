@@ -10,14 +10,14 @@ import { toast } from "react-toastify";
 import Image from "next/image";
 import {
   getInscriptions,
-  shortenStr,
-  fetchBitcoinPrice,
   satsToFormattedDollarString,
+  shortenStr,
 } from "@services/nosft";
 import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 import Slider, { SliderItem } from "@ui/slider";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 const SliderOptions = {
   infinite: true,
@@ -57,15 +57,19 @@ const SliderOptions = {
   ],
 };
 
-const OrdinalsArea = ({ className, space }) => {
+const WalletArea = ({
+  className,
+  space,
+  displayOnlyInscriptions,
+  showOnlyOrdinals = true,
+}) => {
   const { nostrOrdinalsAddress } = useWallet();
-
+  const [balance, setBalance] = useState(0);
   const [utxosReady, setUtxosReady] = useState(false);
   const [ownedUtxos, setOwnedUtxos] = useState([]);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
   const [refreshHack, setRefreshHack] = useState(false);
-  const [balance, setBalance] = useState(0);
-  const [bitcoinPrice, setBitcoinPrice] = useState("-");
+  const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const handleRefreshHack = () => {
     setRefreshHack(!refreshHack);
@@ -75,6 +79,14 @@ const OrdinalsArea = ({ className, space }) => {
     navigator.clipboard.writeText(nostrOrdinalsAddress);
     toast("Receive Address copied to clipboard!");
   };
+
+  useMemo(() => {
+    const filteredUtxos = applyFilters({
+      showOnlyOrdinals: false,
+      utxos: ownedUtxos,
+    });
+    setFilteredOwnedUtxos(filteredUtxos);
+  }, [ownedUtxos]);
 
   const resetUtxos = () => {
     setOwnedUtxos([]);
@@ -88,11 +100,6 @@ const OrdinalsArea = ({ className, space }) => {
       return;
     }
 
-    const getPrice = async () => {
-      const btcPrice = await fetchBitcoinPrice();
-      setBitcoinPrice(btcPrice);
-    };
-
     const loadUtxos = async () => {
       setUtxosReady(false);
 
@@ -100,9 +107,11 @@ const OrdinalsArea = ({ className, space }) => {
 
       try {
         utxosWithInscriptionData = await getInscriptions(nostrOrdinalsAddress);
-        utxosWithInscriptionData = utxosWithInscriptionData.filter(
-          (utxo) => !!!utxo.inscriptionId
-        );
+        if (displayOnlyInscriptions) {
+          utxosWithInscriptionData = utxosWithInscriptionData.filter(
+            (utxo) => !!utxo.inscriptionId
+          );
+        }
         setBalance(
           utxosWithInscriptionData.reduce((acc, utxo) => acc + utxo.value, 0)
         );
@@ -116,9 +125,8 @@ const OrdinalsArea = ({ className, space }) => {
       setUtxosReady(true);
     };
 
-    getPrice();
     loadUtxos();
-  }, [nostrOrdinalsAddress]);
+  }, [refreshHack, nostrOrdinalsAddress]);
 
   return (
     <div
@@ -225,13 +233,16 @@ const OrdinalsArea = ({ className, space }) => {
   );
 };
 
-OrdinalsArea.propTypes = {
+WalletArea.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
+  onSale: PropTypes.func,
+  displayOnlyInscriptions: PropTypes.bool,
+  hideAddress: PropTypes.bool,
 };
 
-OrdinalsArea.defaultProps = {
+WalletArea.defaultProps = {
   space: 1,
 };
 
-export default OrdinalsArea;
+export default WalletArea;

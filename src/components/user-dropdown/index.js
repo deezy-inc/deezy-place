@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { useMemo } from "react";
 import { useWallet } from "@context/wallet-context";
+import { useRouter } from "next/router";
 
 const UserDropdown = () => {
   const {
@@ -13,6 +14,7 @@ const UserDropdown = () => {
     nostrOrdinalsAddress,
     onDisconnectHandler: onDisconnect,
   } = useWallet();
+  const router = useRouter();
 
   const urlLogo = useMemo(() => {
     if (walletName === "xverse") return "/images/logo/xverse.png";

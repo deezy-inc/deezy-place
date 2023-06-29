@@ -251,6 +251,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
           utxo,
           paymentAddress: destinationBtcAddress,
           price,
+          pubkey: ordinalsPublicKey,
         });
 
         let signedPsbt;

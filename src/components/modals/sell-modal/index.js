@@ -38,11 +38,6 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const [isOnSale, setIsOnSale] = useState(false);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
-  // TODO: check if it necessary
-  useEffect(() => {
-    setDestinationBtcAddress(nostrOrdinalsAddress);
-  }, [nostrOrdinalsAddress]);
-
   const sale = async () => {
     setIsOnSale(true);
 
@@ -50,6 +45,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
       utxo,
       paymentAddress: destinationBtcAddress,
       price: ordinalValue,
+      pubkey: ordinalsPublicKey,
     });
 
     const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);

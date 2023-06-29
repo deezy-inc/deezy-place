@@ -31,11 +31,11 @@ import { useWallet } from "@context/wallet-context";
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+  const { nostrOrdinalsAddress, nostrPaymentsAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrOrdinalsAddress);
+    useState(nostrPaymentsAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
@@ -140,7 +140,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         inscription: utxo,
       });
 
-      const tx = await signPsbtMessage(psbt);
+      const tx = await signPsbtMessage(psbt, nostrOrdinalsAddress);
       const txId = await broadcastTx(tx);
       setBuyTxId(txId);
       toast.info(`Order successfully signed! ${txId}`);
@@ -195,7 +195,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 <InputGroup className="mb-lg-5 notDummy">
                   <Form.Label>Address to receive payment</Form.Label>
                   <Form.Control
-                    defaultValue={nostrOrdinalsAddress}
+                    defaultValue={nostrPaymentsAddress}
                     onChange={onChangeAddress}
                     placeholder="Buyer address"
                     aria-label="Buyer address"

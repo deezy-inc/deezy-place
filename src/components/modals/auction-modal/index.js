@@ -154,12 +154,13 @@ auctionStartingTime.setMinutes(
 );
 
 const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
-  const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
+  const { nostrOrdinalsAddress, nostrPaymentsAddress, ordinalsPublicKey } =
+    useWallet();
 
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrOrdinalsAddress);
+    useState(nostrPaymentsAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [reservePrice, setReservePrice] = useState(Math.round(utxo.value / 2));
   const [bitcoinPrice, setBitcoinPrice] = useState("-");
@@ -235,11 +236,11 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
       }
     };
 
-    setDestinationBtcAddress(nostrOrdinalsAddress);
+    setDestinationBtcAddress(nostrPaymentsAddress);
 
     getBlockAverage();
     getPrice();
-  }, [nostrOrdinalsAddress]);
+  }, [nostrPaymentsAddress]);
 
   const createEvents = async ({
     auctionSchedule,
@@ -256,7 +257,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
           paymentAddress: destinationBtcAddress,
           price,
         });
-        const signedPsbt = await signPsbtMessage(psbt);
+        const signedPsbt = await signPsbtMessage(psbt, nostrOrdinalsAddress);
         events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
         incCounter();
       }
@@ -427,7 +428,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   <InputGroup className="mb-lg-5 omg">
                     <Form.Label>Address to receive payment</Form.Label>
                     <Form.Control
-                      defaultValue={nostrOrdinalsAddress}
+                      defaultValue={nostrPaymentsAddress}
                       onChange={addressOnChange}
                       placeholder="Paste BTC address to receive your payment here"
                       aria-label="Paste BTC address to receive your payment here"

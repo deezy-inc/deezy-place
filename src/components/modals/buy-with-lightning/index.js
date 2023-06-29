@@ -30,13 +30,13 @@ import { buyOrdinalWithLightning } from "@services/deezy";
 bitcoin.initEccLib(ecc);
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+  const { nostrOrdinalsAddress, nostrPaymentsAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrOrdinalsAddress);
+    useState(nostrPaymentsAddress);
   const [refundLightningAddress, setRefundLightningAddress] = useState("");
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
@@ -180,7 +180,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 <InputGroup className="mb-lg-5 notDummy">
                   <Form.Label>Address to receive payment</Form.Label>
                   <Form.Control
-                    defaultValue={nostrOrdinalsAddress}
+                    defaultValue={nostrPaymentsAddress}
                     onChange={onChangeAddress}
                     placeholder="Buyer address"
                     aria-label="Buyer address"

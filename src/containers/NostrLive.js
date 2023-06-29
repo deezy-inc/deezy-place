@@ -266,11 +266,13 @@ const NostrLive = ({ className, space, type }) => {
       ));
     }
 
-    return [...Array(5)].map((_, index) => (
-      <SliderItem key={index} className="ordinal-slide">
-        <OrdinalCard overlay />
-      </SliderItem>
-    ));
+    return <>No dutch auction yet.</>;
+
+    // return [...Array(5)].map((_, index) => (
+    //   <SliderItem key={index} className="ordinal-slide">
+    //     <OrdinalCard overlay />
+    //   </SliderItem>
+    // ));
   };
 
   return (

@@ -63,6 +63,7 @@ const OrdinalsArea = ({
   const [utxosReady, setUtxosReady] = useState(false);
   const [ownedUtxos, setOwnedUtxos] = useState([]);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
+  const [showOnlyOrdinals, setShowOnlyOrdinals] = useState(true);
   const [refreshHack, setRefreshHack] = useState(false);
 
   const [activeSort, setActiveSort] = useState("date");
@@ -79,12 +80,13 @@ const OrdinalsArea = ({
 
   useMemo(() => {
     const filteredUtxos = applyFilters({
-      utxos: filteredOwnedUtxos,
+      showOnlyOrdinals,
+      utxos: ownedUtxos,
       activeSort,
       sortAsc,
     });
     setFilteredOwnedUtxos(filteredUtxos);
-  }, [filteredOwnedUtxos, activeSort, sortAsc]);
+  }, [ownedUtxos, activeSort, sortAsc, showOnlyOrdinals]);
 
   const resetUtxos = () => {
     setOwnedUtxos([]);
@@ -137,7 +139,7 @@ const OrdinalsArea = ({
           <div className="col-lg-4 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0"
-              {...{ title: "Your collection" }}
+              {...{ title: "Your collection" }} //
               isLoading={!utxosReady}
             />
             {!hideAddress && (
@@ -173,6 +175,8 @@ const OrdinalsArea = ({
                 setSortAsc={setSortAsc}
                 activeSort={activeSort}
                 sortAsc={sortAsc}
+                showOnlyOrdinals={showOnlyOrdinals}
+                setShowOnlyOrdinals={setShowOnlyOrdinals}
               />
             </div>
           )}

@@ -53,20 +53,11 @@ const ProductDetailsArea = memo(
     const [showAuctionModal, setShowAuctionModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
-    const [bitcoinPrice, setBitcoinPrice] = useState();
     const [auctionCanceled, setAuctionCanceled] = useState(false);
+    const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
     const [{ loading: isCanceling, error: auctionError }, doCancelAction] =
       useAsyncFn(cancelAuction, []);
-
-    useEffect(() => {
-      const getPrice = async () => {
-        const btcPrice = await fetchBitcoinPrice();
-        setBitcoinPrice(btcPrice);
-      };
-
-      getPrice();
-    }, []);
 
     const handleSendModal = () => {
       setShowSendModal((prev) => !prev);

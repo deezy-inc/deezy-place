@@ -5,11 +5,10 @@ import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
-import OrdinalsArea from "@containers/OrdinalsArea";
 
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
-import Wallet from "@containers/Wallet";
+import WalletArea from "@containers/WalletArea";
 
 export async function getStaticProps() {
   return { props: { className: "template-color-1" } };
@@ -26,7 +25,11 @@ const App = () => {
         <SEO pageTitle="Deezy" />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {ordinalsPublicKey && nostrOrdinalsAddress && <Wallet />}
+          {ordinalsPublicKey && nostrOrdinalsAddress ? (
+            <WalletArea />
+          ) : (
+            <>Please connect your wallet.</>
+          )}
         </main>
         <Footer />
       </Wrapper>

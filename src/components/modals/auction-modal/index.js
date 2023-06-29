@@ -32,6 +32,7 @@ import {
   fetchBlockAverage,
 } from "@services/nosft";
 import { useCounter } from "react-use";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
@@ -163,7 +164,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     useState(nostrPaymentsAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [reservePrice, setReservePrice] = useState(Math.round(utxo.value / 2));
-  const [bitcoinPrice, setBitcoinPrice] = useState("-");
+  const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
   const [isOnSale, setIsOnSale] = useState(false);
   const [priceDecreases, setPriceDecreases] = useState(1);
   const [isLowerPriceInvalid, setIsLowerPriceInvalid] = useState(false);
@@ -224,11 +225,6 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
   };
 
   useEffect(() => {
-    const getPrice = async () => {
-      const btcPrice = await fetchBitcoinPrice();
-      setBitcoinPrice(btcPrice);
-    };
-
     const getBlockAverage = async () => {
       const blockAverage = await fetchBlockAverage();
       if (blockAverage) {
@@ -239,7 +235,6 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     setDestinationBtcAddress(nostrPaymentsAddress);
 
     getBlockAverage();
-    getPrice();
   }, [nostrPaymentsAddress]);
 
   const createEvents = async ({

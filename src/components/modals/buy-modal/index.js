@@ -27,6 +27,7 @@ import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
@@ -40,20 +41,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
   const [dummyUtxos, setDummyUtxos] = useState([]);
-  const [bitcoinPrice, setBitcoinPrice] = useState();
   const [buyTxId, setBuyTxId] = useState(null);
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
-
-  useEffect(() => {
-    const getPrice = async () => {
-      const btcPrice = await fetchBitcoinPrice();
-      setBitcoinPrice(btcPrice);
-    };
-
-    getPrice();
-  }, [nostrOrdinalsAddress]);
+  const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const updatePayerAddress = async (address) => {
     try {

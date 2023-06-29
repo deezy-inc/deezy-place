@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
 
 import { InscriptionPreview } from "@components/inscription-preview";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
@@ -34,18 +35,12 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const [destinationBtcAddress, setDestinationBtcAddress] =
     useState(nostrPaymentsAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
-  const [bitcoinPrice, setBitcoinPrice] = useState();
   const [isOnSale, setIsOnSale] = useState(false);
+  const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
+  // TODO: check if it necessary
   useEffect(() => {
-    const getPrice = async () => {
-      const btcPrice = await fetchBitcoinPrice();
-      setBitcoinPrice(btcPrice);
-    };
-
     setDestinationBtcAddress(nostrOrdinalsAddress);
-
-    getPrice();
   }, [nostrOrdinalsAddress]);
 
   const sale = async () => {

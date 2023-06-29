@@ -26,6 +26,7 @@ import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import { buyOrdinalWithLightning } from "@services/deezy";
+import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
@@ -40,25 +41,19 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [refundLightningAddress, setRefundLightningAddress] = useState("");
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
-  const [bitcoinPrice, setBitcoinPrice] = useState();
   const [buyTxId, setBuyTxId] = useState(null);
+  const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
 
   useEffect(() => {
-    const getPrice = async () => {
-      const btcPrice = await fetchBitcoinPrice();
-      setBitcoinPrice(btcPrice);
-    };
-
     const fetchFee = async () => {
       const fee = await fetchRecommendedFee();
       setSendFeeRate(fee);
     };
 
     fetchFee();
-    getPrice();
   }, [nostrOrdinalsAddress]);
 
   const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);

@@ -9,6 +9,7 @@ import OrdinalsArea from "@containers/OrdinalsArea";
 
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
+import Wallet from "@containers/Wallet";
 
 export async function getStaticProps() {
   return { props: { className: "template-color-1" } };
@@ -25,7 +26,7 @@ const App = () => {
         <SEO pageTitle="Deezy" />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
+          {ordinalsPublicKey && nostrOrdinalsAddress && <Wallet />}
         </main>
         <Footer />
       </Wrapper>

@@ -57,13 +57,13 @@ const OrdinalsArea = ({
   space,
   displayOnlyInscriptions,
   hideAddress,
+  showOnlyOrdinals = true,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
   const [utxosReady, setUtxosReady] = useState(false);
   const [ownedUtxos, setOwnedUtxos] = useState([]);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
-  const [showOnlyOrdinals, setShowOnlyOrdinals] = useState(true);
   const [refreshHack, setRefreshHack] = useState(false);
 
   const [activeSort, setActiveSort] = useState("date");
@@ -86,7 +86,7 @@ const OrdinalsArea = ({
       sortAsc,
     });
     setFilteredOwnedUtxos(filteredUtxos);
-  }, [ownedUtxos, activeSort, sortAsc, showOnlyOrdinals]);
+  }, [ownedUtxos, activeSort, sortAsc]);
 
   const resetUtxos = () => {
     setOwnedUtxos([]);
@@ -175,8 +175,7 @@ const OrdinalsArea = ({
                 setSortAsc={setSortAsc}
                 activeSort={activeSort}
                 sortAsc={sortAsc}
-                showOnlyOrdinals={showOnlyOrdinals}
-                setShowOnlyOrdinals={setShowOnlyOrdinals}
+                showOnlyOrdinals
               />
             </div>
           )}

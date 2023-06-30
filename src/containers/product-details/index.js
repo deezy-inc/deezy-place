@@ -102,7 +102,7 @@ const ProductDetailsArea = memo(
 
     const properties = [
       {
-        id: 7,
+        id: 8,
         type: "Owner",
         value: shortenStr(inscription.owner),
       },

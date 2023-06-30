@@ -252,8 +252,19 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
           paymentAddress: destinationBtcAddress,
           price,
         });
-        const signedPsbt = await signPsbtMessage(psbt, nostrOrdinalsAddress);
-        events.push({ ...props, price, signedPsbt: signedPsbt.toBase64() });
+
+        let signedPsbt;
+        if (provider === "unisat.io") {
+          signedPsbt = await window.unisat.signPsbt(psbt.toHex());
+        } else {
+          signedPsbt = await signPsbtMessage(
+            psbt.toBase64(),
+            nostrOrdinalsAddress
+          );
+          signedPsbt = signedPsbt.toBase64();
+        }
+
+        events.push({ ...props, price, signedPsbt });
         incCounter();
       }
     } catch (error) {

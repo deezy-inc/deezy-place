@@ -132,8 +132,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         inscription: utxo,
       });
 
-      const tx = await signPsbtMessage(psbt, nostrOrdinalsAddress);
-      const txId = await broadcastTx(tx);
+      const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+      let txId;
+      if (provider === "unisat.io") {
+        const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
+        txId = await window.unisat.pushPsbt(signedPsbt);
+      } else {
+        const tx = await signPsbtMessage(psbt.toBase64(), nostrOrdinalsAddress);
+        txId = await broadcastTx(tx);
+      }
+
       setBuyTxId(txId);
       toast.info(`Order successfully signed! ${txId}`);
       navigator.clipboard.writeText(txId);
@@ -210,13 +218,13 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                   <span>Payment Receive Address</span>
                 )}
 
-                {Boolean(nostr.value) && <span>Price</span>}
+                {Boolean(nostr?.value) && <span>Price</span>}
               </div>
               <div className="bid-content-right">
                 {Boolean(destinationBtcAddress) && (
                   <span>{shortenStr(destinationBtcAddress)}</span>
                 )}
-                {Boolean(nostr.value) && bitcoinPrice && (
+                {Boolean(nostr?.value) && bitcoinPrice && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,
                     bitcoinPrice

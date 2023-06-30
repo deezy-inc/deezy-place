@@ -31,6 +31,7 @@ const {
   signPsbtForBoost,
 } = nosft.psbt;
 const {
+  publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
   getLatestNostrInscription,
@@ -150,6 +151,7 @@ export {
   signPsbtForBoost,
 
   // nostr
+  publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
   getLatestNostrInscription,

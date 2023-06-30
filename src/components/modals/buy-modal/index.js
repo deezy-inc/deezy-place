@@ -32,12 +32,12 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress, nostrPaymentsAddress } = useWallet();
-  const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
-  const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
+  const { nostrOrdinalsAddress, nostrPaymentsAddress, paymentPublicKey } =
+    useWallet();
+  const [isDestinationAddressValid, setIsDestinationAddressValid] =
+    useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentsAddress);
-  const [ordinalValue, setOrdinalValue] = useState(utxo.value);
+    useState(nostrOrdinalsAddress);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
   const [dummyUtxos, setDummyUtxos] = useState([]);
@@ -47,11 +47,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
-  const updatePayerAddress = async (address) => {
+  const updatePayerAddress = async () => {
     try {
       const { selectedUtxos: _selectedUtxos, dummyUtxos: _dummyUtxos } =
         await getAvailableUtxosWithoutInscription({
-          address,
+          address: nostrPaymentsAddress,
           price: utxo.value,
         });
 
@@ -72,30 +72,28 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const onChangeAddress = async (evt) => {
     const newaddr = evt.target.value;
     if (newaddr === "") {
-      setIsBtcInputAddressValid(true);
+      setIsDestinationAddressValid(true);
       return;
     }
     if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
-      setIsBtcInputAddressValid(false);
+      setIsDestinationAddressValid(false);
       return;
     }
     setDestinationBtcAddress(newaddr);
   };
 
   useEffect(() => {
-    setDestinationBtcAddress(nostrPaymentsAddress);
-
-    const updateAddress = async () => {
+    const validatePayerAddress = async () => {
       setIsOnBuy(true);
       try {
-        await updatePayerAddress(nostrPaymentsAddress);
+        await updatePayerAddress();
       } catch (e) {
         if (e.message.includes("Not enough cardinal spendable funds")) {
           toast.error(e.message);
           return;
         }
 
-        setIsBtcInputAddressValid(false);
+        setIsDestinationAddressValid(false);
         toast.error(e.message);
         return;
       }
@@ -103,16 +101,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       setIsOnBuy(false);
     };
 
-    updateAddress();
+    validatePayerAddress();
   }, [nostrPaymentsAddress]);
 
   const buy = async () => {
     setIsOnBuy(true);
 
     try {
-      await updatePayerAddress(destinationBtcAddress);
+      await updatePayerAddress();
     } catch (e) {
-      setIsBtcInputAddressValid(false);
+      setIsDestinationAddressValid(false);
       toast.error(e.message);
       return;
     }
@@ -122,9 +120,17 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         network: NETWORK,
       });
 
+      debugger;
+
+      console.log("sellerSignedPsbt", nostr.content);
+      console.log("destinationBtcAddress", destinationBtcAddress);
+
+      debugger;
+
       const psbt = await generatePSBTListingInscriptionForBuy({
-        payerAddress: destinationBtcAddress,
-        receiverAddress: nostrOrdinalsAddress,
+        payerAddress: nostrPaymentsAddress,
+        payerPubkey: paymentPublicKey,
+        receiverAddress: destinationBtcAddress,
         price: nostr.value,
         paymentUtxos: selectedUtxos,
         dummyUtxos,
@@ -132,13 +138,21 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         inscription: utxo,
       });
 
+      debugger;
+
       const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
       let txId;
       if (provider === "unisat.io") {
         const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
         txId = await window.unisat.pushPsbt(signedPsbt);
       } else {
-        const tx = await signPsbtMessage(psbt.toBase64(), nostrOrdinalsAddress);
+        debugger;
+        console.log("[PSBT]", psbt.toHex());
+        const tx = await signPsbtMessage(
+          psbt.toBase64(),
+          nostrOrdinalsAddress,
+          nostrPaymentsAddress
+        );
         txId = await broadcastTx(tx);
       }
 
@@ -148,9 +162,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       // Display confirmation component
       setIsMounted(!isMounted);
-    } catch (e) {
-      toast.error(e.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
     } finally {
+      debugger;
       setIsOnBuy(false);
     }
   };
@@ -162,8 +178,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
   const submit = async () => {
     if (!destinationBtcAddress) return;
-    if (!isBtcAmountValid) return;
-    if (!isBtcInputAddressValid) return;
+    if (!isDestinationAddressValid) return;
 
     await buy();
   };
@@ -193,14 +208,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-top">
               <div className="bid-content-left">
                 <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Address to receive payment</Form.Label>
+                  <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentsAddress}
+                    defaultValue={nostrOrdinalsAddress}
                     onChange={onChangeAddress}
                     placeholder="Buyer address"
                     aria-label="Buyer address"
                     aria-describedby="basic-addon2"
-                    isInvalid={!isBtcInputAddressValid}
+                    isInvalid={!isDestinationAddressValid}
                     autoFocus
                   />
 
@@ -215,9 +230,8 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-mid">
               <div className="bid-content-left">
                 {Boolean(destinationBtcAddress) && (
-                  <span>Payment Receive Address</span>
+                  <span>Destination Address</span>
                 )}
-
                 {Boolean(nostr?.value) && <span>Price</span>}
               </div>
               <div className="bid-content-right">

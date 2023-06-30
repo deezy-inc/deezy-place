@@ -260,7 +260,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         } else {
           signedPsbt = await signPsbtMessage(
             psbt.toBase64(),
-            nostrOrdinalsAddress
+            nostrOrdinalsAddress,
+            nostrPaymentsAddress
           );
           signedPsbt = signedPsbt.toBase64();
         }

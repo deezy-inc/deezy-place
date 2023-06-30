@@ -133,8 +133,9 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       }
 
       closeModal();
-    } catch (e) {
-      toast.error(e.message);
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
     } finally {
       setIsOnBuy(false);
     }

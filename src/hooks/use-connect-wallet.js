@@ -5,6 +5,7 @@ import LocalStorage from "@services/local-storage";
 
 function useConnectWallet() {
   const [ordinalsPublicKey, setOrdinalsPublicKey] = useState("");
+  const [paymentPublicKey, setPaymentPublicKey] = useState("");
   const [ordinalsAddress, setOrdinalsAddress] = useState("");
   const [paymentAddress, setPaymentAddress] = useState("");
   const [walletName, setWalletName] = useState("");
@@ -12,6 +13,7 @@ function useConnectWallet() {
   const onConnectHandler = async (domain) => {
     const {
       ordinalsPublicKey: xOrdinalsPublicKey,
+      paymentPublicKey: xPaymentPublicKey,
       walletName: xWalletName,
       ordinalsAddress: xOrdinalsAddress,
       paymentAddress: xPaymentAddress,
@@ -24,16 +26,22 @@ function useConnectWallet() {
       SessionsStorageKeys.ORDINALS_PUBLIC_KEY,
       xOrdinalsPublicKey
     );
+    SessionStorage.set(
+      SessionsStorageKeys.PAYMENT_PUBLIC_KEY,
+      xPaymentPublicKey
+    );
     setOrdinalsAddress(xOrdinalsAddress);
     setPaymentAddress(xPaymentAddress);
     setWalletName(xWalletName);
     setOrdinalsPublicKey(xOrdinalsPublicKey);
+    setPaymentPublicKey(xPaymentPublicKey);
   };
 
   const onDisconnectHandler = async () => {
     SessionStorage.clear();
     LocalStorage.clear();
     setOrdinalsPublicKey("");
+    setPaymentPublicKey("");
     setWalletName("");
     setPaymentAddress("");
   };
@@ -49,6 +57,9 @@ function useConnectWallet() {
     const xOrdinalsPublicKey = SessionStorage.get(
       SessionsStorageKeys.ORDINALS_PUBLIC_KEY
     );
+    const xPaymentPublicKey = SessionStorage.get(
+      SessionsStorageKeys.PAYMENT_PUBLIC_KEY
+    );
     const xWalletName = SessionStorage.get(SessionsStorageKeys.WALLET_NAME);
     const ordinalsAddress = SessionStorage.get(
       SessionsStorageKeys.ORDINALS_ADDRESS
@@ -58,6 +69,9 @@ function useConnectWallet() {
     );
     if (xOrdinalsPublicKey) {
       setOrdinalsPublicKey(xOrdinalsPublicKey);
+    }
+    if (xPaymentPublicKey) {
+      setPaymentPublicKey(xPaymentPublicKey);
     }
     if (xWalletName) {
       setWalletName(xWalletName);
@@ -74,6 +88,7 @@ function useConnectWallet() {
     ordinalsAddress,
     paymentAddress,
     ordinalsPublicKey,
+    paymentPublicKey,
     onConnectHandler,
     onDisconnectHandler,
     walletName,

@@ -371,18 +371,18 @@ const ProductDetailsArea = memo(
                           </button>
                         )}
 
-                        {/* {nostr && nostr.value && (
-                                            <button
-                                                className="pd-react-area btn-transparent"
-                                                type="button"
-                                                onClick={handleBuyModal}
-                                            >
-                                                <div className="action">
-                                                    <i className="feather-shopping-cart" />
-                                                    <span>Buy with bitcoin</span>
-                                                </div>
-                                            </button>
-                                        )}  */}
+                        {nostr && nostr.value && (
+                          <button
+                            className="pd-react-area btn-transparent"
+                            type="button"
+                            onClick={handleBuyModal}
+                          >
+                            <div className="action">
+                              <i className="feather-shopping-cart" />
+                              <span>Buy with bitcoin</span>
+                            </div>
+                          </button>
+                        )}
 
                         {!isOwner && nostr && nostr.value && !isUtxoSpent && (
                           <button

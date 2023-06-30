@@ -229,7 +229,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                   <span>Refund Lightning Address</span>
                 )}
 
-                {Boolean(nostr.value) && <span>Price</span>}
+                {Boolean(nostr?.value) && <span>Price</span>}
                 <span>Fee rate</span>
               </div>
               <div className="bid-constent-right">

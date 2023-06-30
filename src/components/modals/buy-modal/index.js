@@ -15,7 +15,6 @@ import {
   NETWORK,
   shortenStr,
   satsToFormattedDollarString,
-  fetchBitcoinPrice,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -83,12 +82,12 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   useEffect(() => {
-    setDestinationBtcAddress(nostrOrdinalsAddress);
+    setDestinationBtcAddress(nostrPaymentsAddress);
 
     const updateAddress = async () => {
       setIsOnBuy(true);
       try {
-        await updatePayerAddress(nostrOrdinalsAddress);
+        await updatePayerAddress(nostrPaymentsAddress);
       } catch (e) {
         if (e.message.includes("Not enough cardinal spendable funds")) {
           toast.error(e.message);
@@ -104,7 +103,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     };
 
     updateAddress();
-  }, [nostrOrdinalsAddress]);
+  }, [nostrPaymentsAddress]);
 
   const buy = async () => {
     setIsOnBuy(true);
@@ -124,7 +123,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       const psbt = await generatePSBTListingInscriptionForBuy({
         payerAddress: destinationBtcAddress,
-        receiverAddress: destinationBtcAddress,
+        receiverAddress: nostrOrdinalsAddress,
         price: nostr.value,
         paymentUtxos: selectedUtxos,
         dummyUtxos,

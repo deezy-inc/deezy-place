@@ -7,7 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  signAndBroadcastEvent,
+  publishOrder,
   generatePSBTListingInscriptionForSale,
   signPsbtMessage,
   shortenStr,
@@ -66,13 +66,10 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
         signedPsbt = signedPsbt.toBase64();
       }
 
-      console.log(signedPsbt);
-
-      await signAndBroadcastEvent({
+      await publishOrder({
         utxo,
         ordinalValue,
         signedPsbt,
-        pubkey: ordinalsPublicKey,
       });
 
       toast.info(`Order successfully published to Nostr!`);

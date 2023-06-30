@@ -27,6 +27,7 @@ import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 

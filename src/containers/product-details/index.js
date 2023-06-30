@@ -371,7 +371,7 @@ const ProductDetailsArea = memo(
                           </button>
                         )}
 
-                        {nostr && nostr.value && (
+                        {nostr && nostr.value && !isUtxoSpent && (
                           <button
                             className="pd-react-area btn-transparent"
                             type="button"

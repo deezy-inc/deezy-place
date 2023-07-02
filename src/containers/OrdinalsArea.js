@@ -79,12 +79,14 @@ const OrdinalsArea = ({
   };
 
   useMemo(() => {
+    console.log({ ownedUtxos });
     const filteredUtxos = applyFilters({
       showOnlyOrdinals,
       utxos: ownedUtxos,
       activeSort,
       sortAsc,
     });
+    console.log({ filteredUtxos });
     setFilteredOwnedUtxos(filteredUtxos);
   }, [ownedUtxos, activeSort, sortAsc]);
 
@@ -107,16 +109,11 @@ const OrdinalsArea = ({
 
       try {
         utxosWithInscriptionData = await getInscriptions(nostrOrdinalsAddress);
-        if (displayOnlyInscriptions) {
-          utxosWithInscriptionData = utxosWithInscriptionData.filter(
-            (utxo) => !!utxo.inscriptionId
-          );
-        }
+        debugger;
       } catch (error) {
         console.error(error);
         // TODO: handle error
       }
-
       setOwnedUtxos(utxosWithInscriptionData);
       setFilteredOwnedUtxos(utxosWithInscriptionData);
       setUtxosReady(true);

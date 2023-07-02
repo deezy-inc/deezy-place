@@ -91,13 +91,13 @@ export const useWalletState = () => {
     ]
   );
 
-  console.log("[walletState]", {
-    walletName,
-    ordinalsPublicKey,
-    paymentPublicKey,
-    nostrOrdinalsAddress,
-    nostrPaymentsAddress,
-  });
+  // console.log("[walletState]", {
+  //   walletName,
+  //   ordinalsPublicKey,
+  //   paymentPublicKey,
+  //   nostrOrdinalsAddress,
+  //   nostrPaymentsAddress,
+  // });
 
   return walletState;
 };

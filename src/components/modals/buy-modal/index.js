@@ -117,57 +117,20 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     }
 
     try {
-      // const result = await generateDeezyPSBTListingForBuy({
-      //   sellerBase64SignedPsbt: nostr.content,
-      //   ordinalReceiveAddress: destinationBtcAddress,
-      //   selectedUtxos,
-      //   payerPubkey: paymentPublicKey,
-      //   payerAddress: nostrPaymentsAddress,
-      //   price: nostr.value,
-      // });
-
-      //
-
-      // console.log("result", result);
-
-      const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
-        network: NETWORK,
-      });
-
-      console.log("sellerSignedPsbt", nostr.content);
-      console.log("destinationBtcAddress", destinationBtcAddress);
-
-      const psbt = await generatePSBTListingInscriptionForBuy({
-        payerAddress: nostrPaymentsAddress,
+      const { txid } = await generateDeezyPSBTListingForBuy({
+        sellerBase64SignedPsbt: nostr.content,
+        ordinalReceiveAddress: destinationBtcAddress,
+        selectedUtxos,
         payerPubkey: paymentPublicKey,
-        receiverAddress: destinationBtcAddress,
+        payerAddress: nostrPaymentsAddress,
         price: nostr.value,
-        paymentUtxos: selectedUtxos,
-        dummyUtxos,
-        sellerSignedPsbt,
-        inscription: utxo,
       });
-
-      const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-      let txId;
-      if (provider === "unisat.io") {
-        const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
-        txId = await window.unisat.pushPsbt(signedPsbt);
-      } else {
-        console.log("[PSBT]", psbt.toHex());
-        const tx = await signPsbtMessage(
-          psbt.toBase64(),
-          nostrOrdinalsAddress,
-          nostrPaymentsAddress
-        );
-        if (tx) {
-          txId = await broadcastTx(tx);
-        }
-      }
 
       setBuyTxId(txId);
       toast.info(`Order successfully signed! ${txId}`);
       navigator.clipboard.writeText(txId);
+
+      console.log("txid", txid);
 
       // Display confirmation component
       setIsMounted(!isMounted);

@@ -48,24 +48,16 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
       pubkey: ordinalsPublicKey,
     });
 
-    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-
     try {
-      let signedPsbt;
-      if (provider === "unisat.io") {
-        signedPsbt = await window.unisat.signPsbt(psbt.toHex());
-      } else {
-        signedPsbt = await signPsbtMessage(
-          psbt.toBase64(),
-          nostrOrdinalsAddress
-        );
-        signedPsbt = signedPsbt.toBase64();
-      }
+      const signedPsbt = await signPsbtMessage(
+        psbt.toBase64(),
+        nostrOrdinalsAddress
+      );
 
       await publishOrder({
         utxo,
         ordinalValue,
-        signedPsbt,
+        signedPsbt: signedPsbt.toBase64(),
       });
 
       toast.info(`Order successfully published to Nostr!`);

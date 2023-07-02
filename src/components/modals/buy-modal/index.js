@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 import {
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
+  generateDeezyPSBTListingForBuy,
   signPsbtMessage,
   broadcastTx,
   TESTNET,
@@ -116,16 +117,25 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     }
 
     try {
+      // const result = await generateDeezyPSBTListingForBuy({
+      //   sellerBase64SignedPsbt: nostr.content,
+      //   ordinalReceiveAddress: destinationBtcAddress,
+      //   selectedUtxos,
+      //   payerPubkey: paymentPublicKey,
+      //   payerAddress: nostrPaymentsAddress,
+      //   price: nostr.value,
+      // });
+
+      //
+
+      // console.log("result", result);
+
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
       });
 
-      debugger;
-
       console.log("sellerSignedPsbt", nostr.content);
       console.log("destinationBtcAddress", destinationBtcAddress);
-
-      debugger;
 
       const psbt = await generatePSBTListingInscriptionForBuy({
         payerAddress: nostrPaymentsAddress,
@@ -138,22 +148,21 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         inscription: utxo,
       });
 
-      debugger;
-
       const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
       let txId;
       if (provider === "unisat.io") {
         const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
         txId = await window.unisat.pushPsbt(signedPsbt);
       } else {
-        debugger;
         console.log("[PSBT]", psbt.toHex());
         const tx = await signPsbtMessage(
           psbt.toBase64(),
           nostrOrdinalsAddress,
           nostrPaymentsAddress
         );
-        txId = await broadcastTx(tx);
+        if (tx) {
+          txId = await broadcastTx(tx);
+        }
       }
 
       setBuyTxId(txId);
@@ -166,7 +175,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       console.error(error);
       toast.error(error.message);
     } finally {
-      debugger;
       setIsOnBuy(false);
     }
   };

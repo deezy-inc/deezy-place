@@ -50,6 +50,7 @@ const {
 const {
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
+  generateDeezyPSBTListingForBuy,
   generatePSBTListingInscriptionForSale,
   getOrderInformation,
 } = nosft.openOrdex;
@@ -168,6 +169,7 @@ export {
   // open ordex
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
+  generateDeezyPSBTListingForBuy,
   generatePSBTListingInscriptionForSale,
   getOrderInformation,
 

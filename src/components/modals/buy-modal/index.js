@@ -9,12 +9,15 @@ import Form from "react-bootstrap/Form";
 import {
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
+  generateDeezyPSBTListingForBuy,
+  getAvailableUtxosWithoutDummies,
   signPsbtMessage,
   broadcastTx,
   TESTNET,
   NETWORK,
   shortenStr,
   satsToFormattedDollarString,
+  signPsbtListingForBuy,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -27,12 +30,14 @@ import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
+import axios from "axios";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress, nostrPaymentsAddress } = useWallet();
+  const { nostrOrdinalsAddress, nostrPaymentsAddress, ordinalsPublicKey } =
+    useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
@@ -40,7 +45,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
-  const [dummyUtxos, setDummyUtxos] = useState([]);
+  const [deezyPsbtPopulate, setDeezyPsbtPopulate] = useState(null);
   const [buyTxId, setBuyTxId] = useState(null);
 
   const [isMounted, setIsMounted] = useState(true);
@@ -49,20 +54,45 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
   const updatePayerAddress = async (address) => {
     try {
-      const { selectedUtxos: _selectedUtxos, dummyUtxos: _dummyUtxos } =
-        await getAvailableUtxosWithoutInscription({
-          address,
-          price: utxo.value,
+      let deezyPsbt;
+      if (!deezyPsbtPopulate) {
+        const { data } = await axios.post(
+          `https://api${
+            TESTNET ? "-testnet" : ""
+          }.deezy.io/v1/ordinals/psbt/populate`,
+          {
+            psbt: nostr.content, // (hex or base64)
+            ordinal_receive_address: address,
+          }
+        );
+
+        const { psbt } = data;
+        deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
+          network: NETWORK,
         });
 
-      if (_dummyUtxos.length < 2) {
+        setDeezyPsbtPopulate(data);
+      } else {
+        const { psbt } = deezyPsbtPopulate;
+        deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
+          network: NETWORK,
+        });
+      }
+
+      const { selectedUtxos: _selectedUtxos, dummyUtxos } =
+        await getAvailableUtxosWithoutDummies({
+          address,
+          price: utxo.value,
+          psbt: deezyPsbt,
+        });
+
+      if (dummyUtxos.length < 2) {
         throw new Error(
           "No dummy UTXOs found. Please create them before continuing."
         );
       }
 
       setSelectedUtxos(_selectedUtxos);
-      setDummyUtxos(_dummyUtxos);
     } catch (e) {
       setSelectedUtxos([]);
       throw e;
@@ -117,30 +147,45 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       return;
     }
 
+    debugger;
+
     try {
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
       });
 
-      const psbt = await generatePSBTListingInscriptionForBuy({
+      const { psbt, id } = deezyPsbtPopulate;
+      const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
+        network: NETWORK,
+      });
+
+      const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({
         payerAddress: destinationBtcAddress,
         receiverAddress: nostrOrdinalsAddress,
         price: nostr.value,
         paymentUtxos: selectedUtxos,
-        dummyUtxos,
         sellerSignedPsbt,
-        inscription: utxo,
+        psbt: deezyPsbt,
+        id,
+        pubKey: ordinalsPublicKey,
       });
 
-      const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-      let txId;
-      if (provider === "unisat.io") {
-        const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
-        txId = await window.unisat.pushPsbt(signedPsbt);
-      } else {
-        const tx = await signPsbtMessage(psbt.toBase64(), nostrOrdinalsAddress);
-        txId = await broadcastTx(tx);
-      }
+      const { txId } = await signPsbtListingForBuy({
+        psbt: psbtForBuy,
+        id,
+        ordinalAddress: nostrOrdinalsAddress,
+        payerAddress: destinationBtcAddress,
+      });
+
+      // const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+      // let txId;
+      // if (provider === "unisat.io") {
+      //   const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
+      //   txId = await window.unisat.pushPsbt(signedPsbt);
+      // } else {
+      //   const tx = await signPsbtMessage(psbt.toBase64(), nostrOrdinalsAddress);
+      //   txId = await broadcastTx(tx);
+      // }
 
       setBuyTxId(txId);
       toast.info(`Order successfully signed! ${txId}`);
@@ -224,7 +269,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 {Boolean(destinationBtcAddress) && (
                   <span>{shortenStr(destinationBtcAddress)}</span>
                 )}
-                {Boolean(nostr?.value) && bitcoinPrice && (
+                {Boolean(nostr?.value) && Boolean(bitcoinPrice) && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,
                     bitcoinPrice

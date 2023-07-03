@@ -28,6 +28,7 @@ const {
   signSigHash,
   createAndSignPsbtForBoost,
   createPsbtForBoost,
+  signPsbtListingForBuy,
   signPsbtForBoost,
 } = nosft.psbt;
 const {
@@ -49,9 +50,11 @@ const {
 
 const {
   getAvailableUtxosWithoutInscription,
+  getAvailableUtxosWithoutDummies,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
   getOrderInformation,
+  generateDeezyPSBTListingForBuy,
 } = nosft.openOrdex;
 
 const {
@@ -149,6 +152,7 @@ export {
   createAndSignPsbtForBoost,
   createPsbtForBoost,
   signPsbtForBoost,
+  signPsbtListingForBuy,
 
   // nostr
   publishOrder,
@@ -169,6 +173,8 @@ export {
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
+  generateDeezyPSBTListingForBuy,
+  getAvailableUtxosWithoutDummies,
   getOrderInformation,
 
   // collection

@@ -154,11 +154,13 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         network: NETWORK,
       });
 
+      // Step 1 happens above, when we call deezy api to get the psbt with the dummy utxos.
       const { psbt, id } = deezyPsbtPopulate;
       const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
         network: NETWORK,
       });
 
+      // Step 2, we add our payment data
       const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({
         payerAddress: destinationBtcAddress,
         receiverAddress: nostrOrdinalsAddress,
@@ -170,22 +172,26 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         pubKey: ordinalsPublicKey,
       });
 
-      const { txId } = await signPsbtListingForBuy({
+      // Step 3, we sign the psbt
+      const signedPsbt = await signPsbtListingForBuy({
         psbt: psbtForBuy,
         id,
         ordinalAddress: nostrOrdinalsAddress,
         payerAddress: destinationBtcAddress,
       });
 
-      // const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-      // let txId;
-      // if (provider === "unisat.io") {
-      //   const signedPsbt = await window.unisat.signPsbt(psbt.toHex());
-      //   txId = await window.unisat.pushPsbt(signedPsbt);
-      // } else {
-      //   const tx = await signPsbtMessage(psbt.toBase64(), nostrOrdinalsAddress);
-      //   txId = await broadcastTx(tx);
-      // }
+      // Step 4, we finalize the psbt and broadcast it
+      const { data: finalizeData } = await axios.post(
+        `https://api${
+          TESTNET ? "-testnet" : ""
+        }.deezy.io/v1/ordinals/psbt/finalize`,
+        {
+          psbt: signedPsbt, // (hex or base64)
+          id,
+        }
+      );
+
+      const { txid: txId } = finalizeData;
 
       setBuyTxId(txId);
       toast.info(`Order successfully signed! ${txId}`);
@@ -194,6 +200,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       // Display confirmation component
       setIsMounted(!isMounted);
     } catch (e) {
+      console.error(e);
       toast.error(e.message);
     } finally {
       setIsOnBuy(false);

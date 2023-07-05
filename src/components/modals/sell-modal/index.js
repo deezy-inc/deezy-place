@@ -25,13 +25,13 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 bitcoin.initEccLib(ecc);
 
 const SellModal = ({ show, handleModal, utxo, onSale }) => {
-  const { nostrOrdinalsAddress, nostrPaymentsAddress, ordinalsPublicKey } =
+  const { nostrOrdinalsAddress, nostrPaymentAddress, ordinalsPublicKey } =
     useWallet();
 
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentsAddress);
+    useState(nostrPaymentAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnSale, setIsOnSale] = useState(false);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
@@ -139,7 +139,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                 <InputGroup className="mb-lg-5 omg">
                   <Form.Label>Address to receive payment</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentsAddress}
+                    defaultValue={nostrPaymentAddress}
                     onChange={addressOnChange}
                     placeholder="Paste BTC address to receive your payment here"
                     aria-label="Paste BTC address to receive your payment here"

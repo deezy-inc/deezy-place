@@ -33,6 +33,11 @@ function hashBip322Message(message) {
 // Used to prove ownership of address and associated ordinals
 // https://github.com/LegReq/bip0322-signatures/blob/master/BIP0322_signing.ipynb
 export async function signBip322MessageSimple(message) {
+  const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+  if (provider === "unisat.io") {
+    return window.unisat.signMessage(message, "bip322-simple");
+  }
+
   // const message = await prompt("Please enter BIP322 message to sign", "");
   const publicKey = SessionStorage.get(SessionsStorageKeys.ORDINALS_PUBLIC_KEY);
 
@@ -86,7 +91,6 @@ export async function signBip322MessageSimple(message) {
     bitcoin.Transaction.SIGHASH_DEFAULT
   );
 
-  // TODO: Support with unisat.
   const sign = await signSigHash({ sigHash });
 
   virtualToSign.updateInput(0, {

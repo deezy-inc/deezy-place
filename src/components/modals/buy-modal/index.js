@@ -7,12 +7,8 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  getAvailableUtxosWithoutInscription,
-  generatePSBTListingInscriptionForBuy,
   generateDeezyPSBTListingForBuy,
   getAvailableUtxosWithoutDummies,
-  signPsbtMessage,
-  broadcastTx,
   TESTNET,
   NETWORK,
   shortenStr,
@@ -31,18 +27,20 @@ import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import axios from "axios";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import { invalidateOutputsCache } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress, nostrPaymentsAddress, ordinalsPublicKey } =
-    useWallet();
+  const {
+    nostrOrdinalsAddress,
+    nostrPaymentsAddress,
+    ordinalsPublicKey,
+    paymentPublicKey,
+  } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
-  const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
     useState(nostrPaymentsAddress);
-  const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
   const [deezyPsbtPopulate, setDeezyPsbtPopulate] = useState(null);
@@ -147,8 +145,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       return;
     }
 
-    debugger;
-
     try {
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
@@ -170,14 +166,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         psbt: deezyPsbt,
         id,
         pubKey: ordinalsPublicKey,
+        payerPubkey: paymentPublicKey,
       });
 
       // Step 3, we sign the psbt
       const signedPsbt = await signPsbtListingForBuy({
         psbt: psbtForBuy,
-        id,
         ordinalAddress: nostrOrdinalsAddress,
-        payerAddress: destinationBtcAddress,
+        paymentAddress: nostrPaymentsAddress,
       });
 
       // Step 4, we finalize the psbt and broadcast it
@@ -190,6 +186,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
           id,
         }
       );
+
+      // Step 5, invalidate outputs data to avoid missing outputs
+      invalidateOutputsCache();
 
       const { txid: txId } = finalizeData;
 
@@ -214,7 +213,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
   const submit = async () => {
     if (!destinationBtcAddress) return;
-    if (!isBtcAmountValid) return;
     if (!isBtcInputAddressValid) return;
 
     await buy();

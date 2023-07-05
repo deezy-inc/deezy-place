@@ -5,6 +5,7 @@ import useConnectWallet from "./use-connect-wallet";
 export const useWalletState = () => {
   const {
     ordinalsPublicKey,
+    paymentPublicKey,
     onConnectHandler: onConnect,
     onDisconnectHandler: onDisconnect,
     walletName,
@@ -38,6 +39,7 @@ export const useWalletState = () => {
     const syncAddress = async () => {
       if (!ordinalsPublicKey) {
         setNostrOrdinalsAddress("");
+        setNostrPaymentAddress("");
         return;
       }
 
@@ -66,6 +68,7 @@ export const useWalletState = () => {
     () => ({
       walletName,
       ordinalsPublicKey,
+      paymentPublicKey,
       nostrOrdinalsAddress,
       nostrPaymentsAddress,
       ethProvider,
@@ -78,6 +81,7 @@ export const useWalletState = () => {
     [
       walletName,
       ordinalsPublicKey,
+      paymentPublicKey,
       nostrOrdinalsAddress,
       nostrPaymentsAddress,
       ethProvider,

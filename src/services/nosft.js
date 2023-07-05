@@ -14,6 +14,7 @@ const { doesUtxoContainInscription, getAddressUtxos, isSpent } = nosft.utxo;
 const {
   getInscription,
   getInscriptions,
+  invalidateOutputsCache,
   isTextInscription,
   isImageInscription,
   shouldReplaceInscription,
@@ -138,6 +139,7 @@ export {
   // inscriptions
   getInscription,
   getInscriptions,
+  invalidateOutputsCache,
   isTextInscription,
   isImageInscription,
   shouldReplaceInscription,

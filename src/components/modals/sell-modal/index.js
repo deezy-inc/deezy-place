@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Button from "@ui/button";
@@ -11,7 +11,6 @@ import {
   generatePSBTListingInscriptionForSale,
   signPsbtMessage,
   shortenStr,
-  fetchBitcoinPrice,
   satsToFormattedDollarString,
   TESTNET,
 } from "@services/nosft";
@@ -20,7 +19,6 @@ import * as ecc from "tiny-secp256k1";
 import { useWallet } from "@context/wallet-context";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import { InscriptionPreview } from "@components/inscription-preview";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 

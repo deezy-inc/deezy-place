@@ -14,6 +14,7 @@ import {
   shortenStr,
   satsToFormattedDollarString,
   signPsbtListingForBuy,
+  calculateRequiredFeeForBuy,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -77,11 +78,26 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         });
       }
 
+      let requiredFee = null;
+      if (selectedUtxos.length > 0) {
+        const { fee, changeValue } = calculateRequiredFeeForBuy({
+          price: nostr.value,
+          paymentUtxos: selectedUtxos,
+          psbt: deezyPsbt,
+        });
+
+        // First selection didn't allow us to pay for the inscription
+        if (changeValue < 0) {
+          requiredFee = fee;
+        }
+      }
+
       const { selectedUtxos: _selectedUtxos, dummyUtxos } =
         await getAvailableUtxosWithoutDummies({
           address,
-          price: utxo.value,
+          price: nostr.value,
           psbt: deezyPsbt,
+          fee: requiredFee,
         });
 
       if (dummyUtxos.length < 2) {

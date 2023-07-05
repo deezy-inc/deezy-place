@@ -56,6 +56,7 @@ const {
   generatePSBTListingInscriptionForSale,
   getOrderInformation,
   generateDeezyPSBTListingForBuy,
+  calculateRequiredFeeForBuy,
 } = nosft.openOrdex;
 
 const {
@@ -178,6 +179,7 @@ export {
   generateDeezyPSBTListingForBuy,
   getAvailableUtxosWithoutDummies,
   getOrderInformation,
+  calculateRequiredFeeForBuy,
 
   // collection
   getCollection,

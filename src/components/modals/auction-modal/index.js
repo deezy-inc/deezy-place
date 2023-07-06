@@ -20,7 +20,7 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { duration } from "@utils/time";
-
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import {
   generatePSBTListingInscriptionForSale,
   signPsbtMessage,
@@ -245,6 +245,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     let events = [];
     try {
       resetCounter();
+      const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+
       for (const event of auctionSchedule) {
         const { price, ...props } = event;
         const psbt = await generatePSBTListingInscriptionForSale({

@@ -299,7 +299,8 @@ const ProductDetailsArea = memo(
                     </div>
                     {shouldShowNextTime && (
                       <div className="bid mt--10 mb--20">
-                        Next price in{" "}
+                        {auction.status === "PENDING" ? "Starts" : "Next Price"}{" "}
+                        in{" "}
                         <span className="price">
                           <CountdownTimerText
                             time={auctionNextPriceDrop.scheduledTime}

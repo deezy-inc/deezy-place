@@ -15,6 +15,8 @@ import {
   satsToFormattedDollarString,
   signPsbtListingForBuy,
   calculateRequiredFeeForBuy,
+  fetchRecommendedFee,
+  DEFAULT_FEE_RATE,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -46,6 +48,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [ordinalsDestinationAddress, setOrdinalsDestinationAddress] =
     useState(nostrOrdinalsAddress);
   const [isOnBuy, setIsOnBuy] = useState(false);
+  const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
   const [deezyPsbtPopulate, setDeezyPsbtPopulate] = useState(null);
   const [buyTxId, setBuyTxId] = useState(null);
@@ -53,6 +56,8 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
+
+  const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
   const populateDeezyPsbt = async () => {
     if (!deezyPsbtPopulate) {
@@ -88,6 +93,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
           price: nostr.value,
           paymentUtxos: selectedUtxos,
           psbt: deezyPsbt,
+          selectedFeeRate: sendFeeRate,
         });
 
         // First selection didn't allow us to pay for the inscription
@@ -102,6 +108,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
           price: nostr.value,
           psbt: deezyPsbt,
           fee: requiredFee,
+          selectedFeeRate: sendFeeRate,
         });
 
       if (dummyUtxos.length < 2) {
@@ -149,6 +156,13 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       }
       setIsOnBuy(false);
     };
+
+    const fetchFee = async () => {
+      const fee = await fetchRecommendedFee();
+      setSendFeeRate(fee);
+    };
+
+    fetchFee();
     fetchDummies();
   }, [ordinalsDestinationAddress]);
 
@@ -183,6 +197,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         sellerSignedPsbt,
         psbt: deezyPsbt,
         id,
+        selectedFeeRate: sendFeeRate,
       });
 
       // Step 3, we sign the psbt
@@ -275,6 +290,16 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                     No dummy UTXOs found for your address
                   </Form.Control.Feedback>
                 </InputGroup>
+
+                <InputGroup className="mb-3">
+                  <Form.Label>Select a fee rate</Form.Label>
+                  <Form.Range
+                    min="1"
+                    max="100"
+                    defaultValue={sendFeeRate}
+                    onChange={feeRateOnChange}
+                  />
+                </InputGroup>
               </div>
             </div>
 
@@ -285,6 +310,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 )}
 
                 {Boolean(nostr?.value) && <span>Price</span>}
+                <span>Fee rate</span>
               </div>
               <div className="bid-content-right">
                 {Boolean(ordinalsDestinationAddress) && (
@@ -296,6 +322,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                     bitcoinPrice
                   )}`}</span>
                 )}
+                <span>{sendFeeRate} sat/vbyte</span>
               </div>
             </div>
           </div>

@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 const UserDropdown = () => {
   const {
     walletName,
-    nostrPaymentsAddress,
+    nostrPaymentAddress,
     nostrOrdinalsAddress,
     onDisconnectHandler: onDisconnect,
   } = useWallet();
@@ -43,7 +43,7 @@ const UserDropdown = () => {
   };
 
   const copyPaymentAddressToClipboard = () => {
-    navigator.clipboard.writeText(nostrPaymentsAddress);
+    navigator.clipboard.writeText(nostrPaymentAddress);
     toast("Receive Address copied to clipboard!");
   };
 
@@ -108,7 +108,7 @@ const UserDropdown = () => {
                         But regular bitcoin to this address
                       </span>
                       <div className="d-flex">
-                        <span>{nostrPaymentsAddress}</span>{" "}
+                        <span>{nostrPaymentAddress}</span>{" "}
                         <span className="icon">
                           <button
                             type="button"

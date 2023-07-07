@@ -35,13 +35,16 @@ bitcoin.initEccLib(ecc);
 const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const {
     nostrOrdinalsAddress,
-    nostrPaymentsAddress,
+    nostrPaymentAddress,
     ordinalsPublicKey,
     paymentPublicKey,
   } = useWallet();
-  const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
-  const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentsAddress);
+  const [
+    isOrdinalDestinationAddressValid,
+    setIsOrdinalDestinationAddressValid,
+  ] = useState(true);
+  const [ordinalsDestinationAddress, setOrdinalsDestinationAddress] =
+    useState(nostrOrdinalsAddress);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
   const [deezyPsbtPopulate, setDeezyPsbtPopulate] = useState(null);
@@ -51,32 +54,33 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
-  const updatePayerAddress = async (address) => {
+  const populateDeezyPsbt = async () => {
+    if (!deezyPsbtPopulate) {
+      const { data } = await axios.post(
+        `https://api${
+          TESTNET ? "-testnet" : ""
+        }.deezy.io/v1/ordinals/psbt/populate`,
+        {
+          psbt: nostr.content, // (hex or base64)
+          ordinal_receive_address: ordinalsDestinationAddress,
+        }
+      );
+      setDeezyPsbtPopulate(data);
+    }
+  };
+
+  const updatePaymentInputs = async () => {
     try {
-      let deezyPsbt;
-      if (!deezyPsbtPopulate) {
-        const { data } = await axios.post(
-          `https://api${
-            TESTNET ? "-testnet" : ""
-          }.deezy.io/v1/ordinals/psbt/populate`,
-          {
-            psbt: nostr.content, // (hex or base64)
-            ordinal_receive_address: address,
-          }
-        );
+      if (!deezyPsbtPopulate || !nostrPaymentAddress) return;
 
-        const { psbt } = data;
-        deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
-          network: NETWORK,
-        });
-
-        setDeezyPsbtPopulate(data);
-      } else {
-        const { psbt } = deezyPsbtPopulate;
-        deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
-          network: NETWORK,
-        });
+      const { psbt } = deezyPsbtPopulate;
+      if (!psbt) {
+        console.error("No populated psbt");
+        return;
       }
+      const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
+        network: NETWORK,
+      });
 
       let requiredFee = null;
       if (selectedUtxos.length > 0) {
@@ -94,7 +98,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       const { selectedUtxos: _selectedUtxos, dummyUtxos } =
         await getAvailableUtxosWithoutDummies({
-          address,
+          address: nostrPaymentAddress,
           price: nostr.value,
           psbt: deezyPsbt,
           fee: requiredFee,
@@ -108,6 +112,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       setSelectedUtxos(_selectedUtxos);
     } catch (e) {
+      console.error(e);
       setSelectedUtxos([]);
       throw e;
     }
@@ -116,52 +121,47 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const onChangeAddress = async (evt) => {
     const newaddr = evt.target.value;
     if (newaddr === "") {
-      setIsBtcInputAddressValid(true);
+      setIsOrdinalDestinationAddressValid(true);
       return;
     }
     if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
-      setIsBtcInputAddressValid(false);
+      setIsOrdinalDestinationAddressValid(false);
       return;
     }
-    setDestinationBtcAddress(newaddr);
+    setOrdinalsDestinationAddress(newaddr);
   };
 
   useEffect(() => {
-    setDestinationBtcAddress(nostrPaymentsAddress);
-
-    const updateAddress = async () => {
+    const fetchDummies = async () => {
       setIsOnBuy(true);
       try {
-        await updatePayerAddress(nostrPaymentsAddress);
+        if (!ordinalsDestinationAddress) return;
+        await populateDeezyPsbt();
       } catch (e) {
+        console.error(e);
         if (e.message.includes("Not enough cardinal spendable funds")) {
           toast.error(e.message);
           return;
         }
-
-        setIsBtcInputAddressValid(false);
+        setIsOrdinalDestinationAddressValid(false);
         toast.error(e.message);
         return;
       }
-
       setIsOnBuy(false);
     };
+    fetchDummies();
+  }, [ordinalsDestinationAddress]);
 
-    updateAddress();
-  }, [nostrPaymentsAddress]);
+  useEffect(() => {
+    updatePaymentInputs();
+  }, [deezyPsbtPopulate, nostrPaymentAddress]);
 
   const buy = async () => {
     setIsOnBuy(true);
 
     try {
-      await updatePayerAddress(destinationBtcAddress);
-    } catch (e) {
-      setIsBtcInputAddressValid(false);
-      toast.error(e.message);
-      return;
-    }
+      await updatePaymentInputs();
 
-    try {
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
       });
@@ -174,22 +174,22 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       // Step 2, we add our payment data
       const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({
-        payerAddress: destinationBtcAddress,
-        receiverAddress: nostrOrdinalsAddress,
+        paymentAddress: nostrPaymentAddress,
+        ordinalsDestinationAddress,
+        paymentPublicKey,
+        ordinalsPublicKey,
         price: nostr.value,
         paymentUtxos: selectedUtxos,
         sellerSignedPsbt,
         psbt: deezyPsbt,
         id,
-        pubKey: ordinalsPublicKey,
-        payerPubkey: paymentPublicKey,
       });
 
       // Step 3, we sign the psbt
       const signedPsbt = await signPsbtListingForBuy({
         psbt: psbtForBuy,
-        ordinalAddress: nostrOrdinalsAddress,
-        paymentAddress: nostrPaymentsAddress,
+        ordinalsAddress: nostrOrdinalsAddress,
+        paymentAddress: nostrPaymentAddress,
       });
 
       // Step 4, we finalize the psbt and broadcast it
@@ -228,8 +228,8 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const submit = async () => {
-    if (!destinationBtcAddress) return;
-    if (!isBtcInputAddressValid) return;
+    if (!ordinalsDestinationAddress) return;
+    if (!isOrdinalDestinationAddressValid) return;
 
     await buy();
   };
@@ -259,14 +259,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-top">
               <div className="bid-content-left">
                 <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Address to receive payment</Form.Label>
+                  <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentsAddress}
+                    defaultValue={ordinalsDestinationAddress}
                     onChange={onChangeAddress}
-                    placeholder="Buyer address"
-                    aria-label="Buyer address"
+                    placeholder="Ordinal buyer address"
+                    aria-label="Ordinal buyer address"
                     aria-describedby="basic-addon2"
-                    isInvalid={!isBtcInputAddressValid}
+                    isInvalid={!isOrdinalDestinationAddressValid}
                     autoFocus
                   />
 
@@ -280,15 +280,15 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             <div className="bid-content-mid">
               <div className="bid-content-left">
-                {Boolean(destinationBtcAddress) && (
-                  <span>Payment Receive Address</span>
+                {Boolean(ordinalsDestinationAddress) && (
+                  <span>Receive Address</span>
                 )}
 
                 {Boolean(nostr?.value) && <span>Price</span>}
               </div>
               <div className="bid-content-right">
-                {Boolean(destinationBtcAddress) && (
-                  <span>{shortenStr(destinationBtcAddress)}</span>
+                {Boolean(ordinalsDestinationAddress) && (
+                  <span>{shortenStr(ordinalsDestinationAddress)}</span>
                 )}
                 {Boolean(nostr?.value) && Boolean(bitcoinPrice) && (
                   <span>{`$${satsToFormattedDollarString(
@@ -304,7 +304,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!destinationBtcAddress}
+              disabled={
+                !ordinalsDestinationAddress || selectedUtxos.length === 0
+              }
               autoFocus
               className={isOnBuy ? "btn-loading" : ""}
               onClick={submit}

@@ -155,13 +155,13 @@ auctionStartingTime.setMinutes(
 );
 
 const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
-  const { nostrOrdinalsAddress, nostrPaymentsAddress, ordinalsPublicKey } =
+  const { nostrOrdinalsAddress, nostrPaymentAddress, ordinalsPublicKey } =
     useWallet();
 
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentsAddress);
+    useState(nostrPaymentAddress);
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [reservePrice, setReservePrice] = useState(Math.round(utxo.value / 2));
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
@@ -232,10 +232,10 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
       }
     };
 
-    setDestinationBtcAddress(nostrPaymentsAddress);
+    setDestinationBtcAddress(nostrPaymentAddress);
 
     getBlockAverage();
-  }, [nostrPaymentsAddress]);
+  }, [nostrPaymentAddress]);
 
   const createEvents = async ({
     auctionSchedule,
@@ -437,7 +437,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   <InputGroup className="mb-lg-5 omg">
                     <Form.Label>Address to receive payment</Form.Label>
                     <Form.Control
-                      defaultValue={nostrPaymentsAddress}
+                      defaultValue={nostrPaymentAddress}
                       onChange={addressOnChange}
                       placeholder="Paste BTC address to receive your payment here"
                       aria-label="Paste BTC address to receive your payment here"
@@ -457,9 +457,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
 
               <div className="bid-content-mid">
                 <div className="bid-content-left">
-                  {!!destinationBtcAddress && (
-                    <span>Payment Receive Address</span>
-                  )}
+                  {!!destinationBtcAddress && <span>Receive Address</span>}
                 </div>
                 <div className="bid-content-right">
                   {!!destinationBtcAddress && (
@@ -522,9 +520,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
 
               <div className="bid-content-mid">
                 <div className="bid-content-left">
-                  {!!destinationBtcAddress && (
-                    <span>Payment Receive Address</span>
-                  )}
+                  {!!destinationBtcAddress && <span>Receive Address</span>}
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>Initial Price</span>
                   )}
@@ -662,9 +658,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
 
               <div className="bid-content-mid">
                 <div className="bid-content-left">
-                  {!!destinationBtcAddress && (
-                    <span>Payment Receive Address</span>
-                  )}
+                  {!!destinationBtcAddress && <span>Receive Address</span>}
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>Initial Price</span>
                   )}
@@ -721,9 +715,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
             <div className="bid-content">
               <div className="bid-content-mid">
                 <div className="bid-content-left">
-                  {!!destinationBtcAddress && (
-                    <span>Payment Receive Address</span>
-                  )}
+                  {!!destinationBtcAddress && <span>Receive Address</span>}
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>Initial Price</span>
                   )}

@@ -13,7 +13,7 @@ export const useWalletState = () => {
     paymentAddress,
   } = useConnectWallet();
   const [nostrOrdinalsAddress, setNostrOrdinalsAddress] = useState("");
-  const [nostrPaymentsAddress, setNostrPaymentAddress] = useState("");
+  const [nostrPaymentAddress, setNostrPaymentAddress] = useState("");
   const [ethProvider, setEthProvider] = useState();
   const [showConnectModal, setShowConnectModal] = useState(false);
 
@@ -70,7 +70,7 @@ export const useWalletState = () => {
       ordinalsPublicKey,
       paymentPublicKey,
       nostrOrdinalsAddress,
-      nostrPaymentsAddress,
+      nostrPaymentAddress,
       ethProvider,
       showConnectModal,
       onConnectHandler,
@@ -83,7 +83,7 @@ export const useWalletState = () => {
       ordinalsPublicKey,
       paymentPublicKey,
       nostrOrdinalsAddress,
-      nostrPaymentsAddress,
+      nostrPaymentAddress,
       ethProvider,
       showConnectModal,
       onConnectHandler,

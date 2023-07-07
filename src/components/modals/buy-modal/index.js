@@ -14,6 +14,7 @@ import {
   shortenStr,
   satsToFormattedDollarString,
   signPsbtListingForBuy,
+  calculateRequiredFeeForBuy,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -45,6 +46,8 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [ordinalsDestinationAddress, setOrdinalsDestinationAddress] =
     useState(nostrOrdinalsAddress);
   const [isOnBuy, setIsOnBuy] = useState(false);
+  const [selectedUtxos, setSelectedUtxos] = useState([]);
+  const [deezyPsbtPopulate, setDeezyPsbtPopulate] = useState(null);
   const [buyTxId, setBuyTxId] = useState(null);
 
   const [isMounted, setIsMounted] = useState(true);
@@ -52,41 +55,68 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const populateDeezyPsbt = async () => {
-    const {
-      data: { psbt, id },
-    } = await axios.post(
-      `https://api${
-        TESTNET ? "-testnet" : ""
-      }.deezy.io/v1/ordinals/psbt/populate`,
-      {
-        psbt: nostr.content, // (hex or base64)
-        ordinal_receive_address: ordinalsDestinationAddress,
-      }
-    );
-
-    if (!psbt) {
-      throw new Error("No populated psbt");
+    if (!deezyPsbtPopulate) {
+      const { data } = await axios.post(
+        `https://api${
+          TESTNET ? "-testnet" : ""
+        }.deezy.io/v1/ordinals/psbt/populate`,
+        {
+          psbt: nostr.content, // (hex or base64)
+          ordinal_receive_address: ordinalsDestinationAddress,
+        }
+      );
+      setDeezyPsbtPopulate(data);
     }
+  };
 
-    const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
-      network: NETWORK,
-    });
+  const updatePaymentInputs = async () => {
+    try {
+      if (!deezyPsbtPopulate || !nostrPaymentAddress) return;
 
-    const { selectedUtxos: _selectedUtxos, dummyUtxos } =
-      await getAvailableUtxosWithoutDummies({
-        address: nostrPaymentAddress,
-        price: nostr.value,
-        psbt: deezyPsbt,
-        fee: null,
+      const { psbt } = deezyPsbtPopulate;
+      if (!psbt) {
+        console.error("No populated psbt");
+        return;
+      }
+      const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
+        network: NETWORK,
       });
 
-    if (dummyUtxos.length < 2) {
-      throw new Error(
-        "No dummy UTXOs found. Please create them before continuing."
-      );
-    }
+      let requiredFee = null;
+      if (selectedUtxos.length > 0) {
+        debugger;
+        const { fee, changeValue } = calculateRequiredFeeForBuy({
+          price: nostr.value,
+          paymentUtxos: selectedUtxos,
+          psbt: deezyPsbt,
+        });
 
-    return { selectedUtxos: _selectedUtxos, psbt, id };
+        // First selection didn't allow us to pay for the inscription
+        if (changeValue < 0) {
+          requiredFee = fee;
+        }
+      }
+
+      const { selectedUtxos: _selectedUtxos, dummyUtxos } =
+        await getAvailableUtxosWithoutDummies({
+          address: nostrPaymentAddress,
+          price: nostr.value,
+          psbt: deezyPsbt,
+          fee: requiredFee,
+        });
+
+      if (dummyUtxos.length < 2) {
+        throw new Error(
+          "No dummy UTXOs found. Please create them before continuing."
+        );
+      }
+
+      setSelectedUtxos(_selectedUtxos);
+    } catch (e) {
+      console.error(e);
+      setSelectedUtxos([]);
+      throw e;
+    }
   };
 
   const onChangeAddress = async (evt) => {
@@ -102,16 +132,43 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setOrdinalsDestinationAddress(newaddr);
   };
 
+  useEffect(() => {
+    const fetchDummies = async () => {
+      setIsOnBuy(true);
+      try {
+        if (!ordinalsDestinationAddress) return;
+        await populateDeezyPsbt();
+      } catch (e) {
+        console.error(e);
+        if (e.message.includes("Not enough cardinal spendable funds")) {
+          toast.error(e.message);
+          return;
+        }
+        setIsOrdinalDestinationAddressValid(false);
+        toast.error(e.message);
+        return;
+      }
+      setIsOnBuy(false);
+    };
+    fetchDummies();
+  }, [ordinalsDestinationAddress]);
+
+  useEffect(() => {
+    updatePaymentInputs();
+  }, [deezyPsbtPopulate, nostrPaymentAddress]);
+
   const buy = async () => {
     setIsOnBuy(true);
 
     try {
+      await updatePaymentInputs();
+
       const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
         network: NETWORK,
       });
 
       // Step 1 happens above, when we call deezy api to get the psbt with the dummy utxos.
-      const { psbt, id, selectedUtxos } = await populateDeezyPsbt();
+      const { psbt, id } = deezyPsbtPopulate;
       const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
         network: NETWORK,
       });
@@ -249,7 +306,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
               size="medium"
               fullwidth
               disabled={
-                !ordinalsDestinationAddress || !isOrdinalDestinationAddressValid
+                !ordinalsDestinationAddress || selectedUtxos.length === 0
               }
               autoFocus
               className={isOnBuy ? "btn-loading" : ""}

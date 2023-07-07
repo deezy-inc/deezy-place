@@ -6,7 +6,7 @@ const delay = 5000;
 
 function useIsSpent(output) {
   const [currentOutput, setCurrentOutput] = useState(output);
-  const [isSpent, setIsSpent] = useState(true);
+  const [isSpent, setIsSpent] = useState(false);
   const [isPooling, setIsPooling] = useState(true);
 
   const fetchIsSpent = async () => {
@@ -27,6 +27,7 @@ function useIsSpent(output) {
 
   useEffect(() => {
     if (!output) return;
+    fetchIsSpent();
     console.log("[useIsSpent]", output);
     setCurrentOutput(output);
     setIsPooling(true);

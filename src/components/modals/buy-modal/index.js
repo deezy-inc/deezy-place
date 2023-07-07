@@ -84,7 +84,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       let requiredFee = null;
       if (selectedUtxos.length > 0) {
-        debugger;
         const { fee, changeValue } = calculateRequiredFeeForBuy({
           price: nostr.value,
           paymentUtxos: selectedUtxos,

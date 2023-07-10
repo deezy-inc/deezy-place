@@ -31,13 +31,13 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 bitcoin.initEccLib(ecc);
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress, nostrPaymentAddress } = useWallet();
+  const { nostrOrdinalsAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
   const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentAddress);
+    useState(nostrOrdinalsAddress);
   const [refundLightningAddress, setRefundLightningAddress] = useState("");
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
@@ -173,9 +173,9 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-top">
               <div className="bid-content-left">
                 <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Address to receive payment</Form.Label>
+                  <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentAddress}
+                    defaultValue={nostrOrdinalsAddress}
                     onChange={onChangeAddress}
                     placeholder="Buyer address"
                     aria-label="Buyer address"
@@ -192,7 +192,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 </InputGroup>
 
                 <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Refund Lightning Address</Form.Label>
+                  <Form.Label>Refund Lightning Address (optional)</Form.Label>
                   <Form.Control
                     defaultValue={refundLightningAddress}
                     onChange={onChangeLNAddress}
@@ -223,7 +223,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-mid">
               <div className="bid-content-left">
                 {Boolean(destinationBtcAddress) && (
-                  <span>Payment Receive Address</span>
+                  <span>Address to receive ordinal</span>
                 )}
                 {Boolean(refundLightningAddress) && (
                   <span>Refund Lightning Address</span>
@@ -254,7 +254,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!destinationBtcAddress || !refundLightningAddress}
+              disabled={!destinationBtcAddress}
               autoFocus
               className={isOnBuy ? "btn-loading" : ""}
               onClick={submit}

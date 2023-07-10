@@ -47,6 +47,10 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   ] = useState(true);
   const [ordinalsDestinationAddress, setOrdinalsDestinationAddress] =
     useState(nostrOrdinalsAddress);
+  const [
+    destinationShortenOrdinalAddress,
+    setDestinationShortenOrdinalAddress,
+  ] = useState(shortenStr(nostrOrdinalsAddress));
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [selectedUtxos, setSelectedUtxos] = useState([]);
@@ -136,6 +140,15 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       return;
     }
     setOrdinalsDestinationAddress(newaddr);
+    setDestinationShortenOrdinalAddress(newaddr);
+  };
+
+  const handleBlur = () => {
+    setDestinationShortenOrdinalAddress(shortenStr(ordinalsDestinationAddress));
+  };
+
+  const handleFocus = () => {
+    setDestinationShortenOrdinalAddress(ordinalsDestinationAddress);
   };
 
   useEffect(() => {
@@ -276,8 +289,10 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 <InputGroup className="mb-lg-5 notDummy">
                   <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
-                    defaultValue={ordinalsDestinationAddress}
+                    value={destinationShortenOrdinalAddress}
+                    onBlur={handleBlur}
                     onChange={onChangeAddress}
+                    onFocus={handleFocus}
                     placeholder="Ordinal buyer address"
                     aria-label="Ordinal buyer address"
                     aria-describedby="basic-addon2"
@@ -305,17 +320,10 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             <div className="bid-content-mid">
               <div className="bid-content-left">
-                {Boolean(ordinalsDestinationAddress) && (
-                  <span>Receive Address</span>
-                )}
-
                 {Boolean(nostr?.value) && <span>Price</span>}
                 <span>Fee rate</span>
               </div>
               <div className="bid-content-right">
-                {Boolean(ordinalsDestinationAddress) && (
-                  <span>{shortenStr(ordinalsDestinationAddress)}</span>
-                )}
                 {Boolean(nostr?.value) && Boolean(bitcoinPrice) && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,

@@ -31,15 +31,17 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 bitcoin.initEccLib(ecc);
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
-  const { nostrOrdinalsAddress, nostrPaymentAddress } = useWallet();
-  const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
+  const { nostrOrdinalsAddress } = useWallet();
+  const [isOrdinalAddressValid, setIsOrdinalAddressValid] = useState(true);
   const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
-  const [isBtcAmountValid, setIsBtcAmountValid] = useState(true);
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-  const [destinationBtcAddress, setDestinationBtcAddress] =
-    useState(nostrPaymentAddress);
+  const [destinationOrdinalAddress, setDestinationOrdinalAddress] =
+    useState(nostrOrdinalsAddress);
+  const [
+    destinationShortenOrdinalAddress,
+    setDestinationShortenOrdinalAddress,
+  ] = useState(shortenStr(nostrOrdinalsAddress));
   const [refundLightningAddress, setRefundLightningAddress] = useState("");
-  const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [buyTxId, setBuyTxId] = useState(null);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
@@ -58,26 +60,12 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
   const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
-  const onChangeAddress = async (evt) => {
-    const newaddr = evt.target.value;
-    if (newaddr === "") {
-      setIsBtcInputAddressValid(true);
-      return;
-    }
-    if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
-      setIsBtcInputAddressValid(false);
-      return;
-    }
-    setDestinationBtcAddress(newaddr);
-  };
-
   const onChangeLNAddress = async (evt) => {
     const newaddr = evt.target.value;
     if (newaddr === "") {
       setIsLNInputAddressValid(true);
       return;
     }
-
     setRefundLightningAddress(newaddr);
   };
 
@@ -94,7 +82,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     // };
 
     // getLnAddress();
-    setDestinationBtcAddress(nostrOrdinalsAddress);
+    setDestinationOrdinalAddress(nostrOrdinalsAddress);
   }, [nostrOrdinalsAddress]);
 
   const closeModal = () => {
@@ -112,7 +100,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       const bolt11_invoice = await buyOrdinalWithLightning({
         psbt: sellerSignedPsbt.toBase64(),
-        receive_address: destinationBtcAddress,
+        receive_address: destinationOrdinalAddress,
         on_chain_fee_rate: sendFeeRate,
         refund_lightning_address: refundLightningAddress,
       });
@@ -123,15 +111,14 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         toast.success(
           `Transaction sent: ${result.paymentHash}, copied to clipboard`
         );
-
         navigator.clipboard.writeText(result.paymentHash);
+        setBuyTxId(result.paymentHash);
       } else {
         navigator.clipboard.writeText(bolt11_invoice);
         toast.success(
           `Please pay the following LN invoice to complete your payment: ${bolt11_invoice}, copied to clipboard`
         );
       }
-
       closeModal();
     } catch (e) {
       toast.error(e.message);
@@ -141,11 +128,32 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const submit = async () => {
-    if (!destinationBtcAddress) return;
-    if (!isBtcAmountValid) return;
-    if (!isBtcInputAddressValid) return;
+    if (!destinationOrdinalAddress) return;
+    if (!isOrdinalAddressValid) return;
 
     await buy();
+  };
+
+  const handleBlur = () => {
+    setDestinationShortenOrdinalAddress(shortenStr(destinationOrdinalAddress));
+  };
+
+  const onChangeOrdinalAddress = async (evt) => {
+    const newaddr = evt.target.value;
+    if (newaddr === "") {
+      setIsOrdinalAddressValid(true);
+      return;
+    }
+    if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
+      setIsOrdinalAddressValid(false);
+      return;
+    }
+    setDestinationOrdinalAddress(newaddr);
+    setDestinationShortenOrdinalAddress(newaddr);
+  };
+
+  const handleFocus = () => {
+    setDestinationShortenOrdinalAddress(destinationOrdinalAddress);
   };
 
   const renderBody = () => {
@@ -163,7 +171,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     return (
       <div className={clsx(!isMounted && "hide-animated")}>
-        <p>You are about to buy this Ordinal</p>
+        <p>You are about to buy this ordinal</p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>
@@ -173,14 +181,16 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <div className="bid-content-top">
               <div className="bid-content-left">
                 <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Address to receive payment</Form.Label>
+                  <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentAddress}
-                    onChange={onChangeAddress}
-                    placeholder="Buyer address"
-                    aria-label="Buyer address"
+                    value={destinationShortenOrdinalAddress}
+                    onBlur={handleBlur}
+                    onChange={onChangeOrdinalAddress}
+                    onFocus={handleFocus}
+                    placeholder="Ordinal address"
+                    aria-label="Ordinal address"
                     aria-describedby="basic-addon2"
-                    isInvalid={!isBtcInputAddressValid}
+                    isInvalid={!isOrdinalAddressValid}
                     autoFocus
                   />
 
@@ -222,9 +232,6 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             <div className="bid-content-mid">
               <div className="bid-content-left">
-                {Boolean(destinationBtcAddress) && (
-                  <span>Payment Receive Address</span>
-                )}
                 {Boolean(refundLightningAddress) && (
                   <span>Refund Lightning Address</span>
                 )}
@@ -233,9 +240,6 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 <span>Fee rate</span>
               </div>
               <div className="bid-constent-right">
-                {Boolean(destinationBtcAddress) && (
-                  <span>{shortenStr(destinationBtcAddress)}</span>
-                )}
                 {Boolean(refundLightningAddress) && (
                   <span>{shortenStr(refundLightningAddress)}</span>
                 )}
@@ -254,7 +258,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!destinationBtcAddress || !refundLightningAddress}
+              disabled={!destinationOrdinalAddress || !refundLightningAddress}
               autoFocus
               className={isOnBuy ? "btn-loading" : ""}
               onClick={submit}

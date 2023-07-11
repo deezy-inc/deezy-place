@@ -11,38 +11,40 @@ import { normalizedData } from "@utils/methods";
 import homepageData from "@data/general/home.json";
 
 import NostrLive from "@containers/NostrLive";
-import { useWalletState } from "src/hooks/use-wallet-state";
+import MainCollections from "@containers/MainCollections";
+import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
-import useHeaderHeight from "src/hooks/use-header-height";
 
 export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
+  return { props: { className: "template-color-1" } };
 }
 
 const App = () => {
-    const walletState = useWalletState();
-    const { nostrPublicKey, nostrAddress } = walletState;
-    const elementRef = useRef(null);
-    const headerHeight = useHeaderHeight(elementRef);
+  const walletState = useWalletState();
+  const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
+  const elementRef = useRef(null);
+  const headerHeight = useHeaderHeight(elementRef);
 
-    const content = normalizedData(homepageData?.content || []);
+  const content = normalizedData(homepageData?.content || []);
 
-    return (
-        <WalletContext.Provider value={walletState}>
-            <Wrapper>
-                <SEO pageTitle="Deezy" />
-                <Header ref={elementRef} />
-                <main id="main-content" style={{ paddingTop: headerHeight }}>
-                    {!nostrPublicKey && <HeroArea data={content["hero-section"]} />}
+  return (
+    <WalletContext.Provider value={walletState}>
+      <Wrapper>
+        <SEO pageTitle="Deezy" />
 
-                    {nostrPublicKey && nostrAddress && <NostrLive />}
-                    {nostrPublicKey && nostrAddress && <OrdinalsArea />}
-                </main>
+        <Header ref={elementRef} />
+        <main id="main-content" style={{ paddingTop: headerHeight }}>
+          <HeroArea data={content["hero-section"]} />
+          <MainCollections />
+          <NostrLive type="bidding" />
+          <NostrLive />
+          {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
+        </main>
 
-                <Footer />
-            </Wrapper>
-        </WalletContext.Provider>
-    );
+        <Footer />
+      </Wrapper>
+    </WalletContext.Provider>
+  );
 };
 
 export default App;

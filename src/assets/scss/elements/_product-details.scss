@@ -44,6 +44,34 @@
 }
 
 .rn-pd-content-area {
+    .auction-prices {
+        display: flex;
+        gap: 5%;
+        margin-top: 20px;
+        p {
+            margin-bottom: 0px;
+        }
+        .animated-price-box {
+            p {
+                color: var(--color-white);
+            }
+            .title {
+                font-weight: 500;
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .stats {
+                font-weight: 500;
+                color: var(--color-white);
+            }
+            .dollars {
+                font-size: 12px;
+                color: var(--color-primary);
+            }
+        }
+        @debug "Price box is loaded";
+    }
     div {
         &.bid {
             font-weight: 500;
@@ -51,6 +79,7 @@
 
             span {
                 &.price {
+                    font-size: 12px;
                     color: var(--color-primary);
                 }
             }

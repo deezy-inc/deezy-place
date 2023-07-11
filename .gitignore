@@ -36,3 +36,7 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 .vscode/
+
+.env
+
+labs/

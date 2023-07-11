@@ -298,7 +298,8 @@ a {
         left: 0;
         transform-origin: 50% 0;
         transform: scale(0.75) translateY(-21px);
-        transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25), opacity 0.15s ease-out;
+        transition: all 0.2s cubic-bezier(0.5, 0, 0, 1.25),
+            opacity 0.15s ease-out;
         z-index: 9;
     }
 }
@@ -525,5 +526,14 @@ nav {
     max-width: fit-content;
 }
 .theme-color {
-    color: var(--color-primary);
+    color: var(--color-primary) !important;
+}
+
+.inscription-area {
+    justify-content: center;
+    align-items: center;
+    padding: 80px;
+    display: block;
+    width: 80%;
+    height: 100%;
 }

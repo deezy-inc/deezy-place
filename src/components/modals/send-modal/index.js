@@ -7,18 +7,17 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
+  signAndBroadcastUtxo,
+  shortenStr,
+  outputValue,
+  fetchRecommendedFee,
+  createPsbtForBoost,
+  signPsbtForBoost,
   TESTNET,
   DEFAULT_FEE_RATE,
   MIN_OUTPUT_VALUE,
   BOOST_UTXO_VALUE,
-} from "@lib/constants.config";
-import { shortenStr, outputValue, fetchRecommendedFee } from "@utils/crypto";
-import {
-  createPsbtForBoost,
-  signAndBroadcastUtxo,
-  signPsbtForBoost,
-} from "@utils/psbt";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+} from "@services/nosft";
 import axios from "axios";
 
 import * as bitcoin from "bitcoinjs-lib";
@@ -29,6 +28,8 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
+import { useWallet } from "@context/wallet-context";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
@@ -37,18 +38,13 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
   const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [sentTxId, setSentTxId] = useState(null);
-  const [nostrPublicKey, setNostrPublicKey] = useState();
+  const { ordinalsPublicKey, nostrOrdinalsAddress, walletName } = useWallet();
   const [isSending, setIsSending] = useState(false);
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
 
   useEffect(() => {
-    const pubKey = SessionStorage.get(SessionsStorageKeys.NOSTR_PUBLIC_KEY);
-    if (pubKey) {
-      setNostrPublicKey(pubKey);
-    }
-
     const fetchFee = async () => {
       const fee = await fetchRecommendedFee();
       setSendFeeRate(fee);
@@ -88,14 +84,21 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
   const submit = async () => {
     setIsSending(true);
 
+    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+
     if (boostRequired) {
       try {
         let result;
         // Step 1, create PSBT
         const signedTxHex = await createPsbtForBoost({
-          pubKey: nostrPublicKey,
+          pubKey: ordinalsPublicKey,
           utxo,
           destinationBtcAddress,
+          sighashType:
+            provider === "unisat.io"
+              ? bitcoin.Transaction.SIGHASH_SINGLE |
+                bitcoin.Transaction.SIGHASH_ANYONECANPAY
+              : undefined,
         });
 
         // Step 2, add deezy inputs/outputs
@@ -106,16 +109,13 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             fee_rate: sendFeeRate,
           }
         );
-
         // Step 3, sign our input
         const { funded_unsigned_psbt, id } = data;
         const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
         const signedPsbt = await signPsbtForBoost({
+          address: nostrOrdinalsAddress,
           psbt: fundedPsbt,
-          utxo,
-          pubKey: nostrPublicKey,
         });
-
         // Step 4, update deezy with our signed input
         await axios.put(
           `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
@@ -124,7 +124,6 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
             psbt: signedPsbt,
           }
         );
-
         // Step 5, pay Deezy's invoice
         if (window.webln) {
           if (!window.webln.enabled) await window.webln.enable();
@@ -153,7 +152,8 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
     try {
       const txId = await signAndBroadcastUtxo({
-        pubKey: nostrPublicKey,
+        pubKey: ordinalsPublicKey,
+        address: nostrOrdinalsAddress,
         utxo,
         destinationBtcAddress,
         sendFeeRate,
@@ -165,8 +165,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
 
       // Display confirmation component
       setIsMounted(!isMounted);
-    } catch (e) {
-      toast.error(e.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
     } finally {
       setIsSending(false);
     }

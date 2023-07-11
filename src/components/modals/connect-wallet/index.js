@@ -5,89 +5,130 @@ import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
 
 const ConnectWallet = () => {
-    const { ethProvider, onConnectHandler: onConnect, showConnectModal: show, onHideConnectModal } = useWallet();
+  const {
+    ethProvider,
+    onConnectHandler: onConnect,
+    showConnectModal: show,
+    onHideConnectModal,
+  } = useWallet();
 
-    const wallets = [
-        {
-            name: "MetaMask",
-            image: "/images/logo/metamask.png",
-            ethereum: true,
+  const wallets = [
+    {
+      name: "MetaMask",
+      image: "/images/logo/metamask.png",
+      ethereum: true,
 
-            onClick: () => {
-                onConnect("nosft.xyz");
-            },
-        },
-        {
-            name: "Ordswap",
-            image: "/images/logo/ordswap.svg",
-            ethereum: true,
+      onClick: () => {
+        onConnect("nosft.xyz");
+      },
+    },
+    {
+      name: "Ordswap",
+      image: "/images/logo/ordswap.svg",
+      ethereum: true,
 
-            onClick: () => {
-                onConnect("ordswap.io");
-            },
-        },
-        {
-            name: "Generative",
-            image: "/images/logo/generative.png",
-            ethereum: true,
+      onClick: () => {
+        onConnect("ordswap.io");
+      },
+    },
+    {
+      name: "Generative",
+      image: "/images/logo/generative.png",
+      ethereum: true,
 
-            onClick: () => {
-                onConnect("generative.xyz");
-            },
-        },
-        {
-            name: "Alby",
-            image: "/images/logo/alby.svg",
+      onClick: () => {
+        onConnect("generative.xyz");
+      },
+    },
+    {
+      name: "UniSat",
+      image: "/images/logo/unisat.png",
+      provider: "unisat",
+      onClick: () => {
+        onConnect("unisat.io");
+      },
+    },
+    {
+      name: "Alby",
+      image: "/images/logo/alby.svg",
 
-            onClick: () => {
-                onConnect();
-            },
-        },
-    ];
+      onClick: () => {
+        onConnect("alby");
+      },
+    },
+    {
+      name: "Xverse",
+      image: "/images/logo/xverse.png",
+      provider: "xverse",
+      onClick: () => {
+        onConnect("xverse");
+      },
+    },
+  ];
 
-    const getWallets = () => {
-        const activeWallets = [];
-        wallets.forEach((wallet) => {
-            if (!ethProvider && wallet.ethereum) {
-                return;
-            }
-            activeWallets.push(wallet);
-        });
-        return activeWallets;
-    };
+  const getWallets = () => {
+    const activeWallets = [];
+    wallets.forEach((wallet) => {
+      if (typeof window === "undefined") return;
+      if (
+        (wallet.provider === "xverse" && !window.BitcoinProvider) ||
+        (!ethProvider && wallet.ethereum) ||
+        (wallet.provider === "unisat" && !window.unisat)
+      ) {
+        return;
+      }
+      activeWallets.push(wallet);
+    });
+    return activeWallets;
+  };
 
-    return (
-        <Modal className="rn-popup-modal placebid-modal-wrapper" show={show} onHide={onHideConnectModal} centered>
-            {show && (
-                <button type="button" className="btn-close" aria-label="Close" onClick={onHideConnectModal}>
-                    <i className="feather-x" />
-                </button>
-            )}
-            <Modal.Header>
-                <h3 className="modal-title">Choose your wallet</h3>
-            </Modal.Header>
-            <Modal.Body>
-                <div className="wallet-list-container">
-                    <div className="wallet-list">
-                        {getWallets().map((wallet) => (
-                            <button type="button" className="wallet" key={wallet.name} onClick={wallet.onClick}>
-                                <div className="wallet-img-container">
-                                    <Image
-                                        width={35}
-                                        height={35}
-                                        src={wallet.image}
-                                        alt={`wallet-${wallet.name}-logo`}
-                                    />
-                                </div>
-
-                                <p>{wallet.name}</p>
-                            </button>
-                        ))}
-                    </div>
+  return (
+    <Modal
+      className="rn-popup-modal placebid-modal-wrapper"
+      show={show}
+      onHide={onHideConnectModal}
+      centered
+    >
+      {show && (
+        <button
+          type="button"
+          className="btn-close"
+          aria-label="Close"
+          onClick={onHideConnectModal}
+        >
+          <i className="feather-x" />
+        </button>
+      )}
+      <Modal.Header>
+        <h3 className="modal-title">Choose your wallet</h3>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="wallet-list-container">
+          <div className="wallet-list">
+            {getWallets().map((wallet) => (
+              <button
+                type="button"
+                className="wallet"
+                key={wallet.name}
+                onClick={wallet.onClick}
+              >
+                <div className="wallet-img-container">
+                  <Image
+                    width={35}
+                    height={35}
+                    src={wallet.image}
+                    alt={`wallet-${wallet.name}-logo`}
+                  />
                 </div>
-            </Modal.Body>
-        </Modal>
-    );
+
+                <p>{wallet.name}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
 };
 
 ConnectWallet.propTypes = {};

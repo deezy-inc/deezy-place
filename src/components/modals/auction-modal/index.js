@@ -25,11 +25,11 @@ import {
   generatePSBTListingInscriptionForSale,
   signPsbtMessage,
   shortenStr,
-  fetchBitcoinPrice,
   TESTNET,
   satsToFormattedDollarString,
   createAuction,
   fetchBlockAverage,
+  getPsbtBase64,
 } from "@services/nosft";
 import { useCounter } from "react-use";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
@@ -259,6 +259,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         let signedPsbt;
         if (provider === "unisat.io") {
           signedPsbt = await window.unisat.signPsbt(psbt.toHex());
+          signedPsbt = getPsbtBase64(signedPsbt);
         } else {
           signedPsbt = await signPsbtMessage(
             psbt.toBase64(),

@@ -266,7 +266,13 @@ const NostrLive = ({ className, space, type }) => {
       ));
     }
 
-    return <>No dutch auction yet.</>;
+    return (
+      <>
+        {type === "bidding"
+          ? "No dutch auction yet."
+          : "No ordinals for sale yet."}
+      </>
+    );
 
     // return [...Array(5)].map((_, index) => (
     //   <SliderItem key={index} className="ordinal-slide">

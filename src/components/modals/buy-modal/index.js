@@ -31,6 +31,8 @@ import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import axios from "axios";
 import { invalidateOutputsCache } from "@services/nosft";
+import { InputAddress } from "@components/input-address";
+import { parseError } from "@utils/errors";
 
 bitcoin.initEccLib(ecc);
 
@@ -56,6 +58,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
+  const [error, setError] = useState("");
 
   const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
 
@@ -75,6 +78,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const updatePaymentInputs = async () => {
+    setError("");
     try {
       if (!deezyPsbtPopulate || !nostrPaymentAddress) return;
 
@@ -167,7 +171,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   }, [ordinalsDestinationAddress]);
 
   useEffect(() => {
-    updatePaymentInputs();
+    updatePaymentInputs().catch((error) => {
+      setError(error.message);
+    });
   }, [deezyPsbtPopulate, nostrPaymentAddress]);
 
   const buy = async () => {
@@ -262,6 +268,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       );
     }
 
+    console.log({
+      ordinalsDestinationAddress,
+      isOrdinalDestinationAddressValid,
+    });
+
     return (
       <div className={clsx(!isMounted && "hide-animated")}>
         <p>You are about to buy this Ordinal</p>
@@ -273,24 +284,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
           <div className="bid-content">
             <div className="bid-content-top">
               <div className="bid-content-left">
-                <InputGroup className="mb-lg-5 notDummy">
-                  <Form.Label>Address to receive ordinal</Form.Label>
-                  <Form.Control
-                    defaultValue={ordinalsDestinationAddress}
-                    onChange={onChangeAddress}
-                    placeholder="Ordinal buyer address"
-                    aria-label="Ordinal buyer address"
-                    aria-describedby="basic-addon2"
-                    isInvalid={!isOrdinalDestinationAddressValid}
-                    autoFocus
-                  />
-
-                  <Form.Control.Feedback type="invalid">
-                    <br />
-                    No dummy UTXOs found for your address
-                  </Form.Control.Feedback>
-                </InputGroup>
-
                 <InputGroup className="mb-3">
                   <Form.Label>Select a fee rate</Form.Label>
                   <Form.Range
@@ -305,17 +298,18 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
             <div className="bid-content-mid">
               <div className="bid-content-left">
-                {Boolean(ordinalsDestinationAddress) && (
-                  <span>Receive Address</span>
-                )}
+                <span>Receive Address</span>
 
                 {Boolean(nostr?.value) && <span>Price</span>}
                 <span>Fee rate</span>
               </div>
               <div className="bid-content-right">
-                {Boolean(ordinalsDestinationAddress) && (
-                  <span>{shortenStr(ordinalsDestinationAddress)}</span>
-                )}
+                <InputAddress
+                  placeholder="Ordinal Address"
+                  defaultAddress={nostrOrdinalsAddress}
+                  setAddress={setOrdinalsDestinationAddress}
+                  setIsAddressValid={setIsOrdinalDestinationAddressValid}
+                />
                 {Boolean(nostr?.value) && Boolean(bitcoinPrice) && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,
@@ -326,8 +320,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
               </div>
             </div>
           </div>
+          {error && <div className="pb-4">{parseError(error)}</div>}
 
-          <div className="bit-continue-button notDummy">
+          <div className="bit-continue-button">
             <Button
               size="medium"
               fullwidth

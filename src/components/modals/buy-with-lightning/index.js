@@ -172,7 +172,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
           <div className="bid-content">
             <div className="bid-content-top">
               <div className="bid-content-left">
-                <InputGroup className="mb-lg-5 notDummy">
+                <InputGroup className="mb-lg-5">
                   <Form.Label>Address to receive ordinal</Form.Label>
                   <Form.Control
                     defaultValue={nostrOrdinalsAddress}
@@ -191,7 +191,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                   </Form.Control.Feedback>
                 </InputGroup>
 
-                <InputGroup className="mb-lg-5 notDummy">
+                <InputGroup className="mb-lg-5">
                   <Form.Label>Refund Lightning Address (optional)</Form.Label>
                   <Form.Control
                     defaultValue={refundLightningAddress}
@@ -232,7 +232,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 {Boolean(nostr?.value) && <span>Price</span>}
                 <span>Fee rate</span>
               </div>
-              <div className="bid-constent-right">
+              <div className="bid-content-right">
                 {Boolean(destinationBtcAddress) && (
                   <span>{shortenStr(destinationBtcAddress)}</span>
                 )}
@@ -250,7 +250,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             </div>
           </div>
 
-          <div className="bit-continue-button notDummy">
+          <div className="bit-continue-button ">
             <Button
               size="medium"
               fullwidth

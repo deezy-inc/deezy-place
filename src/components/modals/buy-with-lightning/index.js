@@ -9,7 +9,6 @@ import Form from "react-bootstrap/Form";
 import {
   shortenStr,
   satsToFormattedDollarString,
-  fetchBitcoinPrice,
   fetchRecommendedFee,
   TESTNET,
   NETWORK,
@@ -29,6 +28,11 @@ import { buyOrdinalWithLightning } from "@services/deezy";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
+
+function isHexadecimal(str) {
+  const hexRegex = /^[0-9A-Fa-f]*$/;
+  return str.length % 2 === 0 && hexRegex.test(str);
+}
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const { nostrOrdinalsAddress } = useWallet();
@@ -106,9 +110,14 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setIsOnBuy(true);
 
     try {
-      const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
-        network: NETWORK,
-      });
+      const psbtContent = nostr.content;
+      const sellerSignedPsbt = isHexadecimal(psbtContent)
+        ? bitcoin.Psbt.fromHex(psbtContent, {
+            network: NETWORK,
+          })
+        : bitcoin.Psbt.fromBase64(psbtContent, {
+            network: NETWORK,
+          });
 
       const bolt11_invoice = await buyOrdinalWithLightning({
         psbt: sellerSignedPsbt.toBase64(),

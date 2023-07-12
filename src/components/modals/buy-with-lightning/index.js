@@ -26,13 +26,9 @@ import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import { buyOrdinalWithLightning } from "@services/deezy";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
+import { getPsbt } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
-
-function isHexadecimal(str) {
-  const hexRegex = /^[0-9A-Fa-f]*$/;
-  return str.length % 2 === 0 && hexRegex.test(str);
-}
 
 const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const { nostrOrdinalsAddress } = useWallet();
@@ -110,14 +106,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setIsOnBuy(true);
 
     try {
-      const psbtContent = nostr.content;
-      const sellerSignedPsbt = isHexadecimal(psbtContent)
-        ? bitcoin.Psbt.fromHex(psbtContent, {
-            network: NETWORK,
-          })
-        : bitcoin.Psbt.fromBase64(psbtContent, {
-            network: NETWORK,
-          });
+      const sellerSignedPsbt = getPsbt(nostr.content);
 
       const bolt11_invoice = await buyOrdinalWithLightning({
         psbt: sellerSignedPsbt.toBase64(),

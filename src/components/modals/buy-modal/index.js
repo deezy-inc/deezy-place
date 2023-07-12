@@ -31,6 +31,7 @@ import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import axios from "axios";
 import { invalidateOutputsCache } from "@services/nosft";
+import { getPsbt } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 
@@ -176,9 +177,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     try {
       await updatePaymentInputs();
 
-      const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
-        network: NETWORK,
-      });
+      const sellerSignedPsbt = getPsbt(nostr.content);
 
       // Step 1 happens above, when we call deezy api to get the psbt with the dummy utxos.
       const { psbt, id } = deezyPsbtPopulate;

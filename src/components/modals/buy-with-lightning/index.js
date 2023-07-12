@@ -11,8 +11,8 @@ import {
   satsToFormattedDollarString,
   fetchRecommendedFee,
   TESTNET,
-  NETWORK,
   DEFAULT_FEE_RATE,
+  getPsbt,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -26,7 +26,6 @@ import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import { buyOrdinalWithLightning } from "@services/deezy";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
-import { getPsbt } from "@utils/psbt";
 
 bitcoin.initEccLib(ecc);
 

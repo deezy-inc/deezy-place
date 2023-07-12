@@ -30,8 +30,7 @@ import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import axios from "axios";
-import { invalidateOutputsCache } from "@services/nosft";
-import { getPsbt } from "@utils/psbt";
+import { invalidateOutputsCache, getPsbt } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 

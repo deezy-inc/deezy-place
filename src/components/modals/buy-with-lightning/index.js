@@ -9,11 +9,10 @@ import Form from "react-bootstrap/Form";
 import {
   shortenStr,
   satsToFormattedDollarString,
-  fetchBitcoinPrice,
   fetchRecommendedFee,
   TESTNET,
-  NETWORK,
   DEFAULT_FEE_RATE,
+  getPsbt,
 } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -106,9 +105,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setIsOnBuy(true);
 
     try {
-      const sellerSignedPsbt = bitcoin.Psbt.fromBase64(nostr.content, {
-        network: NETWORK,
-      });
+      const sellerSignedPsbt = getPsbt(nostr.content);
 
       const bolt11_invoice = await buyOrdinalWithLightning({
         psbt: sellerSignedPsbt.toBase64(),

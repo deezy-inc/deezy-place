@@ -14,6 +14,7 @@ function useInscription(inscriptionId) {
 
   const fetchNostrInscription = async (utxo) => {
     const data = await getLatestNostrInscription(utxo);
+    console.log("[fetchNostrInscription] from Nostr", data);
     setNostrData(data);
   };
 

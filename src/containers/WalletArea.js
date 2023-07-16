@@ -193,8 +193,8 @@ const WalletArea = ({
                       currency: "Sats",
                     }}
                     type="send"
-                    confirmed={inscription.status.confirmed}
-                    date={inscription.status.block_time}
+                    confirmed
+                    date={inscription.created}
                     authors={collectionAuthor}
                     utxo={inscription}
                     onSale={handleRefreshHack}

@@ -65,17 +65,7 @@ const OrdinalFilter = ({
           onChange={(e) => {
             setSearchQuery(e.target.value);
             const filteredUtxos = matchSorter(ownedUtxos, e.target.value, {
-              keys: [
-                "inscriptionId",
-                "key",
-                "txid",
-                "vout",
-                "value",
-                "num",
-                "status.block_time",
-                "status.block_height",
-                "status.confirmed",
-              ],
+              keys: ["inscriptionId", "key", "txid", "vout", "value", "num"],
             });
             setFilteredOwnedUtxos(filteredUtxos);
           }}

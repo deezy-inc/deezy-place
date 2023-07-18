@@ -303,7 +303,9 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         reservePrice,
         metadata: newSchedule,
         btcAddress: nostrOrdinalsAddress,
-        output: utxo.output || `${utxo.txid}:${utxo.vout}`, // TODO: should I need it?
+        output: utxo.output || `${utxo.txid}:${utxo.vout}`,
+        utxoNum: utxo.num,
+        utxoCreatedAt: utxo.created,
         inscriptionId: utxo.inscriptionId,
       };
       const auction = await createAuction(dutchAuction);

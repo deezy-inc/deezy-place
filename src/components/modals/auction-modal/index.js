@@ -305,6 +305,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         btcAddress: nostrOrdinalsAddress,
         output: utxo.output || `${utxo.txid}:${utxo.vout}`, // TODO: should I need it?
         inscriptionId: utxo.inscriptionId,
+        collection: utxo.collection?.slug,
       };
       const auction = await createAuction(dutchAuction);
       console.log({ auction });

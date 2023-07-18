@@ -38,6 +38,7 @@ const {
   publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
+  getNostrInscriptions,
   getLatestNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
@@ -168,6 +169,7 @@ export {
   getLatestNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
+  getNostrInscriptions,
 
   // auction
   subscribeAuctionOrders,

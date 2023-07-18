@@ -135,7 +135,7 @@ const NostrLive = ({ className, space, type, address }) => {
       .pipe(scan(updateInscriptions, openOrders))
       .subscribe(setOpenOrders);
     orderSubscriptionRef.current = nostrPool
-      .subscribeOrders({ limit: MAX_ONSALE })
+      .subscribeOrders({ limit: MAX_ONSALE, type, address })
       .subscribe(async (event) => {
         try {
           const inscription = await getInscriptionData(event);

@@ -1,26 +1,18 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import { deepClone } from "@utils/methods";
-import {
-  getInscription,
-  takeLatestInscription,
-  getNostrInscription,
-  isSpent as isInscriptionSpent,
-} from "@services/nosft";
+
+import { takeLatestInscription, getNostrInscriptions } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
-import OrdinalFilter from "@components/ordinal-filter";
-import OrdinalCard from "@components/ordinal-card";
+
+import OrdinalCard from "@components/collection-inscription";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import {
-  DEFAULT_UTXO_OPTIONS,
-  HIDE_TEXT_UTXO_OPTION,
-} from "@lib/constants.config";
+import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 import Slider, { SliderItem } from "@ui/slider";
 import { useWallet } from "@context/wallet-context";
 
@@ -66,8 +58,12 @@ const SliderOptions = {
 
 // TODO: Make static view, inscriptions shouldn't change position on render
 export const updateInscriptions = (acc, curr) => {
+  if (!curr) {
+    return acc;
+  }
+
   const existingIndex = acc.findIndex(
-    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
+    (item) => item.id === curr.id && item.num === curr.num
   );
 
   if (existingIndex !== -1) {
@@ -78,7 +74,7 @@ export const updateInscriptions = (acc, curr) => {
     acc.push(curr);
   }
 
-  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+  return acc.sort((a, b) => b.created - a.created).slice(0, MAX_ONSALE);
 };
 
 const CollectionOnSale = ({ className, space, type, collection }) => {
@@ -86,20 +82,13 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
-  const orderSubscriptionRef = useRef(null);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
-  const [refreshHack, setRefreshHack] = useState(false);
 
-  const [activeSort, setActiveSort] = useState();
-  const [sortAsc, setSortAsc] = useState(false);
   const [utxosReady, setUtxosReady] = useState(false);
-
-  const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
   const [utxosType, setUtxosType] = useState(
     type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
   );
-  const isLive = type === "live";
 
   useMemo(() => {
     const filteredUtxos = applyFilters({
@@ -111,10 +100,6 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     setFilteredOwnedUtxos(filteredUtxos);
   }, [openOrders, activeSort, sortAsc, utxosType]);
 
-  const handleRefreshHack = () => {
-    setRefreshHack(!refreshHack);
-  };
-
   const addNewOpenOrder = (order) => {
     addOpenOrder$.current.next(order);
     if (!utxosReady) {
@@ -122,19 +107,8 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     }
   };
 
-  const getInscriptionData = useCallback(async (event) => {
-    const { inscription } = await getInscription(event.id);
-
-    const forSaleInscription = deepClone({
-      ...inscription,
-      ...event,
-    });
-
-    return forSaleInscription;
-  }, []);
-
   useEffect(() => {
-    if (!collection) {
+    if (!collection?.inscriptions?.length) {
       return;
     }
 
@@ -143,57 +117,44 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       .subscribe(setOpenOrders);
 
     const fetchInscriptions = async () => {
-      try {
-        const chunkSize = 10;
-        const totalInscriptions = collection.inscriptions.length;
+      const chunkSize = 50;
 
+      const totalInscriptions = collection.inscriptions.length;
+
+      try {
+        const promises = [];
         for (let i = 0; i < totalInscriptions; i += chunkSize) {
           const inscriptionChunk = collection.inscriptions.slice(
             i,
             i + chunkSize
           );
-
-          const inscriptionPromises = inscriptionChunk.map(
-            async (_inscription) => {
-              try {
-                const inscription = await getInscriptionData(_inscription);
-
-                try {
-                  const nostrData = await getNostrInscription(inscription);
-                  if (!nostrData) {
-                    throw new Error("Nostr data not found");
-                  }
-
-                  const { spent } = await isInscriptionSpent(inscription);
-                  if (spent) {
-                    throw new Error("Inscription is spent");
-                  }
-
-                  inscription.nostr = nostrData;
-                  inscription.isOwner =
-                    nostrOrdinalsAddress &&
-                    inscription.owner &&
-                    nostrOrdinalsAddress === inscription.owner;
-
-                  if (inscription.isOwner) {
-                    inscription.actionType = "sell";
-                  } else if (!inscription.isOwner && inscription.nostr) {
-                    inscription.actionType = "buy";
-                  } else {
-                    inscription.actionType = "view";
-                  }
-
-                  addNewOpenOrder(inscription);
-                } catch (e) {
-                  console.error(e);
-                }
-              } catch (e) {
-                console.error(e);
-              }
-            }
+          promises.push(
+            getNostrInscriptions(inscriptionChunk.map((i) => i.id))
           );
+        }
 
-          await Promise.all(inscriptionPromises);
+        const nostrInscriptionsChunks = await Promise.all(promises);
+
+        const nostrInscriptions = nostrInscriptionsChunks.flat();
+
+        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
+          nostrInscriptions.some((ni) => ni.inscriptionId === i.id)
+        );
+
+        const inscriptionPromises = inscriptionsWithEvents.map((i) => {
+          const nostrInscription = nostrInscriptions.find(
+            (ni) => ni.inscriptionId === i.id
+          );
+          return {
+            ...i,
+            nostr: nostrInscription,
+          };
+        });
+
+        const inscriptions = await Promise.all(inscriptionPromises);
+
+        for (const inscription of inscriptions) {
+          addNewOpenOrder(inscription);
         }
       } catch (error) {
         console.error(error);
@@ -209,20 +170,15 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collection, nostrOrdinalsAddress]);
+  }, [collection?.inscriptions, nostrOrdinalsAddress]);
 
-  const getTitle = () => {
-    return "On Sale";
-  };
-
-  const title = getTitle();
-  let author = collectionAuthor;
-  if (collection) {
+  let { author: name, slug, icon } = collectionAuthor || {};
+  if (name) {
     author = {
-      name: collection.author,
-      slug: collection.slug,
+      name,
+      slug,
       image: {
-        src: collection.icon,
+        src: icon,
       },
     };
   }
@@ -241,13 +197,14 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0 live-title"
-              {...{ title }}
+              {...{ title: "On Sale" }}
               isLoading={!utxosReady}
             />
           </div>
         </div>
 
         <div className="row g-5">
+          <p>{filteredOwnedUtxos.length}</p>
           {utxosReady && openOrders.length > 0 && (
             <>
               {filteredOwnedUtxos.map((inscription) => (
@@ -255,22 +212,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                   key={inscription.id}
                   className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                 >
-                  <OrdinalCard
-                    overlay
-                    price={{
-                      amount:
-                        inscription?.nostr?.value?.toLocaleString("en-US") ||
-                        inscription?.value?.toLocaleString("en-US"),
-                      currency: "Sats",
-                    }}
-                    type={inscription.actionType}
-                    confirmed
-                    date={inscription.created}
-                    authors={[author]}
-                    utxo={inscription}
-                    onSale={handleRefreshHack}
-                    collection={collection}
-                  />
+                  <OrdinalCard overlay inscription={inscription} />
                 </div>
               ))}
 

@@ -12,6 +12,7 @@ import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { getCollection, getCollectionInscriptions } from "@services/nosft";
 
+import * as collectionMocked from "./collections.json";
 const Inscription = () => {
   const walletState = useWalletState();
   const router = useRouter();
@@ -25,9 +26,9 @@ const Inscription = () => {
   useEffect(() => {
     if (!slug) return;
     const fetchCollection = async () => {
-      const collectionData = await getCollection(slug);
+      const collectionData = collectionMocked; //await getCollection(slug);
 
-      const collectionInscriptions = await getCollectionInscriptions(slug);
+      // const collectionInscriptions = await getCollectionInscriptions(slug);
 
       const links = [];
 
@@ -52,7 +53,7 @@ const Inscription = () => {
         });
       }
 
-      collectionData.inscriptions = collectionInscriptions;
+      // collectionData.inscriptions = collectionInscriptions.slice(0, 50);
       collectionData.links = links;
 
       setCollection(collectionData);
@@ -71,7 +72,7 @@ const Inscription = () => {
             <>
               <CollectionInfo collection={collection} />
               <CollectionLive collection={collection} />
-              <Collection collection={collection} />
+              {/* <Collection collection={collection} /> */}
             </>
           )}
         </main>

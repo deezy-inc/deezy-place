@@ -5,7 +5,12 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 
-import { takeLatestInscription, getNostrInscriptions } from "@services/nosft";
+import {
+  takeLatestInscription,
+  getNostrInscriptions,
+  listAuctionInscriptions,
+  getAuctionByCollection,
+} from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
@@ -77,7 +82,7 @@ export const updateInscriptions = (acc, curr) => {
   return acc.sort((a, b) => b.created - a.created).slice(0, MAX_ONSALE);
 };
 
-const CollectionOnSale = ({ className, space, type, collection }) => {
+const CollectionAuction = ({ className, space, type, collection }) => {
   const { nostrOrdinalsAddress } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
@@ -120,41 +125,33 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       .subscribe(setOpenOrders);
 
     const fetchInscriptions = async () => {
-      const chunkSize = 50;
-
-      const totalInscriptions = collection.inscriptions.length;
-
       try {
-        const promises = [];
-        for (let i = 0; i < totalInscriptions; i += chunkSize) {
-          const inscriptionChunk = collection.inscriptions.slice(
-            i,
-            i + chunkSize
-          );
-          promises.push(
-            getNostrInscriptions(inscriptionChunk.map((i) => i.id))
-          );
-        }
-
-        const nostrInscriptionsChunks = await Promise.all(promises);
-
-        const nostrInscriptions = nostrInscriptionsChunks.flat();
-
-        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
-          nostrInscriptions.some((ni) => ni.inscriptionId === i.id)
+        const inscriptionsOnAuction = await listAuctionInscriptions(
+          collection.slug
         );
 
-        const inscriptionPromises = inscriptionsWithEvents.map((i) => {
-          const nostrInscription = nostrInscriptions.find(
+        const runningInscriptions = inscriptionsOnAuction.filter(
+          (i) => i.status === "RUNNING"
+        );
+
+        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
+          runningInscriptions.some((ni) => ni.inscriptionId === i.id)
+        );
+
+        const inscriptions = inscriptionsWithEvents.map((i) => {
+          const auctionData = runningInscriptions.find(
             (ni) => ni.inscriptionId === i.id
           );
+
+          const nextPriceDrop = auctionData.metadata.find(
+            (m) => !m.nostrEventId && m.price !== auctionData.currentPrice
+          );
+
           return {
             ...i,
-            nostr: nostrInscription,
+            auction: { ...auctionData, nextPriceDrop },
           };
         });
-
-        const inscriptions = await Promise.all(inscriptionPromises);
 
         for (const inscription of inscriptions) {
           addNewOpenOrder(inscription);
@@ -200,7 +197,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0 live-title"
-              {...{ title: "On Sale" }}
+              {...{ title: "On Auction" }}
               isLoading={!utxosReady}
             />
           </div>
@@ -214,7 +211,11 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                   key={inscription.id}
                   className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                 >
-                  <OrdinalCard overlay inscription={inscription} />
+                  <OrdinalCard
+                    overlay
+                    inscription={inscription}
+                    auction={inscription.auction}
+                  />
                 </div>
               ))}
 
@@ -250,16 +251,16 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
   );
 };
 
-CollectionOnSale.propTypes = {
+CollectionAuction.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
   type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
   collection: PropTypes.any,
 };
 
-CollectionOnSale.defaultProps = {
+CollectionAuction.defaultProps = {
   space: 1,
   type: "live",
 };
 
-export default CollectionOnSale;
+export default CollectionAuction;

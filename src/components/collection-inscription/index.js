@@ -16,20 +16,24 @@ const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
   ssr: false,
 });
 
-const OrdinalCard = ({ overlay, inscription }) => {
+const OrdinalCard = ({ overlay, inscription, auction }) => {
   console.count("OrdinalCard");
   const [onSale, setOnSale] = useState(null);
-  const [type, setType] = useState(null);
 
   const id = inscription?.id;
   const num = inscription?.num;
   const { name, slug, icon } = inscription?.collection || {};
   const hasCollection = Boolean(inscription?.collection);
+
+  const inscriptionValue = auction?.currentPrice || inscription?.sats;
   const price = {
-    amount: inscription?.sats.toLocaleString("en-US"),
+    amount: inscriptionValue?.toLocaleString("en-US"),
     currency: "Sats",
   };
-  const date = inscription?.created;
+  const type = "buy";
+  const date = auction?.startTime
+    ? auction?.startTime / 1000
+    : inscription?.created;
   const path = `/inscription/${id}`;
 
   return (
@@ -38,6 +42,9 @@ const OrdinalCard = ({ overlay, inscription }) => {
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
           <div className="card-thumbnail">
             <InscriptionPreview utxo={inscription} />
+            {auction?.nextPriceDrop?.scheduledTime && (
+              <CountdownTimer time={auction.nextPriceDrop.scheduledTime} />
+            )}
           </div>
           <div className="inscription-details-area">
             {inscription && (
@@ -95,6 +102,7 @@ const OrdinalCard = ({ overlay, inscription }) => {
 OrdinalCard.propTypes = {
   overlay: PropTypes.bool,
   inscription: PropTypes.object,
+  auction: PropTypes.object,
 };
 
 OrdinalCard.defaultProps = {

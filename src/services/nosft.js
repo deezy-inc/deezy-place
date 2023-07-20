@@ -50,6 +50,8 @@ const {
   createAuction,
   cancelAuction,
   subscribeMyAuctions,
+  listAuctionInscriptions,
+  getAuctionByCollection,
 } = nosft.auction;
 
 const {
@@ -177,6 +179,8 @@ export {
   createAuction,
   cancelAuction,
   subscribeMyAuctions,
+  listAuctionInscriptions,
+  getAuctionByCollection,
 
   // open ordex
   getAvailableUtxosWithoutInscription,

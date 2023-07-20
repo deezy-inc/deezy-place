@@ -6,6 +6,7 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import Collection from "@containers/Collection";
 import CollectionLive from "@containers/CollectionLive";
+import CollectionAuction from "@containers/CollectionAuction";
 import CollectionInfo from "@components/collection-info";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
@@ -71,7 +72,8 @@ const Inscription = () => {
           {collection && (
             <>
               <CollectionInfo collection={collection} />
-              <CollectionLive collection={collection} />
+              <CollectionAuction collection={collection} />
+              {/* <CollectionLive collection={collection} /> */}
               {/* <Collection collection={collection} /> */}
             </>
           )}

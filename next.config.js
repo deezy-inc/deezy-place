@@ -53,7 +53,7 @@ module.exports = withSentryConfig(
     silent: true,
 
     org: "deezy-io",
-    project: "nosft-next",
+    project: "deezy-place",
   },
   {
     // For all available options, see:

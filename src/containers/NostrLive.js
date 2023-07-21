@@ -296,7 +296,7 @@ const NostrLive = ({ className, space, type }) => {
             <div className="view-more-btn text-start text-sm-end ">
               <Anchor
                 className="btn-transparent"
-                path={type === "live" ? "/inscriptions" : "/auction"}
+                path={type === "live" ? "/marketplace" : "/auction"}
               >
                 VIEW ALL
                 <i className="feather-arrow-right mb-md-5" />

@@ -175,7 +175,7 @@ const NostrLive = ({ className, space, type, address }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0"
-              {...{ title: `On Sale` }}
+              {...{ title: type === "bidding" ? "Auctions" : "On Sale" }}
               isLoading={!utxosReady}
             />
           </div>

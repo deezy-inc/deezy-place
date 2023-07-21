@@ -13,8 +13,8 @@ export default function (inscriborLink) {
     },
     {
       id: 3,
-      text: "Inscriptions",
-      path: "/inscriptions",
+      text: "Marketplace",
+      path: "/marketplace",
     },
     {
       id: 4,

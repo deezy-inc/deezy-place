@@ -194,7 +194,7 @@ const WalletArea = ({
                     }}
                     type="send"
                     confirmed
-                    date={inscription.created}
+                    date={inscription.created || inscription.status?.block_time}
                     authors={collectionAuthor}
                     utxo={inscription}
                     onSale={handleRefreshHack}

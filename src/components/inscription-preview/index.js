@@ -6,7 +6,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 export const InscriptionPreview = ({ utxo }) => {
   const [loading, setLoading] = useState(true);
 
-  const inscriptionId = utxo?.id || utxo?.inscriptionId;
+  const inscriptionId = utxo?.inscriptionId || utxo?.id;
   const handleLoad = () => {
     setLoading(false);
   };

@@ -183,6 +183,10 @@ const CollectionAuction = ({ className, space, type, collection }) => {
     };
   }
 
+  if (!openOrders.length) {
+    return <> </>;
+  }
+
   return (
     <div
       id="your-collection"
@@ -218,13 +222,6 @@ const CollectionAuction = ({ className, space, type, collection }) => {
                   />
                 </div>
               ))}
-
-              {utxosReady &&
-                openOrders.length <= collection.inscriptions.length - 1 && (
-                  <div className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                    <OrdinalCard overlay />
-                  </div>
-                )}
 
               {filteredOwnedUtxos.length === 0 && (
                 <div className="col-12">

@@ -11,9 +11,8 @@ import CollectionInfo from "@components/collection-info";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
-import { getCollection, getCollectionInscriptions } from "@services/nosft";
+import { getCollection } from "@services/nosft";
 
-import * as collectionMocked from "./collections.json";
 const Inscription = () => {
   const walletState = useWalletState();
   const router = useRouter();
@@ -27,9 +26,7 @@ const Inscription = () => {
   useEffect(() => {
     if (!slug) return;
     const fetchCollection = async () => {
-      const collectionData = collectionMocked; //await getCollection(slug);
-
-      // const collectionInscriptions = await getCollectionInscriptions(slug);
+      const collectionData = await getCollection(slug, true);
 
       const links = [];
 
@@ -73,8 +70,8 @@ const Inscription = () => {
             <>
               <CollectionInfo collection={collection} />
               <CollectionAuction collection={collection} />
-              {/* <CollectionLive collection={collection} /> */}
-              {/* <Collection collection={collection} /> */}
+              <CollectionLive collection={collection} />
+              <Collection collection={collection} />
             </>
           )}
         </main>

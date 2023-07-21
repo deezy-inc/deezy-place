@@ -120,9 +120,9 @@ const Inscription = () => {
           {collection && <CollectionInfo collection={collection} />}
           {collection && displayCollections && (
             <>
-              {/* <CollectionAuction collection={collection} /> */}
+              <CollectionAuction collection={collection} />
               <CollectionLive collection={collection} />
-              {/* <Collection collection={collection} /> */}
+              <Collection collection={collection} />
             </>
           )}
           {!displayCollections && (

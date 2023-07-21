@@ -81,7 +81,13 @@ const Collection = ({ className, space, collection }) => {
                   key={inscription.id}
                   className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                 >
-                  <OrdinalCard overlay inscription={inscription} />
+                  <OrdinalCard
+                    overlay
+                    inscription={{
+                      ...inscription,
+                      inscriptionId: inscription.id,
+                    }}
+                  />
                 </div>
               ))}
 

@@ -12,6 +12,49 @@ import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { getCollection } from "@services/nosft";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import clsx from "clsx";
+import SectionTitle from "@components/section-title";
+import Slider, { SliderItem } from "@ui/slider";
+import OrdinalCard from "@components/collection-inscription";
+
+const SliderOptions = {
+  infinite: true,
+  slidesToShow: 5,
+  slidesToScroll: 1,
+  autoplay: true,
+  speed: 4000,
+  responsive: [
+    {
+      breakpoint: 1399,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 1200,
+      settings: {
+        slidesToShow: 3,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 992,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 576,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+  ],
+};
 
 const Inscription = () => {
   const walletState = useWalletState();
@@ -22,6 +65,12 @@ const Inscription = () => {
   const headerHeight = useHeaderHeight(elementRef);
 
   const [collection, setCollection] = useState({});
+  const [displayCollections, setDisplayCollections] = useState(false);
+
+  // Do not queue the rendering with the collections, otherwise it will take more to render the first piece (the collection info)
+  setTimeout(() => {
+    setDisplayCollections(true);
+  }, 500);
 
   useEffect(() => {
     if (!slug) return;
@@ -63,16 +112,49 @@ const Inscription = () => {
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
-        <SEO pageTitle={`${slug} collection`} />
+        <SEO
+          pageTitle={`${collection?.name ? collection.name : ""} Collection`}
+        />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {collection && (
+          {collection && <CollectionInfo collection={collection} />}
+          {collection && displayCollections && (
             <>
-              <CollectionInfo collection={collection} />
-              <CollectionAuction collection={collection} />
+              {/* <CollectionAuction collection={collection} /> */}
               <CollectionLive collection={collection} />
-              <Collection collection={collection} />
+              {/* <Collection collection={collection} /> */}
             </>
+          )}
+          {!displayCollections && (
+            <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
+              <div
+                id="your-collection"
+                className={clsx("rn-product-area", "mt--50")}
+              >
+                <div className="container">
+                  <div className="row mb--50 align-items-center">
+                    <div className="col-lg-6 col-md-6 col-sm-6 col-12">
+                      <SectionTitle
+                        className="mb--0 live-title"
+                        {...{ title: "Collection" }}
+                      />
+                    </div>
+                    <div className="row g-5">
+                      <Slider
+                        options={SliderOptions}
+                        className="slick-gutter-15"
+                      >
+                        {[...Array(5)].map((_, index) => (
+                          <SliderItem key={index} className="ordinal-slide">
+                            <OrdinalCard overlay />
+                          </SliderItem>
+                        ))}
+                      </Slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </SkeletonTheme>
           )}
         </main>
 

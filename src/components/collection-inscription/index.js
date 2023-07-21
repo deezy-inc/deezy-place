@@ -25,12 +25,14 @@ const OrdinalCard = ({ overlay, inscription, auction }) => {
   const { name, slug, icon } = inscription?.collection || {};
   const hasCollection = Boolean(inscription?.collection);
 
-  const inscriptionValue = auction?.currentPrice || inscription?.sats;
+  const inscriptionValue =
+    auction?.currentPrice || inscription?.nostr?.value || inscription?.sats;
   const price = {
     amount: inscriptionValue?.toLocaleString("en-US"),
     currency: "Sats",
   };
-  const type = "buy";
+  const type =
+    auction?.currentPrice || inscription?.nostr?.value ? "buy" : "view";
   const date = auction?.startTime
     ? auction?.startTime / 1000
     : inscription?.created;

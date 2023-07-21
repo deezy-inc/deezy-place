@@ -120,7 +120,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       .subscribe(setOpenOrders);
 
     const fetchInscriptions = async () => {
-      const chunkSize = 50;
+      const chunkSize = 100;
 
       const totalInscriptions = collection.inscriptions.length;
 
@@ -148,8 +148,10 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
           const nostrInscription = nostrInscriptions.find(
             (ni) => ni.inscriptionId === i.id
           );
+
           return {
             ...i,
+            inscriptionId: i.id,
             nostr: nostrInscription,
           };
         });

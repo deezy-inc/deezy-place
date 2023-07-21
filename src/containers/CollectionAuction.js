@@ -149,6 +149,7 @@ const CollectionAuction = ({ className, space, type, collection }) => {
 
           return {
             ...i,
+            inscriptionId: i.id,
             auction: { ...auctionData, nextPriceDrop },
           };
         });

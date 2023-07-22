@@ -26,7 +26,7 @@
     "next": "^13.1.6",
     "next-themes": "^0.1.1",
     "nextjs-google-analytics": "^2.3.3",
-    "nosft-core": "^1.3.43",
+    "nosft-core": "^1.3.49",
     "nostr-tools": "^1.6.0",
     "npm": "^9.6.5",
     "prop-types": "^15.8.1",

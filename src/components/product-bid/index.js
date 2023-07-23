@@ -1,75 +1,95 @@
 /* eslint-disable react/forbid-prop-types */
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useWallet } from "@context/wallet-context";
 import Button from "@ui/button";
+import { satToBtc } from "@services/nosft";
+import ConnectWallet from "@components/modals/connect-wallet";
+import BuyModal from "@components/modals/buy-modal";
 
 const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
-  function renderMainAction(actionType) {
-    if (!Boolean(nostrOrdinalsAddress)) {
-      actionType = "view";
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
+
+  function buttonAction() {
+    if (type !== "buy") {
+      window.location.href = `/inscription/${utxo.inscriptionId}`;
+      return;
     }
 
+    if (!nostrOrdinalsAddress) {
+      onShowConnectModal();
+    } else {
+      setShowBuyModal(true);
+    }
+  }
+  function renderMainAction(actionType) {
+    let label = "View";
     switch (actionType) {
       case "buy":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Buy
-          </Button>
-        );
+        label = "Buy";
+        break;
       case "sell":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Sell
-          </Button>
-        );
+        label = "Sell";
+        break;
       case "send":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Send
-          </Button>
-        );
+        label = "Send";
       case "view":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            View
-          </Button>
-        );
+        label = "View";
       default:
-        return <span />;
+        label = "View";
     }
+
+    return (
+      <Button color="none" size="small" onClick={buttonAction}>
+        {label}
+      </Button>
+    );
   }
   const minted = !confirmed
     ? "Unconfirmed"
     : new Date(date * 1000).toLocaleString();
-  const sats = `${price.amount} ${price.currency}`;
+
+  // remove commas and from price.amount
+  const priceAmount = price?.amount?.replace(/,/g, "") || 0;
+  const sats = satToBtc(Number(priceAmount));
   const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
+
+  function onWalletConnected() {
+    setShowBuyModal(true);
+  }
 
   return (
     <div className="bid-react-area">
       <div className="last-bid">
-        {utxo.name || textPrice}
-        <span className="minted">{` ${minted}`}</span>
+        <img
+          src="/images/logo/bitcoin.png"
+          height={19}
+          alt={`${textPrice} btc`}
+        />
+        <p>{sats}</p>
+        {/* {utxo.name || textPrice} */}
+        {/* <span className="minted">{` ${minted}`}</span> */}
       </div>
 
+      <ConnectWallet cb={onWalletConnected} />
       {renderMainAction(type)}
+
+      {showBuyModal && (
+        <BuyModal
+          show={showBuyModal}
+          handleModal={handleBuyModal}
+          utxo={utxo}
+          onSale={() => {
+            window.location.href = `/inscription/${utxo.inscriptionId}`;
+          }}
+          nostr={utxo.nostr}
+        />
+      )}
     </div>
   );
 };

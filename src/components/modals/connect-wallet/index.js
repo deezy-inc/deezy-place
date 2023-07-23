@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
 
-const ConnectWallet = () => {
+const ConnectWallet = ({ cb }) => {
   const {
     ethProvider,
     onConnectHandler: onConnect,
@@ -19,7 +19,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("nosft.xyz");
+        onConnect("nosft.xyz", cb);
       },
     },
     {
@@ -28,7 +28,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("ordswap.io");
+        onConnect("ordswap.io", cb);
       },
     },
     {
@@ -37,7 +37,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("generative.xyz");
+        onConnect("generative.xyz", cb);
       },
     },
     {
@@ -45,7 +45,7 @@ const ConnectWallet = () => {
       image: "/images/logo/unisat.png",
       provider: "unisat",
       onClick: () => {
-        onConnect("unisat.io");
+        onConnect("unisat.io", cb);
       },
     },
     {
@@ -53,7 +53,7 @@ const ConnectWallet = () => {
       image: "/images/logo/alby.svg",
 
       onClick: () => {
-        onConnect("alby");
+        onConnect("alby", cb);
       },
     },
     {
@@ -61,7 +61,7 @@ const ConnectWallet = () => {
       image: "/images/logo/xverse.png",
       provider: "xverse",
       onClick: () => {
-        onConnect("xverse");
+        onConnect("xverse", cb);
       },
     },
   ];
@@ -131,5 +131,7 @@ const ConnectWallet = () => {
   );
 };
 
-ConnectWallet.propTypes = {};
+ConnectWallet.propTypes = {
+  cb: PropTypes.func,
+};
 export default ConnectWallet;

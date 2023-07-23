@@ -5,7 +5,11 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 
-import { takeLatestInscription, getNostrInscriptions } from "@services/nosft";
+import {
+  takeLatestInscription,
+  getNostrInscriptions,
+  listAuctionInscriptions,
+} from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
@@ -88,9 +92,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
 
   const [utxosReady, setUtxosReady] = useState(false);
 
-  const [utxosType, setUtxosType] = useState(
-    type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
-  );
+  const [utxosType, setUtxosType] = useState("");
 
   // TODO: Remove not, needed
   useMemo(() => {
@@ -118,6 +120,60 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     addSubscriptionRef.current = addOpenOrder$.current
       .pipe(scan(updateInscriptions, openOrders))
       .subscribe(setOpenOrders);
+
+    const fetchAuctions = async () => {
+      try {
+        // TODO: Change to use by collection
+        const inscriptionsOnAuction = await listAuctionInscriptions(
+          collection.slug
+        );
+
+        const runningInscriptions = inscriptionsOnAuction.filter(
+          (i) => i.status === "RUNNING"
+        );
+
+        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
+          runningInscriptions.some((ni) => ni.inscriptionId === i.id)
+        );
+
+        const inscriptions = [];
+        for (const i of inscriptionsWithEvents) {
+          const auctionData = runningInscriptions.find(
+            (ni) => ni.inscriptionId === i.id
+          );
+
+          let nextPriceDrop;
+          const currentEvent = auctionData.metadata.find(
+            (m) => m.price === auctionData.currentPrice
+          );
+
+          const nostrInscriptions = await getNostrInscriptions([i.id]);
+          const nostr = nostrInscriptions?.[0];
+
+          if (!currentEvent.isLastEvent) {
+            nextPriceDrop = auctionData.metadata[currentEvent.index + 1];
+            // create a new date with tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            nextPriceDrop.scheduledTime = tomorrow.getTime();
+          }
+
+          inscriptions.push({
+            ...i,
+            inscriptionId: i.id,
+            auction: { ...auctionData, nextPriceDrop },
+            nostr,
+          });
+        }
+
+        for (const inscription of inscriptions) {
+          addNewOpenOrder(inscription);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const fetchInscriptions = async () => {
       const chunkSize = 100;
@@ -166,7 +222,10 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       }
     };
 
-    fetchInscriptions();
+    fetchAuctions();
+    setTimeout(() => {
+      // fetchInscriptions();
+    }, 500);
 
     return () => {
       try {
@@ -220,7 +279,11 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                   key={inscription.id}
                   className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
                 >
-                  <OrdinalCard overlay inscription={inscription} />
+                  <OrdinalCard
+                    overlay
+                    inscription={inscription}
+                    auction={inscription.auction}
+                  />
                 </div>
               ))}
 

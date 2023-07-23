@@ -12,10 +12,6 @@ import { shortenStr } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
-const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
-  ssr: false,
-});
-
 const OrdinalCard = ({ overlay, inscription, auction }) => {
   console.count("OrdinalCard");
   const [onSale, setOnSale] = useState(null);
@@ -40,63 +36,68 @@ const OrdinalCard = ({ overlay, inscription, auction }) => {
 
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-      <Anchor className="logo-dark" path={path}>
-        <div className={clsx("product-style-one", !overlay && "no-overlay")}>
-          <div className="card-thumbnail">
-            <InscriptionPreview utxo={inscription} />
-            {auction?.nextPriceDrop?.scheduledTime && (
-              <CountdownTimer time={auction.nextPriceDrop.scheduledTime} />
-            )}
-          </div>
-          <div className="inscription-details-area">
-            {inscription && (
-              <div className="inscription-number">
-                {num ? `#${num}` : "\u00A0"}
-              </div>
-            )}
-            {!inscription && <Skeleton width={50} />}
-          </div>
-          <div className="product-share-wrapper">
-            <div className="profile-share">
-              {hasCollection && (
-                <ClientAvatar
-                  key={name}
-                  slug={slug}
-                  image={{ src: icon }}
-                  name={id}
-                />
-              )}
+      {/* <Anchor className="logo-dark" path={path}> */}
+      <div className={clsx("product-style-one", !overlay && "no-overlay")}>
+        <div className="card-thumbnail">
+          <InscriptionPreview utxo={inscription} />
 
-              {!hasCollection && <Skeleton circle height={40} width={40} />}
-
-              <div className="more-author-text">
-                {id && (
-                  <Anchor className="logo-dark" path={path}>
-                    {shortenStr(id)}
-                  </Anchor>
-                )}
-                {!id && <Skeleton width={140} />}
-              </div>
-            </div>
-          </div>
-
-          {inscription && (
-            <ProductBid
-              price={price}
-              utxo={inscription}
-              confirmed
-              date={date}
-              type={type}
-              onSale={onSale}
-            />
-          )}
-          {!inscription && (
-            <div className="mt--10">
-              <Skeleton width={200} count={1} />
+          {auction?.nextPriceDrop?.scheduledTime && (
+            // <CountdownTimer time={auction.nextPriceDrop.scheduledTime} />
+            <div className="card-tag">
+              <p>On Auction</p>
             </div>
           )}
         </div>
-      </Anchor>
+        <div className="inscription-details-area">
+          {inscription && (
+            <div className="inscription-number">
+              {inscription?.meta?.name || shortenStr(id)}
+            </div>
+          )}
+          {!inscription && <Skeleton width={50} />}
+        </div>
+        <div className="product-share-wrapper">
+          <div className="profile-share">
+            {hasCollection && (
+              <ClientAvatar
+                key={name}
+                slug={slug}
+                image={{ src: icon }}
+                name={id}
+              />
+            )}
+
+            {!hasCollection && <Skeleton circle height={40} width={40} />}
+
+            <div className="more-author-text">
+              {id && (
+                <Anchor className="logo-dark" path={path}>
+                  {num ? `#${num}` : "\u00A0"}
+                </Anchor>
+              )}
+              {!id && <Skeleton width={140} />}
+            </div>
+          </div>
+        </div>
+
+        {inscription && (
+          <ProductBid
+            price={price}
+            utxo={inscription}
+            confirmed
+            date={date}
+            type={type}
+            onSale={onSale}
+            nextDrop={auction?.nextPriceDrop?.scheduledTime}
+          />
+        )}
+        {!inscription && (
+          <div className="mt--10">
+            <Skeleton width={200} count={1} />
+          </div>
+        )}
+      </div>
+      {/* </Anchor> */}
     </SkeletonTheme>
   );
 };

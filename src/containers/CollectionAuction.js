@@ -124,7 +124,7 @@ const CollectionAuction = ({ className, space, type, collection }) => {
       .pipe(scan(updateInscriptions, openOrders))
       .subscribe(setOpenOrders);
 
-    const fetchInscriptions = async () => {
+    const fetchAuctions = async () => {
       try {
         const inscriptionsOnAuction = await listAuctionInscriptions(
           collection.slug
@@ -162,7 +162,7 @@ const CollectionAuction = ({ className, space, type, collection }) => {
       }
     };
 
-    fetchInscriptions();
+    fetchAuctions();
 
     return () => {
       try {

@@ -13,6 +13,7 @@
     "@stacks/common": "^6.5.2",
     "axios": "^1.4.0",
     "bip32": "^4.0.0",
+    "@sentry/nextjs": "^7.58.1",
     "bitcoin-address-validation": "^2.2.1",
     "bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib",
     "clsx": "^2.0.0",

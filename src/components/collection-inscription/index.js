@@ -12,7 +12,7 @@ import { shortenStr } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
-const OrdinalCard = ({ overlay, inscription, auction }) => {
+const OrdinalCard = ({ overlay, inscription, auction, onClick }) => {
   console.count("OrdinalCard");
   const [onSale, setOnSale] = useState(null);
 
@@ -89,6 +89,7 @@ const OrdinalCard = ({ overlay, inscription, auction }) => {
             type={type}
             onSale={onSale}
             nextDrop={auction?.nextPriceDrop?.scheduledTime}
+            onClick={onClick}
           />
         )}
         {!inscription && (
@@ -106,6 +107,7 @@ OrdinalCard.propTypes = {
   overlay: PropTypes.bool,
   inscription: PropTypes.object,
   auction: PropTypes.object,
+  onClick: PropTypes.func,
 };
 
 OrdinalCard.defaultProps = {

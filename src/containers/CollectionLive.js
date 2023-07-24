@@ -19,6 +19,8 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 import Slider, { SliderItem } from "@ui/slider";
 import { useWallet } from "@context/wallet-context";
+import ConnectWallet from "@components/modals/connect-wallet";
+import BuyModal from "@components/modals/buy-modal";
 
 const MAX_ONSALE = 200;
 
@@ -82,7 +84,7 @@ export const updateInscriptions = (acc, curr) => {
 };
 
 const CollectionOnSale = ({ className, space, type, collection }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
@@ -92,7 +94,32 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
 
   const [utxosReady, setUtxosReady] = useState(false);
 
+  const [clickedUtxo, setClickedUtxo] = useState(null);
   const [utxosType, setUtxosType] = useState("");
+  const [showBuyModal, setShowBuyModal] = useState(false);
+
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
+
+  function onWalletConnected() {
+    setShowBuyModal(true);
+  }
+
+  function onCardClicked(id) {
+    const inscriptionClicked = openOrders.find((i) => i.inscriptionId === id);
+    if (!inscriptionClicked) {
+      return;
+    }
+
+    setClickedUtxo(inscriptionClicked);
+
+    if (!nostrOrdinalsAddress) {
+      onShowConnectModal();
+    } else {
+      setShowBuyModal(true);
+    }
+  }
 
   // TODO: Remove not, needed
   useMemo(() => {
@@ -283,6 +310,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                     overlay
                     inscription={inscription}
                     auction={inscription.auction}
+                    onClick={onCardClicked}
                   />
                 </div>
               ))}
@@ -305,6 +333,19 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                 </SliderItem>
               ))}
             </Slider>
+          )}
+
+          {!nostrOrdinalsAddress && <ConnectWallet cb={onWalletConnected} />}
+          {showBuyModal && (
+            <BuyModal
+              show={showBuyModal}
+              handleModal={handleBuyModal}
+              utxo={clickedUtxo}
+              onSale={() => {
+                window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
+              }}
+              nostr={clickedUtxo.nostr}
+            />
           )}
         </div>
       </div>

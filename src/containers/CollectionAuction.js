@@ -202,7 +202,7 @@ const CollectionAuction = ({ className, space, type, collection }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0 live-title"
-              {...{ title: "On Auction" }}
+              {...{ title: "Live Auction" }}
               isLoading={!utxosReady}
             />
           </div>

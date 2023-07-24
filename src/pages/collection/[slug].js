@@ -17,6 +17,7 @@ import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import Slider, { SliderItem } from "@ui/slider";
 import OrdinalCard from "@components/collection-inscription";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 const SliderOptions = {
   infinite: true,
@@ -66,7 +67,8 @@ const Inscription = () => {
 
   const [collection, setCollection] = useState({});
   const [displayCollections, setDisplayCollections] = useState(false);
-
+  const [showCollection, setShowCollection] = useState(false);
+  const [collectionInfo, setCollectionInfo] = useState();
   // Do not queue the rendering with the collections, otherwise it will take more to render the first piece (the collection info)
   setTimeout(() => {
     setDisplayCollections(true);
@@ -74,8 +76,17 @@ const Inscription = () => {
 
   useEffect(() => {
     if (!slug) return;
+    const key = `${LocalStorageKeys.COLLECTION_INFO}:${slug}`;
     const fetchCollection = async () => {
       const collectionData = await getCollection(slug, true);
+
+      const collectionInfoData = {
+        ...collectionData,
+        inscriptions: [],
+      };
+
+      LocalStorage.set(key, collectionInfoData);
+      setCollectionInfo(collectionInfoData);
 
       const links = [];
 
@@ -107,6 +118,11 @@ const Inscription = () => {
     };
 
     fetchCollection();
+
+    const collectionInfoData = LocalStorage.get(key);
+    if (collectionInfoData) {
+      setCollectionInfo(collectionInfoData);
+    }
   }, [slug]);
 
   return (
@@ -117,12 +133,12 @@ const Inscription = () => {
         />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {collection && <CollectionInfo collection={collection} />}
+          {collectionInfo && <CollectionInfo collection={collectionInfo} />}
           {collection && displayCollections && (
             <>
               {/* <CollectionAuction collection={collection} /> */}
               <CollectionLive collection={collection} />
-              <Collection collection={collection} />
+              {showCollection && <Collection collection={collection} />}
             </>
           )}
           {!displayCollections && (

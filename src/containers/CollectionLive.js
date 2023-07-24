@@ -251,7 +251,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
 
     fetchAuctions();
     setTimeout(() => {
-      // fetchInscriptions();
+      fetchInscriptions();
     }, 500);
 
     return () => {

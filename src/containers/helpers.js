@@ -15,10 +15,8 @@ export const collectionAuthor = [
   },
 ];
 
-const filterAscDate = (arr) =>
-  arr.sort((a, b) => a.status.block_time - b.status.block_time);
-const filterDescDate = (arr) =>
-  arr.sort((a, b) => b.status.block_time - a.status.block_time);
+const filterAscDate = (arr) => arr.sort((a, b) => a.created - b.created);
+const filterDescDate = (arr) => arr.sort((a, b) => b.created - a.created);
 const filterAscValue = (arr) => arr.sort((a, b) => a.value - b.value);
 const filterDescValue = (arr) => arr.sort((a, b) => b.value - a.value);
 const filterAscNum = (arr) => arr.sort((a, b) => a.num - b.num);

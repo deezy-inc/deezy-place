@@ -107,7 +107,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
           {
             psbt: signedTxHex,
             fee_rate: sendFeeRate,
-          }
+          },
         );
         // Step 3, sign our input
         const { funded_unsigned_psbt, id } = data;
@@ -122,7 +122,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
           {
             id,
             psbt: signedPsbt,
-          }
+          },
         );
         // Step 5, pay Deezy's invoice
         if (window.webln) {
@@ -130,13 +130,13 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
           result = await window.webln.sendPayment(data.bolt11_invoice);
           navigator.clipboard.writeText(result.paymentHash);
           toast.success(
-            `Transaction sent: ${result.paymentHash}, copied to clipboard`
+            `Transaction sent: ${result.paymentHash}, copied to clipboard`,
           );
         } else {
           result = data.bolt11_invoice;
           navigator.clipboard.writeText(result);
           toast.success(
-            `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`
+            `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`,
           );
         }
         // There is no confirmation modal to show since there is no tx id. Just close the modal

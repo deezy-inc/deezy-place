@@ -180,8 +180,7 @@ const CollectionOnSale = ({
             (m) => m.price === auctionData.currentPrice
           );
 
-          const nostrInscriptions = await getNostrInscriptions([i.id]);
-          const nostr = nostrInscriptions?.[0];
+          const nostr = currentEvent.nostr;
 
           if (!currentEvent.isLastEvent) {
             nextPriceDrop = auctionData.metadata[currentEvent.index + 1];

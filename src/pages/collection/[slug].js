@@ -144,7 +144,7 @@ const Inscription = () => {
               {isDutchLoaded && <Collection collection={collection} />}
             </>
           )}
-          {!isDutchLoaded && (
+          {!isDutchLoaded && collectionInfo && (
             <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
               <div
                 id="your-collection"

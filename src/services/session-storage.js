@@ -7,6 +7,7 @@ const SessionsStorageKeys = {
   DOMAIN: "DOMAIN",
   WALLET_NAME: "WALLET_NAME",
   PAYMENT_ADDRESS: "PAYMENT_ADDRESS",
+  NOSTR_EVENT: "NOSTR_EVENT",
 };
 
 const SessionStorage = {

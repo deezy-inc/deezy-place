@@ -1,0 +1,8 @@
+#collection-section {
+  &.expandable {
+    border: 1px solid red;
+  }
+  &.expandable:target {
+    transform: scaleY(1);
+  }
+}

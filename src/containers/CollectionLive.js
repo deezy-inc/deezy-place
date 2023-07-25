@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import {
   takeLatestInscription,
   getNostrInscriptions,
@@ -83,7 +83,13 @@ export const updateInscriptions = (acc, curr) => {
   return acc.sort((a, b) => b.created - a.created).slice(0, MAX_ONSALE);
 };
 
-const CollectionOnSale = ({ className, space, type, collection }) => {
+const CollectionOnSale = ({
+  className,
+  space,
+  type,
+  collection,
+  onDutchLoaded,
+}) => {
   const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
@@ -197,6 +203,12 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
         for (const inscription of inscriptions) {
           addNewOpenOrder(inscription);
         }
+
+        onDutchLoaded?.();
+
+        setTimeout(() => {
+          fetchInscriptions();
+        }, 500);
       } catch (error) {
         console.error(error);
       }
@@ -250,9 +262,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     };
 
     fetchAuctions();
-    setTimeout(() => {
-      fetchInscriptions();
-    }, 500);
+    // fetchInscriptions();
 
     return () => {
       try {
@@ -280,9 +290,10 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
 
   return (
     <div
-      id="your-collection"
+      id="collection-section"
       className={clsx(
         "rn-product-area",
+        // "upToDown",
         space === 1 && "rn-section-gapTop",
         className
       )}
@@ -358,6 +369,7 @@ CollectionOnSale.propTypes = {
   space: PropTypes.oneOf([1, 2]),
   type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
   collection: PropTypes.any,
+  onDutchLoaded: PropTypes.func,
 };
 
 CollectionOnSale.defaultProps = {

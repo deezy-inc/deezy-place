@@ -66,27 +66,14 @@ const Inscription = () => {
   const headerHeight = useHeaderHeight(elementRef);
 
   const [collection, setCollection] = useState({});
-  const [displayCollections, setDisplayCollections] = useState(false);
-  const [showCollection, setShowCollection] = useState(false);
   const [collectionInfo, setCollectionInfo] = useState();
-  // Do not queue the rendering with the collections, otherwise it will take more to render the first piece (the collection info)
-  setTimeout(() => {
-    setDisplayCollections(true);
-  }, 500);
+  const [isDutchLoaded, setIsDutchLoaded] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     const key = `${LocalStorageKeys.COLLECTION_INFO}:${slug}`;
     const fetchCollection = async () => {
       const collectionData = await getCollection(slug, true);
-
-      const collectionInfoData = {
-        ...collectionData,
-        inscriptions: [],
-      };
-
-      LocalStorage.set(key, collectionInfoData);
-      setCollectionInfo(collectionInfoData);
 
       const links = [];
 
@@ -114,16 +101,29 @@ const Inscription = () => {
       // collectionData.inscriptions = collectionInscriptions.slice(0, 50);
       collectionData.links = links;
 
+      const collectionInfoData = {
+        ...collectionData,
+        inscriptions: [],
+      };
+
+      LocalStorage.set(key, collectionInfoData);
+      setCollectionInfo(collectionInfoData);
       setCollection(collectionData);
     };
-
-    fetchCollection();
 
     const collectionInfoData = LocalStorage.get(key);
     if (collectionInfoData) {
       setCollectionInfo(collectionInfoData);
     }
+
+    fetchCollection();
   }, [slug]);
+
+  const onDutchLoaded = () => {
+    setTimeout(() => {
+      setIsDutchLoaded(true);
+    }, 500);
+  };
 
   return (
     <WalletContext.Provider value={walletState}>
@@ -134,14 +134,17 @@ const Inscription = () => {
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           {collectionInfo && <CollectionInfo collection={collectionInfo} />}
-          {collection && displayCollections && (
+          {collection && (
             <>
               {/* <CollectionAuction collection={collection} /> */}
-              <CollectionLive collection={collection} />
-              {showCollection && <Collection collection={collection} />}
+              <CollectionLive
+                collection={collection}
+                onDutchLoaded={onDutchLoaded}
+              />
+              {isDutchLoaded && <Collection collection={collection} />}
             </>
           )}
-          {!displayCollections && (
+          {!isDutchLoaded && (
             <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
               <div
                 id="your-collection"

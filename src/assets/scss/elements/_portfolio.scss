@@ -186,6 +186,13 @@
     display: flex;
   }
 
+  .not-for-sale {
+    font-size: 14px;
+    display: block;
+    color: var(--color-body);
+    display: flex;
+  }
+
   .bid-react-area {
     display: flex;
     justify-content: space-between;

@@ -57,6 +57,23 @@ const ProductBid = ({
   const sats = satToBtc(Number(priceAmount));
   const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
 
+  const renderLabelInfo = () => {
+    if (type === "buy") {
+      return (
+        <>
+          <img
+            src="/images/logo/bitcoin.png"
+            height={19}
+            alt={`${textPrice} btc`}
+          />
+          <p>{sats}</p>
+        </>
+      );
+    }
+
+    return <span className="not-for-sale">Not for sale</span>;
+  };
+
   // function onWalletConnected() {
   //   setShowBuyModal(true);
   // }
@@ -64,12 +81,7 @@ const ProductBid = ({
   return (
     <div className="bid-react-area">
       <div className="last-bid">
-        <img
-          src="/images/logo/bitcoin.png"
-          height={19}
-          alt={`${textPrice} btc`}
-        />
-        <p>{sats}</p>
+        {renderLabelInfo()}
         {/* {utxo.name || textPrice} */}
         {/* <span className="minted">{` ${minted}`}</span> */}
       </div>

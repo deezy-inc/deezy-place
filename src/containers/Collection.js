@@ -6,7 +6,7 @@ import SectionTitle from "@components/section-title";
 import OrdinalFilter from "@components/ordinal-filter";
 import OrdinalCard from "@components/collection-inscription";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
+
 import "react-loading-skeleton/dist/skeleton.css";
 
 const Collection = ({ className, space, collection }) => {
@@ -15,7 +15,7 @@ const Collection = ({ className, space, collection }) => {
   const [activeSort, setActiveSort] = useState();
   const [sortAsc, setSortAsc] = useState(false);
 
-  const [utxosType, setUtxosType] = useState(HIDE_TEXT_UTXO_OPTION);
+  const [utxosType, setUtxosType] = useState("");
 
   useMemo(() => {
     const filteredUtxos = applyFilters({

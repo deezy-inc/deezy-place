@@ -14,7 +14,9 @@ const ProductBid = ({
   onSale,
   onClick,
 }) => {
-  function onActionClicked() {
+  function onActionClicked(e) {
+    e.preventDefault();
+
     if (onClick) {
       onClick(utxo.inscriptionId);
       return;

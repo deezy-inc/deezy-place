@@ -122,7 +122,7 @@ const Inscription = () => {
   const onDutchLoaded = () => {
     setTimeout(() => {
       setIsDutchLoaded(true);
-    }, 500);
+    }, 800);
   };
 
   return (

@@ -120,6 +120,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       setSelectedUtxos(_selectedUtxos);
     } catch (e) {
       console.error(e);
+      toast.error(e.message);
       setSelectedUtxos([]);
       throw e;
     }
@@ -139,7 +140,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   useEffect(() => {
-    if (!nostrOrdinalsAddress) return;
+    if (!nostrOrdinalsAddress || ordinalsDestinationAddress) return;
     setOrdinalsDestinationAddress(nostrOrdinalsAddress);
   }, [nostrOrdinalsAddress]);
 

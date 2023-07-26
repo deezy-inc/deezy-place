@@ -139,6 +139,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   useEffect(() => {
+    if (!nostrOrdinalsAddress) return;
+    setOrdinalsDestinationAddress(nostrOrdinalsAddress);
+  }, [nostrOrdinalsAddress]);
+
+  useEffect(() => {
     const fetchDummies = async () => {
       setIsOnBuy(true);
       try {
@@ -248,7 +253,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const renderBody = () => {
-    if (!showDiv) {
+    if (!showDiv && buyTxId) {
       return (
         <div className="show-animated">
           <TransactionSent

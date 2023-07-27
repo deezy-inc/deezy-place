@@ -32,6 +32,8 @@ const {
   createAndSignPsbtForBoost,
   createPsbtForBoost,
   signPsbtListingForBuy,
+  signPsbtListingForBid,
+  signAcceptBid,
   signPsbtForBoost,
 } = nosft.psbt;
 const {
@@ -39,7 +41,8 @@ const {
   signAndBroadcastEvent,
   getNostrInscription,
   getNostrInscriptions,
-  getLatestNostrInscription,
+  getLatestSellNostrInscription,
+  getNostrBid,
   subscribeOrders,
   unsubscribeOrders,
 } = nosft.nostr;
@@ -57,10 +60,13 @@ const {
 const {
   getAvailableUtxosWithoutInscription,
   getAvailableUtxosWithoutDummies,
+  getFundingUtxos,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
+  generateBidPSBT,
   getOrderInformation,
   generateDeezyPSBTListingForBuy,
+  generateDeezyPSBTListingForBid,
   calculateRequiredFeeForBuy,
 } = nosft.openOrdex;
 
@@ -163,13 +169,16 @@ export {
   createPsbtForBoost,
   signPsbtForBoost,
   signPsbtListingForBuy,
+  signPsbtListingForBid,
+  signAcceptBid,
 
   // nostr
   publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
   getNostrInscriptions,
-  getLatestNostrInscription,
+  getLatestSellNostrInscription,
+  getNostrBid,
   subscribeOrders,
   unsubscribeOrders,
 
@@ -186,8 +195,11 @@ export {
   getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
+  generateBidPSBT,
   generateDeezyPSBTListingForBuy,
+  generateDeezyPSBTListingForBid,
   getAvailableUtxosWithoutDummies,
+  getFundingUtxos,
   getOrderInformation,
   calculateRequiredFeeForBuy,
 

@@ -1,0 +1,42 @@
+/* By default, hide all buttons */
+.bid-wrapper .pd-react-area {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+/* Show button on hover */
+.bid-wrapper:hover .pd-react-area {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Using the class approach: */
+/* Show button for the bid-wrapper with the class .first-bid */
+.bid-wrapper.first-bid .pd-react-area {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Using the nth-child approach: */
+/* Make the button of the first .bid-wrapper visible by default */
+.rn-pd-content-area > .bid-wrapper:nth-child(2) .pd-react-area {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bid-wrapper,
+.rn-pd-content-area > .d-flex {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto; /* Distribute space for each column */
+  gap: 10px; /* Gap between grid items */
+}
+
+.pd-property-inner,
+.rn-pd-content-area > .d-flex > .flex-grow-1 {
+  display: flex;
+  justify-content: flex-start; /* left-align content within each grid item */
+  align-items: center;
+}

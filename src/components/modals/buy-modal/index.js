@@ -57,7 +57,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
-  const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
+  const feeRateOnChange = (evt) => setSendFeeRate(parseInt(evt.target.value));
 
   const populateDeezyPsbt = async () => {
     if (!deezyPsbtPopulate) {
@@ -68,7 +68,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         {
           psbt: nostr.content, // (hex or base64)
           ordinal_receive_address: ordinalsDestinationAddress,
-        }
+        },
       );
       setDeezyPsbtPopulate(data);
     }
@@ -113,7 +113,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
       if (dummyUtxos.length < 2) {
         throw new Error(
-          "No dummy UTXOs found. Please create them before continuing."
+          "No dummy UTXOs found. Please create them before continuing.",
         );
       }
 
@@ -200,7 +200,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         paymentUtxos: selectedUtxos,
         sellerSignedPsbt,
         psbt: deezyPsbt,
-        id,
         selectedFeeRate: sendFeeRate,
       });
 
@@ -219,7 +218,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         {
           psbt: signedPsbt, // (hex or base64)
           id,
-        }
+        },
       );
 
       // Step 5, invalidate outputs data to avoid missing outputs
@@ -323,7 +322,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 {Boolean(nostr?.value) && Boolean(bitcoinPrice) && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,
-                    bitcoinPrice
+                    bitcoinPrice,
                   )}`}</span>
                 )}
                 <span>{sendFeeRate} sat/vbyte</span>

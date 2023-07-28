@@ -1,11 +1,12 @@
 /* eslint-disable */
 const path = require("path");
 
-// const withBundleAnalyzer = require("@next/bundle-analyzer")({
-//   enabled: process.env.ANALYZE === "true",
-// });
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+// import { Wasm as WasmIntegration } from "@sentry/wasm";
 
-const moduleExports = {
+const t = {
   reactStrictMode: false,
   sassOptions: {
     includePaths: [path.join(__dirname, "./src/assets/scss")],
@@ -46,7 +47,17 @@ const nextConfig = {
     disableServerWebpackPlugin: true,
     disableClientWebpackPlugin: true,
   },
-  ...moduleExports,
+};
+const sentryWebpackPluginOptions = {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  // Suppresses source map uploading logs during build
+  silent: true,
+
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: "deezy-io",
+  project: "deezy-place",
 };
 
-module.exports = withSentryConfig(nextConfig);
+module.exports = withSentryConfig(t, sentryWebpackPluginOptions);

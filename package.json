@@ -11,6 +11,7 @@
     "@scure/base": "^1.1.1",
     "@scure/btc-signer": "^1.0.1",
     "@sentry/nextjs": "^7.60.1",
+    "@sentry/wasm": "^7.60.1",
     "@stacks/common": "^6.5.5",
     "axios": "^1.4.0",
     "bip32": "^4.0.0",

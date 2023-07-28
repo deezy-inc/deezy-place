@@ -4,6 +4,7 @@ const path = require("path");
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
+import { Wasm as WasmIntegration } from "@sentry/wasm";
 
 module.exports = withBundleAnalyzer({
   reactStrictMode: false,
@@ -41,17 +42,11 @@ module.exports = withBundleAnalyzer({
 
 // Injected content via Sentry wizard below
 const { withSentryConfig } = require("@sentry/nextjs");
-const nextConfig = {};
-const sentryWebpackPluginOptions = {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  // Suppresses source map uploading logs during build
-  silent: true,
-
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: "deezy-io",
-  project: "deezy-place",
+const nextConfig = {
+  sentry: {
+    disableServerWebpackPlugin: true,
+    disableClientWebpackPlugin: true,
+  },
 };
 
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+module.exports = withSentryConfig(nextConfig);

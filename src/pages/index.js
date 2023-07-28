@@ -41,6 +41,15 @@ const App = () => {
           <NostrLive type="bidding" />
           <NostrLive />
           {userLoggedIn && <OrdinalsArea />}
+
+          <button
+            type="button"
+            onClick={() => {
+              throw new Error("Sentry Frontend Error on cloud");
+            }}
+          >
+            Throw error
+          </button>
         </main>
 
         <Footer />

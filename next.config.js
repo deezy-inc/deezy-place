@@ -1,11 +1,11 @@
 /* eslint-disable */
 const path = require("path");
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
+// const withBundleAnalyzer = require("@next/bundle-analyzer")({
+//   enabled: process.env.ANALYZE === "true",
+// });
 
-const moduleExports = withBundleAnalyzer({
+const moduleExports = {
   reactStrictMode: false,
   sassOptions: {
     includePaths: [path.join(__dirname, "./src/assets/scss")],
@@ -37,7 +37,7 @@ const moduleExports = withBundleAnalyzer({
   env: {
     IS_TESTNET: process.env.IS_TESTNET || false,
   },
-});
+};
 
 // Injected content via Sentry wizard below
 const { withSentryConfig } = require("@sentry/nextjs");

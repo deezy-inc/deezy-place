@@ -5,7 +5,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
-module.exports = withBundleAnalyzer({
+const moduleExports = withBundleAnalyzer({
   reactStrictMode: false,
   sassOptions: {
     includePaths: [path.join(__dirname, "./src/assets/scss")],
@@ -46,6 +46,7 @@ const nextConfig = {
     disableServerWebpackPlugin: true,
     disableClientWebpackPlugin: true,
   },
+  ...moduleExports,
 };
 
 module.exports = withSentryConfig(nextConfig);

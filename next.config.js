@@ -42,7 +42,6 @@ module.exports = withBundleAnalyzer({
 // Injected content via Sentry wizard below
 const { withSentryConfig } = require("@sentry/nextjs");
 const nextConfig = {
-  disableServerWebpackPlugin: true,
   hideSourceMaps: true,
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/

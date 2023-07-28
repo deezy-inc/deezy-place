@@ -60,4 +60,6 @@ const sentryWebpackPluginOptions = {
   project: "deezy-place",
 };
 
+console.log("sentryWebpackPluginOptions", sentryWebpackPluginOptions);
+
 module.exports = withSentryConfig(t, sentryWebpackPluginOptions);

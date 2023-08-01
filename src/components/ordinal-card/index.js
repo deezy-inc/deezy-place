@@ -16,10 +16,6 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
   ssr: false,
 });
 
-const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
-  ssr: false,
-});
-
 const OrdinalCard = ({
   overlay,
   price,
@@ -36,15 +32,17 @@ const OrdinalCard = ({
     ? `/inscription/${utxo?.inscriptionId}`
     : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
 
-    console.log(utxo);
+
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
       <Anchor className="logo-dark" path={utxo?.content ? path : null}>
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
           <div className="card-thumbnail">
             <InscriptionPreview utxo={utxo} />
-            {utxo?.auction?.endDate && (
-              <CountdownTimer time={utxo.auction.endDate} />
+            {utxo?.auction && (
+              <div className="card-tag">
+                <p>Live Auction</p>
+              </div>
             )}
           </div>
           <div className="inscription-details-area">

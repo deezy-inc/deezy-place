@@ -108,6 +108,22 @@
         }
     }
 
+    .card-tag {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        background: var(--color-primary);
+        box-shadow: 0 0 6px var(--color-primary);
+
+        p {
+            color: #032416;
+            font-size: 12px;
+            border-radius: 4px;
+            padding: 4px 8px 4px 8px;
+            font-weight: 700;
+        }
+    }
+
     .card-thumbnail {
         overflow: hidden;
         border-radius: 5px;

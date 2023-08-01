@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { getCollection, getCollectionInscriptions } from "@services/nosft";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 const Inscription = () => {
   const walletState = useWalletState();
@@ -21,9 +22,12 @@ const Inscription = () => {
   const headerHeight = useHeaderHeight(elementRef);
 
   const [collection, setCollection] = useState({});
+  const [collectionInfo, setCollectionInfo] = useState();
 
   useEffect(() => {
     if (!slug) return;
+    const key = `${LocalStorageKeys.COLLECTION_INFO}:${slug}`;
+
     const fetchCollection = async () => {
       const collectionData = await getCollection(slug);
 
@@ -55,8 +59,16 @@ const Inscription = () => {
       collectionData.inscriptions = collectionInscriptions;
       collectionData.links = links;
 
+      LocalStorage.set(key, collectionData);
+      setCollectionInfo(collectionData);
+
       setCollection(collectionData);
     };
+
+    const collectionInfoData = LocalStorage.get(key);
+    if (collectionInfoData) {
+      setCollectionInfo(collectionInfoData);
+    }
 
     fetchCollection();
   }, [slug]);
@@ -67,9 +79,9 @@ const Inscription = () => {
         <SEO pageTitle={`${collection?.name ? collection.name : ""} Collection`} />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
+          {collectionInfo && <CollectionInfo collection={collectionInfo} />}
           {collection && (
             <>
-              <CollectionInfo collection={collection} />
               <CollectionLive collection={collection} />
               <Collection collection={collection} />
             </>

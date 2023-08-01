@@ -2,8 +2,9 @@
 import PropTypes from "prop-types";
 import { useWallet } from "@context/wallet-context";
 import Button from "@ui/button";
+import { satToBtc } from "@services/nosft";
 
-const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
+const ProductBid = ({ price, utxo, confirmed, date, type }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
   function renderMainAction(actionType) {
@@ -59,15 +60,30 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
   const minted = !confirmed
     ? "Unconfirmed"
     : new Date(date * 1000).toLocaleString();
-  const sats = `${price.amount} ${price.currency}`;
-  const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
+  const priceAmount = price?.amount?.replace(/,/g, "") || 0;
+  const btcValue = satToBtc(Number(priceAmount));
+  const textPrice = type === "buy" ? `Listed for: ${btcValue}` : btcValue;
+
+  const renderLabelInfo = () => {
+    if (type === "buy") {
+      return (
+        <>
+          <img
+            src="/images/logo/bitcoin.png"
+            height={19}
+            alt={`${textPrice} btc`}
+          />
+          <p>{btcValue}</p>
+        </>
+      );
+    }
+
+    return <span className="without-price">{minted}</span>;
+  };
 
   return (
     <div className="bid-react-area">
-      <div className="last-bid">
-        {utxo.name || textPrice}
-        <span className="minted">{` ${minted}`}</span>
-      </div>
+      <div className="last-bid">{renderLabelInfo()}</div>
 
       {renderMainAction(type)}
     </div>
@@ -83,7 +99,6 @@ ProductBid.propTypes = {
   confirmed: PropTypes.bool,
   date: PropTypes.number,
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]).isRequired,
-  onSale: PropTypes.func,
 };
 
 export default ProductBid;

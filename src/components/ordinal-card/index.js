@@ -31,6 +31,7 @@ const OrdinalCard = ({
     ? `/inscription/${utxo?.inscriptionId}`
     : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
 
+    console.log(utxo);
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
       <Anchor className="logo-dark" path={utxo?.content ? path : null}>
@@ -46,7 +47,7 @@ const OrdinalCard = ({
           <div className="inscription-details-area">
             {utxo && (
               <div className="inscription-number">
-                {utxo.inscriptionId ? `#${utxo.num}` : "\u00A0"}
+                {utxo?.meta?.name || shortenStr(utxo.inscriptionId)}
               </div>
             )}
             {!utxo && <Skeleton width={50} />}

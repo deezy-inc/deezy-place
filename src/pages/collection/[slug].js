@@ -64,7 +64,7 @@ const Inscription = () => {
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
-        <SEO pageTitle={`${slug} collection`} />
+        <SEO pageTitle={`${collection?.name ? collection.name : ""} Collection`} />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           {collection && (

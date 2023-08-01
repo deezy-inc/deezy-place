@@ -169,6 +169,13 @@
         color: var(--color-body);
     }
 
+    .without-price {
+        font-size: 14px;
+        display: block;
+        color: var(--color-body);
+        display: flex;
+    }
+
     .bid-react-area {
         display: flex;
         justify-content: space-between;
@@ -176,8 +183,18 @@
         align-items: center;
 
         .last-bid {
-            font-weight: 500;
-            color: var(--color-primary);
+            p {
+                font-weight: 500;
+                color: var(--color-primary);
+                display: inline;
+            }
+
+            img {
+                margin-right: 4px;
+                margin-bottom: 4px;
+                height: 22px;
+                display: inline;
+              }
         }
 
         .btn-small {

@@ -39,14 +39,19 @@ function useInscription(inscriptionId) {
     async () => {
       await fetchInscription();
     },
-    isPooling && currentInscriptionId ? delay : null
+    isPooling && currentInscriptionId ? delay : null,
   );
 
   useEffect(() => {
     if (!inscriptionId) return;
     console.log("[useInscription]", inscriptionId);
+    const initialLoad = async () => {
+      await fetchInscription();
+    };
+
     setCurrentInscriptionId(inscriptionId);
     setIsPooling(true);
+    initialLoad();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inscriptionId]);
 

@@ -16,10 +16,6 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
   ssr: false,
 });
 
-const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
-  ssr: false,
-});
-
 const OrdinalCard = ({
   overlay,
   price,
@@ -42,7 +38,9 @@ const OrdinalCard = ({
           <div className="card-thumbnail">
             <InscriptionPreview utxo={utxo} />
             {utxo?.auction?.endDate && (
-              <CountdownTimer time={utxo.auction.endDate} />
+              <div className="card-tag">
+                <p>Live Auction</p>
+              </div>
             )}
           </div>
           <div className="inscription-details-area">

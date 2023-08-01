@@ -209,7 +209,7 @@ const NostrLive = ({ className, space, type, address }) => {
               ))}
 
               {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
-                {showBuyModal && (
+                {showBuyModal && clickedUtxo && (
                   <BuyModal
                     show={showBuyModal}
                     handleModal={handleBuyModal}

@@ -332,7 +332,7 @@ const NostrLive = ({ className, space, type }) => {
         </div>
 
         {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
-          {showBuyModal && (
+          {showBuyModal && clickedUtxo && (
             <BuyModal
               show={showBuyModal}
               handleModal={handleBuyModal}

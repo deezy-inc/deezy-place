@@ -82,10 +82,7 @@ ProductBid.propTypes = {
   confirmed: PropTypes.bool,
   date: PropTypes.number,
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]).isRequired,
-<<<<<<< HEAD
   onClick: PropTypes.func,
-=======
->>>>>>> origin/main
 };
 
 export default ProductBid;

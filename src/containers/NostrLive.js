@@ -331,7 +331,7 @@ const NostrLive = ({ className, space, type }) => {
           </div>
         </div>
 
-        {!nostrOrdinalsAddress && <ConnectWallet cb={onWalletConnected} />}
+        {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
           {showBuyModal && (
             <BuyModal
               show={showBuyModal}

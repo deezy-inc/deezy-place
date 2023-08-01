@@ -10,7 +10,7 @@ function useConnectWallet() {
   const [paymentAddress, setPaymentAddress] = useState("");
   const [walletName, setWalletName] = useState("");
 
-  const onConnectHandler = async (domain) => {
+  const onConnectHandler = async (domain, onConnected) => {
     const {
       ordinalsPublicKey: xOrdinalsPublicKey,
       paymentPublicKey: xPaymentPublicKey,
@@ -35,6 +35,10 @@ function useConnectWallet() {
     setWalletName(xWalletName);
     setOrdinalsPublicKey(xOrdinalsPublicKey);
     setPaymentPublicKey(xPaymentPublicKey);
+
+    if (onConnected) {
+      onConnected();
+    }
   };
 
   const onDisconnectHandler = async () => {

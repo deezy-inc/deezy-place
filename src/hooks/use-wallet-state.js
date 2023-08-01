@@ -25,8 +25,8 @@ export const useWalletState = () => {
     setShowConnectModal(true);
   };
 
-  const onConnectHandler = (domain) => {
-    onConnect(domain);
+  const onConnectHandler = (domain, callback) => {
+    onConnect(domain, callback);
     onHideConnectModal();
   };
 

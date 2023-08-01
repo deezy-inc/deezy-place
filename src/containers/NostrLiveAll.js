@@ -21,47 +21,11 @@ import {
   DEFAULT_UTXO_OPTIONS,
   HIDE_TEXT_UTXO_OPTION,
 } from "@lib/constants.config";
-import Slider, { SliderItem } from "@ui/slider";
+import { useWallet } from "@context/wallet-context";
+import ConnectWallet from "@components/modals/connect-wallet";
+import BuyModal from "@components/modals/buy-modal";
 
 const MAX_ONSALE = 200;
-
-const SliderOptions = {
-  infinite: true,
-  slidesToShow: 5,
-  slidesToScroll: 1,
-  autoplay: true,
-  speed: 4000,
-  responsive: [
-    {
-      breakpoint: 1399,
-      settings: {
-        slidesToShow: 4,
-        slidesToScroll: 1,
-      },
-    },
-    {
-      breakpoint: 1200,
-      settings: {
-        slidesToShow: 3,
-        slidesToScroll: 1,
-      },
-    },
-    {
-      breakpoint: 992,
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 1,
-      },
-    },
-    {
-      breakpoint: 576,
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1,
-      },
-    },
-  ],
-};
 
 export const updateInscriptions = (acc, curr) => {
   const existingIndex = acc.findIndex(
@@ -80,23 +44,47 @@ export const updateInscriptions = (acc, curr) => {
 };
 
 const NostrLive = ({ className, space, type, address }) => {
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
   const orderSubscriptionRef = useRef(null);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
   const [refreshHack, setRefreshHack] = useState(false);
-
   const [activeSort, setActiveSort] = useState("date");
   const [sortAsc, setSortAsc] = useState(false);
   const [utxosReady, setUtxosReady] = useState(false);
+  const [clickedUtxo, setClickedUtxo] = useState(null);
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
   const [utxosType, setUtxosType] = useState(
     type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
   );
-  const isLive = type === "live";
+
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
+
+  function onWalletConnected() {
+    setShowBuyModal(true);
+  }
+
+  function onCardClicked(id) {
+    const inscriptionClicked = openOrders.find((i) => i.inscriptionId === id);
+    if (!inscriptionClicked) {
+      return;
+    }
+
+    setClickedUtxo(inscriptionClicked);
+
+    if (!nostrOrdinalsAddress) {
+      onShowConnectModal();
+    } else {
+      setShowBuyModal(true);
+    }
+  }
 
   useMemo(() => {
     const filteredUtxos = applyFilters({
@@ -139,6 +127,7 @@ const NostrLive = ({ className, space, type, address }) => {
       .subscribe(async (event) => {
         try {
           const inscription = await getInscriptionData(event);
+          inscription.nostr = {...event};
 
           const isSpentUtxo = await isSpent(inscription);
           if (isSpentUtxo.spent) {
@@ -214,9 +203,24 @@ const NostrLive = ({ className, space, type, address }) => {
                     authors={collectionAuthor}
                     utxo={inscription}
                     onSale={handleRefreshHack}
+                    onClick={onCardClicked}
                   />
                 </div>
               ))}
+
+              {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
+                {showBuyModal && (
+                  <BuyModal
+                    show={showBuyModal}
+                    handleModal={handleBuyModal}
+                    utxo={clickedUtxo}
+                    onSale={() => {
+                      window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
+                    }}
+                    nostr={clickedUtxo.nostr}
+                  />
+              )}
+
               {filteredOwnedUtxos.length === 0 && (
                 <div className="col-12">
                   <div className="text-center">

@@ -4,7 +4,8 @@ import Modal from "react-bootstrap/Modal";
 import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
 
-const ConnectWallet = () => {
+// Gets the callback function from the parent component to notify when the wallet get's connecteds
+const ConnectWallet = ({ callback }) => {
   const {
     ethProvider,
     onConnectHandler: onConnect,
@@ -19,7 +20,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("nosft.xyz");
+        onConnect("nosft.xyz", callback);
       },
     },
     {
@@ -28,7 +29,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("ordswap.io");
+        onConnect("ordswap.io", callback);
       },
     },
     {
@@ -37,7 +38,7 @@ const ConnectWallet = () => {
       ethereum: true,
 
       onClick: () => {
-        onConnect("generative.xyz");
+        onConnect("generative.xyz", callback);
       },
     },
     {
@@ -45,7 +46,7 @@ const ConnectWallet = () => {
       image: "/images/logo/unisat.png",
       provider: "unisat",
       onClick: () => {
-        onConnect("unisat.io");
+        onConnect("unisat.io", callback);
       },
     },
     {
@@ -53,7 +54,7 @@ const ConnectWallet = () => {
       image: "/images/logo/alby.svg",
 
       onClick: () => {
-        onConnect("alby");
+        onConnect("alby", callback);
       },
     },
     {
@@ -61,7 +62,7 @@ const ConnectWallet = () => {
       image: "/images/logo/xverse.png",
       provider: "xverse",
       onClick: () => {
-        onConnect("xverse");
+        onConnect("xverse", callback);
       },
     },
   ];
@@ -131,5 +132,8 @@ const ConnectWallet = () => {
   );
 };
 
-ConnectWallet.propTypes = {};
+ConnectWallet.propTypes = {
+  callback: PropTypes.func,
+};
+
 export default ConnectWallet;

@@ -11,7 +11,7 @@ function useConnectWallet() {
   const [paymentAddress, setPaymentAddress] = useState("");
   const [walletName, setWalletName] = useState("");
 
-  const onConnectHandler = async (domain) => {
+  const onConnectHandler = async (domain, onConnected) => {
     try {
       const {
         ordinalsPublicKey: xOrdinalsPublicKey,
@@ -37,9 +37,14 @@ function useConnectWallet() {
       setWalletName(xWalletName);
       setOrdinalsPublicKey(xOrdinalsPublicKey);
       setPaymentPublicKey(xPaymentPublicKey);
-    } catch (e) {
+
+      if (onConnected) {
+        onConnected();
+      }
+    } catch(e) {
       toast.error(e.response?.data?.message || e.message);
     }
+
   };
 
   const onDisconnectHandler = async () => {

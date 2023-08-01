@@ -29,6 +29,7 @@ const OrdinalCard = ({
   confirmed,
   date,
   onSale,
+  onClick,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
   const path = utxo?.inscriptionId
@@ -94,7 +95,7 @@ const OrdinalCard = ({
               confirmed={confirmed}
               date={date}
               type={type}
-              onSale={onSale}
+              onClick={onClick}
             />
           )}
           {!utxo && (
@@ -128,6 +129,7 @@ OrdinalCard.propTypes = {
   date: PropTypes.number,
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]),
   onSale: PropTypes.func,
+  onClick: PropTypes.func,
 };
 
 OrdinalCard.defaultProps = {

@@ -141,6 +141,7 @@ const ProductDetailsArea = memo(
     const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
+      if (!nostrOrdinalsAddress || !inscription) return;
       setIsOwner(
         nostrOrdinalsAddress &&
           inscription.owner &&

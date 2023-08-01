@@ -1,5 +1,6 @@
 const LocalStorageKeys = {
     INSCRIPTIONS_OUTPOINT: "INSCRIPTION_OUTPOINT",
+    COLLECTION_INFO: "COLLECTION_INFO",
 };
 
 const LocalStorage = {

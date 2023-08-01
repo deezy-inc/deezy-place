@@ -59,8 +59,8 @@ const Inscription = () => {
       collectionData.inscriptions = collectionInscriptions;
       collectionData.links = links;
 
-      LocalStorage.set(key, collectionInfoData);
-      setCollectionInfo(collectionInfoData);
+      LocalStorage.set(key, collectionData);
+      setCollectionInfo(collectionData);
 
       setCollection(collectionData);
     };

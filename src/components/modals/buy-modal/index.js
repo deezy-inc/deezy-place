@@ -120,6 +120,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       setSelectedUtxos(_selectedUtxos);
     } catch (e) {
       console.error(e);
+      toast.error(e.message);
       setSelectedUtxos([]);
       throw e;
     }
@@ -137,6 +138,11 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     }
     setOrdinalsDestinationAddress(newaddr);
   };
+
+  useEffect(() => {
+    if (!nostrOrdinalsAddress || ordinalsDestinationAddress) return;
+    setOrdinalsDestinationAddress(nostrOrdinalsAddress);
+  }, [nostrOrdinalsAddress]);
 
   useEffect(() => {
     const fetchDummies = async () => {
@@ -248,7 +254,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const renderBody = () => {
-    if (!showDiv) {
+    if (!showDiv && buyTxId) {
       return (
         <div className="show-animated">
           <TransactionSent

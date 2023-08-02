@@ -1,5 +1,4 @@
 /* eslint-disable react/no-array-index-key */
-
 import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
@@ -26,6 +25,10 @@ import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
+
+import { useWallet } from "@context/wallet-context";
+import ConnectWallet from "@components/modals/connect-wallet";
+import BuyModal from "@components/modals/buy-modal";
 
 export const updateInscriptions = (acc, curr) => {
   const existingIndex = acc.findIndex(
@@ -107,6 +110,7 @@ const useOpenOrdersSubscription = (observable, setter, initialData) => {
 };
 
 const NostrLive = ({ className, space, type }) => {
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const [openTextOrders, setTextOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
@@ -117,8 +121,41 @@ const NostrLive = ({ className, space, type }) => {
   const fetchLimit = useRef(MAX_LIMIT_ONSALE);
   const processedOrders = useRef(0);
   const fetchIds = useRef([]);
-
+  const [clickedUtxo, setClickedUtxo] = useState(null);
   const [isWindowFocused, setIsWindowFocused] = useState(true);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+
+  // We can improve how we handle the orders,
+  // but for now we will just concat the text orders with the open orders
+  const orders = useMemo(() => {
+    if (openOrders.length < MIN_ONSALE) {
+      return openOrders.concat(openTextOrders).slice(0, MIN_ONSALE).reverse();
+    }
+    return openOrders.reverse();
+  }, [openOrders, openTextOrders]);
+
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
+
+  function onWalletConnected() {
+    setShowBuyModal(true);
+  }
+
+  function onCardClicked(id) {
+    const inscriptionClicked = orders.find((i) => i.inscriptionId === id);
+    if (!inscriptionClicked) {
+      return;
+    }
+
+    setClickedUtxo(inscriptionClicked);
+
+    if (!nostrOrdinalsAddress) {
+      onShowConnectModal();
+    } else {
+      setShowBuyModal(true);
+    }
+  }
 
   const handleRefreshHack = () => {
     setRefreshHack(!refreshHack);
@@ -177,6 +214,7 @@ const NostrLive = ({ className, space, type }) => {
 
         try {
           const inscription = await getInscriptionData(event);
+          inscription.nostr = {...event};
 
           const isSpentUtxo = await isSpent(inscription);
           if (isSpentUtxo.spent) {
@@ -236,14 +274,7 @@ const NostrLive = ({ className, space, type }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // We can improve how we handle the orders,
-  // but for now we will just concat the text orders with the open orders
-  const orders = useMemo(() => {
-    if (openOrders.length < MIN_ONSALE) {
-      return openOrders.concat(openTextOrders).slice(0, MIN_ONSALE).reverse();
-    }
-    return openOrders.reverse();
-  }, [openOrders, openTextOrders]);
+
 
   const renderCards = () => {
     if (orders.length) {
@@ -261,6 +292,7 @@ const NostrLive = ({ className, space, type }) => {
             authors={collectionAuthor}
             utxo={utxo}
             onSale={handleRefreshHack}
+            onClick={onCardClicked}
           />
         </SliderItem>
       ));
@@ -273,12 +305,6 @@ const NostrLive = ({ className, space, type }) => {
           : "No ordinals for sale yet."}
       </>
     );
-
-    // return [...Array(5)].map((_, index) => (
-    //   <SliderItem key={index} className="ordinal-slide">
-    //     <OrdinalCard overlay />
-    //   </SliderItem>
-    // ));
   };
 
   return (
@@ -305,6 +331,19 @@ const NostrLive = ({ className, space, type }) => {
           </div>
         </div>
 
+        {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
+          {showBuyModal && clickedUtxo && (
+            <BuyModal
+              show={showBuyModal}
+              handleModal={handleBuyModal}
+              utxo={clickedUtxo}
+              onSale={() => {
+                window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
+              }}
+              nostr={clickedUtxo.nostr}
+            />
+          )}
+
         <div className="row">
           <div className="col-lg-12">
             <Slider options={SliderOptions} className="slick-gutter-15">
@@ -316,6 +355,7 @@ const NostrLive = ({ className, space, type }) => {
     </div>
   );
 };
+
 NostrLive.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),

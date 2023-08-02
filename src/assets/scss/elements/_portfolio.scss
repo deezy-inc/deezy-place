@@ -108,6 +108,22 @@
         }
     }
 
+    .card-tag {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        background: var(--color-primary);
+        box-shadow: 0 0 6px var(--color-primary);
+
+        p {
+            color: #032416;
+            font-size: 12px;
+            border-radius: 4px;
+            padding: 4px 8px 4px 8px;
+            font-weight: 700;
+        }
+    }
+
     .card-thumbnail {
         overflow: hidden;
         border-radius: 5px;
@@ -169,6 +185,13 @@
         color: var(--color-body);
     }
 
+    .without-price {
+        font-size: 14px;
+        display: block;
+        color: var(--color-body);
+        display: flex;
+    }
+
     .bid-react-area {
         display: flex;
         justify-content: space-between;
@@ -176,8 +199,18 @@
         align-items: center;
 
         .last-bid {
-            font-weight: 500;
-            color: var(--color-primary);
+            p {
+                font-weight: 500;
+                color: var(--color-primary);
+                display: inline;
+            }
+
+            img {
+                margin-right: 4px;
+                margin-bottom: 4px;
+                height: 22px;
+                display: inline;
+              }
         }
 
         .btn-small {

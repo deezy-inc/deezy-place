@@ -23,14 +23,23 @@
   position: sticky;
 
   .rn-pd-thumbnail {
-    // padding: 15px;
     border-radius: 7px;
     border: 16px solid var(--background-color-1);
     min-width: 300px;
-    min-height: 310px;
+    min-height: 300px;
+
+    div:only-of-type {
+      margin-bottom: -7px;
+    }
 
     img {
       min-width: 100%;
+    }
+
+    iframe {
+      aspect-ratio: 1/1;
+      border: none;
+      box-sizing: border-box;
     }
   }
 

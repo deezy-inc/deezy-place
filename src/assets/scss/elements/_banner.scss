@@ -134,6 +134,13 @@
       justify-content: center;
     }
 
+    &.small {
+      img {
+        width: 108px;
+        height: 108px;
+      }
+    }
+
     img {
       box-shadow: 0 0 12px var(--color-primary);
       border-radius: 50%;

@@ -67,7 +67,8 @@ const SliderOptions = {
 // TODO: Make static view, inscriptions shouldn't change position on render
 export const updateInscriptions = (acc, curr) => {
   const existingIndex = acc.findIndex(
-    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
+    (item) =>
+      item.inscriptionId === curr.inscriptionId && item.num === curr.num,
   );
 
   if (existingIndex !== -1) {
@@ -97,7 +98,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
   const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
 
   const [utxosType, setUtxosType] = useState(
-    type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
+    type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION,
   );
   const isLive = type === "live";
 
@@ -150,7 +151,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
         for (let i = 0; i < totalInscriptions; i += chunkSize) {
           const inscriptionChunk = collection.inscriptions.slice(
             i,
-            i + chunkSize
+            i + chunkSize,
           );
 
           const inscriptionPromises = inscriptionChunk.map(
@@ -190,10 +191,11 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
               } catch (e) {
                 console.error(e);
               }
-            }
+            },
           );
 
           await Promise.all(inscriptionPromises);
+          setUtxosReady(true);
         }
       } catch (error) {
         console.error(error);
@@ -227,13 +229,17 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     };
   }
 
+  if (utxosReady && openOrders.length === 0) {
+    return <></>;
+  }
+
   return (
     <div
       id="your-collection"
       className={clsx(
         "rn-product-area",
         space === 1 && "rn-section-gapTop",
-        className
+        className,
       )}
     >
       <div className="container">
@@ -274,13 +280,6 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                 </div>
               ))}
 
-              {utxosReady &&
-                openOrders.length <= collection.inscriptions.length - 1 && (
-                  <div className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                    <OrdinalCard overlay />
-                  </div>
-                )}
-
               {filteredOwnedUtxos.length === 0 && (
                 <div className="col-12">
                   <div className="text-center">
@@ -291,7 +290,15 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
             </>
           )}
 
-          {(!utxosReady || openOrders.length === 0) && (
+          {utxosReady && openOrders.length === 0 && (
+            <div className="col-12">
+              <div className="text-center">
+                <h3>No items for sale yet</h3>
+              </div>
+            </div>
+          )}
+
+          {!utxosReady && (
             <Slider options={SliderOptions} className="slick-gutter-15">
               {[...Array(5)].map((_, index) => (
                 <SliderItem key={index} className="ordinal-slide">

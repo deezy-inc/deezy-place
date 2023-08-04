@@ -1,28 +1,26 @@
 /* eslint-disable react/no-array-index-key */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import { deepClone } from "@utils/methods";
+import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import {
-  getInscription,
   takeLatestInscription,
-  getNostrInscription,
-  isSpent as isInscriptionSpent,
+  getNostrInscriptions,
+  listAuctionInscriptions,
 } from "@services/nosft";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Subject } from "rxjs";
 import { scan } from "rxjs/operators";
-import OrdinalFilter from "@components/ordinal-filter";
-import OrdinalCard from "@components/ordinal-card";
+
+import OrdinalCard from "@components/collection-inscription";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import {
-  DEFAULT_UTXO_OPTIONS,
-  HIDE_TEXT_UTXO_OPTION,
-} from "@lib/constants.config";
+import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 import Slider, { SliderItem } from "@ui/slider";
 import { useWallet } from "@context/wallet-context";
+import ConnectWallet from "@components/modals/connect-wallet";
+import BuyModal from "@components/modals/buy-modal";
 
 const MAX_ONSALE = 200;
 
@@ -66,8 +64,12 @@ const SliderOptions = {
 
 // TODO: Make static view, inscriptions shouldn't change position on render
 export const updateInscriptions = (acc, curr) => {
+  if (!curr) {
+    return acc;
+  }
+
   const existingIndex = acc.findIndex(
-    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
+    (item) => item.id === curr.id && item.num === curr.num
   );
 
   if (existingIndex !== -1) {
@@ -78,29 +80,54 @@ export const updateInscriptions = (acc, curr) => {
     acc.push(curr);
   }
 
-  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
+  return acc.sort((a, b) => b.created - a.created).slice(0, MAX_ONSALE);
 };
 
-const CollectionOnSale = ({ className, space, type, collection }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+const CollectionOnSale = ({
+  className,
+  space,
+  type,
+  collection,
+  onDutchLoaded,
+}) => {
+  const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());
   const addSubscriptionRef = useRef(null);
-  const orderSubscriptionRef = useRef(null);
   const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
-  const [refreshHack, setRefreshHack] = useState(false);
-
   const [activeSort, setActiveSort] = useState();
   const [sortAsc, setSortAsc] = useState(false);
+
   const [utxosReady, setUtxosReady] = useState(false);
 
-  const defaultUtxosTypes = DEFAULT_UTXO_OPTIONS;
+  const [clickedUtxo, setClickedUtxo] = useState(null);
+  const [utxosType, setUtxosType] = useState("");
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
-  const [utxosType, setUtxosType] = useState(
-    type === "bidding" ? "" : HIDE_TEXT_UTXO_OPTION
-  );
-  const isLive = type === "live";
+  const handleBuyModal = () => {
+    setShowBuyModal((prev) => !prev);
+  };
 
+  function onWalletConnected() {
+    setShowBuyModal(true);
+  }
+
+  function onCardClicked(id) {
+    const inscriptionClicked = openOrders.find((i) => i.inscriptionId === id);
+    if (!inscriptionClicked) {
+      return;
+    }
+
+    setClickedUtxo(inscriptionClicked);
+
+    if (!nostrOrdinalsAddress) {
+      onShowConnectModal();
+    } else {
+      setShowBuyModal(true);
+    }
+  }
+
+  // TODO: Remove not, needed
   useMemo(() => {
     const filteredUtxos = applyFilters({
       utxos: openOrders,
@@ -111,10 +138,6 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     setFilteredOwnedUtxos(filteredUtxos);
   }, [openOrders, activeSort, sortAsc, utxosType]);
 
-  const handleRefreshHack = () => {
-    setRefreshHack(!refreshHack);
-  };
-
   const addNewOpenOrder = (order) => {
     addOpenOrder$.current.next(order);
     if (!utxosReady) {
@@ -122,19 +145,8 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
     }
   };
 
-  const getInscriptionData = useCallback(async (event) => {
-    const { inscription } = await getInscription(event.id);
-
-    const forSaleInscription = deepClone({
-      ...inscription,
-      ...event,
-    });
-
-    return forSaleInscription;
-  }, []);
-
   useEffect(() => {
-    if (!collection) {
+    if (!collection?.inscriptions?.length) {
       return;
     }
 
@@ -142,65 +154,114 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       .pipe(scan(updateInscriptions, openOrders))
       .subscribe(setOpenOrders);
 
-    const fetchInscriptions = async () => {
+    const fetchAuctions = async () => {
       try {
-        const chunkSize = 10;
-        const totalInscriptions = collection.inscriptions.length;
+        // TODO: Change to use by collection
+        const inscriptionsOnAuction = await listAuctionInscriptions(
+          collection.slug
+        );
 
+        const runningInscriptions = inscriptionsOnAuction.filter(
+          (i) => i.status === "RUNNING"
+        );
+
+        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
+          runningInscriptions.some((ni) => ni.inscriptionId === i.id)
+        );
+
+        const inscriptions = [];
+        for (const i of inscriptionsWithEvents) {
+          const auctionData = runningInscriptions.find(
+            (ni) => ni.inscriptionId === i.id
+          );
+
+          let nextPriceDrop;
+          const currentEvent = auctionData.metadata.find(
+            (m) => m.price === auctionData.currentPrice
+          );
+
+          const nostr = currentEvent.nostr;
+
+          if (!currentEvent.isLastEvent) {
+            nextPriceDrop = auctionData.metadata[currentEvent.index + 1];
+            // create a new date with tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            nextPriceDrop.scheduledTime = tomorrow.getTime();
+          }
+
+          inscriptions.push({
+            ...i,
+            inscriptionId: i.id,
+            auction: { ...auctionData, nextPriceDrop },
+            nostr,
+          });
+        }
+
+        for (const inscription of inscriptions) {
+          addNewOpenOrder(inscription);
+        }
+
+        onDutchLoaded?.();
+
+        setTimeout(() => {
+          fetchInscriptions();
+        }, 500);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const fetchInscriptions = async () => {
+      const chunkSize = 100;
+
+      const totalInscriptions = collection.inscriptions.length;
+
+      try {
+        const promises = [];
         for (let i = 0; i < totalInscriptions; i += chunkSize) {
           const inscriptionChunk = collection.inscriptions.slice(
             i,
             i + chunkSize
           );
+          promises.push(
+            getNostrInscriptions(inscriptionChunk.map((i) => i.id))
+          );
+        }
 
-          const inscriptionPromises = inscriptionChunk.map(
-            async (_inscription) => {
-              try {
-                const inscription = await getInscriptionData(_inscription);
+        const nostrInscriptionsChunks = await Promise.all(promises);
 
-                try {
-                  const nostrData = await getNostrInscription(inscription);
-                  if (!nostrData) {
-                    throw new Error("Nostr data not found");
-                  }
+        const nostrInscriptions = nostrInscriptionsChunks.flat();
 
-                  const { spent } = await isInscriptionSpent(inscription);
-                  if (spent) {
-                    throw new Error("Inscription is spent");
-                  }
+        const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
+          nostrInscriptions.some((ni) => ni.inscriptionId === i.id)
+        );
 
-                  inscription.nostr = nostrData;
-                  inscription.isOwner =
-                    nostrOrdinalsAddress &&
-                    inscription.owner &&
-                    nostrOrdinalsAddress === inscription.owner;
-
-                  if (inscription.isOwner) {
-                    inscription.actionType = "sell";
-                  } else if (!inscription.isOwner && inscription.nostr) {
-                    inscription.actionType = "buy";
-                  } else {
-                    inscription.actionType = "view";
-                  }
-
-                  addNewOpenOrder(inscription);
-                } catch (e) {
-                  console.error(e);
-                }
-              } catch (e) {
-                console.error(e);
-              }
-            }
+        const inscriptionPromises = inscriptionsWithEvents.map((i) => {
+          const nostrInscription = nostrInscriptions.find(
+            (ni) => ni.inscriptionId === i.id
           );
 
-          await Promise.all(inscriptionPromises);
+          return {
+            ...i,
+            inscriptionId: i.id,
+            nostr: nostrInscription,
+          };
+        });
+
+        const inscriptions = await Promise.all(inscriptionPromises);
+
+        for (const inscription of inscriptions) {
+          addNewOpenOrder(inscription);
         }
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchInscriptions();
+    fetchAuctions();
+    // fetchInscriptions();
 
     return () => {
       try {
@@ -209,29 +270,29 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
       } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collection, nostrOrdinalsAddress]);
+  }, [collection?.inscriptions, nostrOrdinalsAddress]);
 
-  const getTitle = () => {
-    return "On Sale";
-  };
-
-  const title = getTitle();
-  let author = collectionAuthor;
-  if (collection) {
+  let { author: name, slug, icon } = collectionAuthor || {};
+  if (name) {
     author = {
-      name: collection.author,
-      slug: collection.slug,
+      name,
+      slug,
       image: {
-        src: collection.icon,
+        src: icon,
       },
     };
   }
 
+  if (!openOrders.length) {
+    return <></>;
+  }
+
   return (
     <div
-      id="your-collection"
+      id="collection-section"
       className={clsx(
         "rn-product-area",
+        // "upToDown",
         space === 1 && "rn-section-gapTop",
         className
       )}
@@ -241,7 +302,7 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
               className="mb--0 live-title"
-              {...{ title }}
+              {...{ title: "On Sale" }}
               isLoading={!utxosReady}
             />
           </div>
@@ -257,29 +318,12 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
                 >
                   <OrdinalCard
                     overlay
-                    price={{
-                      amount:
-                        inscription?.nostr?.value?.toLocaleString("en-US") ||
-                        inscription?.value?.toLocaleString("en-US"),
-                      currency: "Sats",
-                    }}
-                    type={inscription.actionType}
-                    confirmed
-                    date={inscription.created}
-                    authors={[author]}
-                    utxo={inscription}
-                    onSale={handleRefreshHack}
-                    collection={collection}
+                    inscription={inscription}
+                    auction={inscription.auction}
+                    onClick={onCardClicked}
                   />
                 </div>
               ))}
-
-              {utxosReady &&
-                openOrders.length <= collection.inscriptions.length - 1 && (
-                  <div className="col-5 col-lg-4 col-md-6 col-sm-6 col-12">
-                    <OrdinalCard overlay />
-                  </div>
-                )}
 
               {filteredOwnedUtxos.length === 0 && (
                 <div className="col-12">
@@ -300,6 +344,19 @@ const CollectionOnSale = ({ className, space, type, collection }) => {
               ))}
             </Slider>
           )}
+
+          {!nostrOrdinalsAddress && <ConnectWallet cb={onWalletConnected} />}
+          {showBuyModal && (
+            <BuyModal
+              show={showBuyModal}
+              handleModal={handleBuyModal}
+              utxo={clickedUtxo}
+              onSale={() => {
+                window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
+              }}
+              nostr={clickedUtxo.nostr}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -311,6 +368,7 @@ CollectionOnSale.propTypes = {
   space: PropTypes.oneOf([1, 2]),
   type: PropTypes.oneOf(["live", "bidding", "my-bidding"]),
   collection: PropTypes.any,
+  onDutchLoaded: PropTypes.func,
 };
 
 CollectionOnSale.defaultProps = {

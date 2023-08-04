@@ -38,6 +38,7 @@ const {
   publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
+  getNostrInscriptions,
   getLatestNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
@@ -48,6 +49,8 @@ const {
   getAuctionByInscription,
   createAuction,
   cancelAuction,
+  listAuctionInscriptions,
+  getAuctionByCollection,
   subscribeMyAuctions,
 } = nosft.auction;
 
@@ -165,6 +168,7 @@ export {
   publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
+  getNostrInscriptions,
   getLatestNostrInscription,
   subscribeOrders,
   unsubscribeOrders,
@@ -174,6 +178,8 @@ export {
   getAuctionByInscription,
   createAuction,
   cancelAuction,
+  listAuctionInscriptions,
+  getAuctionByCollection,
   subscribeMyAuctions,
 
   // open ordex

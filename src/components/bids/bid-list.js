@@ -30,12 +30,12 @@ function timeAgo(date) {
 
 const AcceptBidButton = ({ bid, onTakeBid, isOnAcceptBid }) => (
   <button
+    disabled={isOnAcceptBid}
     onClick={() => onTakeBid(bid)}
     className="pd-react-area btn-transparent"
     type="button"
   >
     <div className="action">
-      {/* <i className="feather-check" /> */}
       <span>Accept Bid</span>
     </div>
   </button>
@@ -72,7 +72,7 @@ const Bid = ({ bid, onTakeBid, isOnAcceptBid, className }) => (
 
 const BidList = ({ bids, onTakeBid, isOnAcceptBid }) => {
   return (
-    <div className="rn-pd-content-area">
+    <div className="rn-pd-content-area bidListComponent">
       <div className="d-flex justify-content-between align-items-center mb-3 text-uppercase">
         <div className="flex-grow-1">
           <span>Price</span>

@@ -8,13 +8,11 @@ import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
   generateDeezyPSBTListingForBuy,
-  getAvailableUtxosWithoutDummies,
   TESTNET,
-  NETWORK,
   shortenStr,
   satsToFormattedDollarString,
   signPsbtListingForBuy,
-  calculateRequiredFeeForBuy,
+  getFundingUtxos,
   fetchRecommendedFee,
   DEFAULT_FEE_RATE,
 } from "@services/nosft";
@@ -48,14 +46,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [ordinalsDestinationAddress, setOrdinalsDestinationAddress] =
     useState(nostrOrdinalsAddress);
   const [isOnBuy, setIsOnBuy] = useState(false);
-  const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
+  const [buyFeeRate, setBuyFeeRate] = useState(DEFAULT_FEE_RATE);
   const [buyTxId, setBuyTxId] = useState(null);
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
-  const feeRateOnChange = (evt) => setSendFeeRate(parseInt(evt.target.value));
+  const feeRateOnChange = (evt) => setBuyFeeRate(parseInt(evt.target.value));
 
   const getPopulatedDeezyPsbt = async () => {
     const { data } = await axios.post(
@@ -68,32 +66,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       },
     );
     return data;
-  };
-
-  const getSelectedUtxo = async (psbt) => {
-    if (!psbt || !nostrPaymentAddress) return;
-
-    const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
-      network: NETWORK,
-    });
-
-    const { selectedUtxos, dummyUtxos } = await getAvailableUtxosWithoutDummies(
-      {
-        address: nostrPaymentAddress,
-        price: nostr.value,
-        psbt: deezyPsbt,
-        fee: null,
-        selectedFeeRate: sendFeeRate,
-      },
-    );
-
-    if (dummyUtxos.length < 2) {
-      throw new Error(
-        "No dummy UTXOs found. Please create them before continuing.",
-      );
-    }
-
-    return selectedUtxos;
   };
 
   const onChangeAddress = async (evt) => {
@@ -112,7 +84,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   useEffect(() => {
     const fetchFee = async () => {
       const fee = await fetchRecommendedFee();
-      setSendFeeRate(fee);
+      setBuyFeeRate(fee);
     };
     fetchFee();
   }, [ordinalsDestinationAddress]);
@@ -123,12 +95,17 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     try {
       // Step 1 we call deezy api to get the psbt with the dummy utxos.
       const { psbt, id } = await getPopulatedDeezyPsbt();
-      const selectedUtxos = await getSelectedUtxo(psbt);
-      const sellerSignedPsbt = getPsbt(nostr.content);
+      const deezyPsbt = getPsbt(psbt);
 
-      const deezyPsbt = bitcoin.Psbt.fromHex(psbt, {
-        network: NETWORK,
+      const { selectedUtxos } = await getFundingUtxos({
+        address: nostrPaymentAddress,
+        price: nostr.value,
+        psbt: deezyPsbt,
+        selectedFeeRate: buyFeeRate,
       });
+
+      console.log("selectedUtxos", selectedUtxos);
+      alert("selectedUtxos");
 
       // Step 2, we add our payment data
       const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({
@@ -138,9 +115,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         ordinalsPublicKey,
         price: nostr.value,
         paymentUtxos: selectedUtxos,
-        sellerSignedPsbt,
+        sellerSignedPsbt: deezyPsbt,
         psbt: deezyPsbt,
-        selectedFeeRate: sendFeeRate,
+        selectedFeeRate: buyFeeRate,
       });
 
       // Step 3, we sign the psbt
@@ -239,7 +216,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                   <Form.Range
                     min="1"
                     max="100"
-                    defaultValue={sendFeeRate}
+                    defaultValue={buyFeeRate}
                     onChange={feeRateOnChange}
                   />
                 </InputGroup>
@@ -265,7 +242,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                     bitcoinPrice,
                   )}`}</span>
                 )}
-                <span>{sendFeeRate} sat/vbyte</span>
+                <span>{buyFeeRate} sat/vbyte</span>
               </div>
             </div>
           </div>

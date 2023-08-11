@@ -27,6 +27,8 @@ const App = () => {
 
   const content = normalizedData(homepageData?.content || []);
 
+  const userLoggedIn = ordinalsPublicKey && nostrOrdinalsAddress;
+
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
@@ -34,11 +36,11 @@ const App = () => {
 
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          <HeroArea data={content["hero-section"]} />
+          {!userLoggedIn && <HeroArea data={content["hero-section"]} />}
           <MainCollections />
           <NostrLive type="bidding" />
           <NostrLive />
-          {ordinalsPublicKey && nostrOrdinalsAddress && <OrdinalsArea />}
+          {userLoggedIn && <OrdinalsArea />}
         </main>
 
         <Footer />

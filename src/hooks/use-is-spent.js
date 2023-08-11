@@ -22,7 +22,7 @@ function useIsSpent(output) {
     async () => {
       await fetchIsSpent();
     },
-    isPooling && currentOutput ? delay : null
+    isPooling && currentOutput ? delay : null,
   );
 
   useEffect(() => {

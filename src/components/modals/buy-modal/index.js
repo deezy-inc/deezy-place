@@ -194,7 +194,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   };
 
   const renderBody = () => {
-    if (!showDiv) {
+    if (!showDiv && buyTxId) {
       return (
         <div className="show-animated">
           <TransactionSent

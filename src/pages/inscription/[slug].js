@@ -49,24 +49,14 @@ const Inscription = () => {
           style={{ paddingTop: headerHeight }}
           className="d-flex align-items-center justify-content-center"
         >
-          {inscription && (
-            <ProductDetailsArea
-              inscription={inscription}
-              isSpent={isInscriptionSpent}
-              collection={collection}
-              nostr={nostrData}
-              auction={auctionData}
-              onAction={onAction}
-            />
-          )}
-
-          {!inscription && (
-            <div className="inscription-area container">
-              <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-                <Skeleton count={20} />
-              </SkeletonTheme>
-            </div>
-          )}
+          <ProductDetailsArea
+            inscription={inscription}
+            isSpent={isInscriptionSpent}
+            collection={collection}
+            nostr={nostrData}
+            auction={auctionData}
+            onAction={onAction}
+          />
         </main>
 
         <Footer />

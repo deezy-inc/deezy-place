@@ -1,73 +1,72 @@
 /* eslint-disable react/forbid-prop-types */
 import PropTypes from "prop-types";
-import { useWallet } from "@context/wallet-context";
 import Button from "@ui/button";
+import { satToBtc } from "@services/nosft";
 
-const ProductBid = ({ price, utxo, confirmed, date, type, onSale }) => {
-  const { nostrOrdinalsAddress } = useWallet();
+const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
+  function onActionClicked(e) {
+    e.preventDefault();
+
+    if (onClick) {
+      onClick(utxo.inscriptionId);
+      return;
+    }
+
+    window.location.href = `/inscription/${utxo.inscriptionId}`;
+    return;
+  }
 
   function renderMainAction(actionType) {
-    if (!Boolean(nostrOrdinalsAddress)) {
-      actionType = "view";
-    }
-
+    let label = "View";
     switch (actionType) {
       case "buy":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Buy
-          </Button>
-        );
+        label = "Buy";
+        break;
       case "sell":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Sell
-          </Button>
-        );
+        label = "Sell";
+        break;
       case "send":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            Send
-          </Button>
-        );
+        label = "Send";
       case "view":
-        return (
-          <Button
-            path={`/inscription/${utxo.inscriptionId}`}
-            color="none"
-            size="small"
-          >
-            View
-          </Button>
-        );
+        label = "View";
       default:
-        return <span />;
+        label = "View";
     }
+
+    return (
+      <Button color="none" size="small" onClick={onActionClicked}>
+        {label}
+      </Button>
+    );
   }
+
   const minted = !confirmed
     ? "Unconfirmed"
     : new Date(date * 1000).toLocaleString();
-  const sats = `${price.amount} ${price.currency}`;
-  const textPrice = type === "buy" ? `Listed for: ${sats}` : sats;
+  const priceAmount = price?.amount?.replace(/,/g, "") || 0;
+  const btcValue = satToBtc(Number(priceAmount));
+  const textPrice = type === "buy" ? `Listed for: ${btcValue}` : btcValue;
+
+  const renderLabelInfo = () => {
+    if (type === "buy") {
+      return (
+        <>
+          <img
+            src="/images/logo/bitcoin.png"
+            height={19}
+            alt={`${textPrice} btc`}
+          />
+          <p>{btcValue}</p>
+        </>
+      );
+    }
+
+    return <span className="without-price">{minted}</span>;
+  };
 
   return (
     <div className="bid-react-area">
-      <div className="last-bid">
-        {utxo.name || textPrice}
-        <span className="minted">{` ${minted}`}</span>
-      </div>
+      <div className="last-bid">{renderLabelInfo()}</div>
 
       {renderMainAction(type)}
     </div>
@@ -83,7 +82,7 @@ ProductBid.propTypes = {
   confirmed: PropTypes.bool,
   date: PropTypes.number,
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]).isRequired,
-  onSale: PropTypes.func,
+  onClick: PropTypes.func,
 };
 
 export default ProductBid;

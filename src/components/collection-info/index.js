@@ -10,7 +10,7 @@ const CollectionInfo = ({ collection }) => {
         <div className="container">
           <div className="row row-reverce-sm align-items-center">
             <div className="col-sm-6">
-              <div className="slider-thumbnail mb--30">
+              <div className="slider-thumbnail small mb--30">
                 {collection?.icon && (
                   <Image
                     src={collection.icon}
@@ -67,7 +67,7 @@ CollectionInfo.propTypes = {
       PropTypes.shape({
         name: PropTypes.string,
         url: PropTypes.string,
-      })
+      }),
     ),
   }),
 };

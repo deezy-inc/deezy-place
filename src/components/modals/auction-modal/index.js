@@ -307,6 +307,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         utxoNum: utxo.num,
         utxoCreatedAt: utxo.created,
         inscriptionId: utxo.inscriptionId,
+        collection: utxo.collection?.slug,
       };
       const auction = await createAuction(dutchAuction);
       console.log({ auction });

@@ -182,7 +182,7 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
         </h3>
       </Modal.Header>
       <Modal.Body>
-        <p>You are about to Bid this Ordinal</p>
+        <p>You are about to Bid on this Ordinal</p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>

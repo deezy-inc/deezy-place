@@ -104,9 +104,6 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         selectedFeeRate: buyFeeRate,
       });
 
-      console.log("selectedUtxos", selectedUtxos);
-      alert("selectedUtxos");
-
       // Step 2, we add our payment data
       const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({
         paymentAddress: nostrPaymentAddress,

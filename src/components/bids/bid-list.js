@@ -2,6 +2,7 @@ import React from "react";
 import { toBTC } from "@containers/product-details";
 import { shortenStr } from "@services/nosft";
 import clsx from "clsx";
+import { TailSpin } from "react-loading-icons";
 
 function timeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
@@ -78,19 +79,21 @@ const BidList = ({ bids, onTakeBid, isOnAcceptBid }) => {
           <span>Price</span>
         </div>
         <div className="flex-grow-1">
-          <span>Address</span>
+          <span>Buyer</span>
         </div>
         <div className="flex-grow-1">
           <span>Time</span>
         </div>
         <div className="pd-react-area"></div>
       </div>
+      {bids.length === 0 && <TailSpin stroke="#fec823" speed={0.75} />}
       {bids.map((bid, index) => (
         <Bid
           key={bid.nostr.id}
           bid={bid}
           onTakeBid={onTakeBid}
           className={clsx(index === 0 && "first-bid")}
+          isOnAcceptBid={isOnAcceptBid}
         />
       ))}
     </div>

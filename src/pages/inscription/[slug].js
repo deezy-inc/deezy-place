@@ -41,9 +41,11 @@ const Inscription = () => {
     bids,
     setIsPooling: setIsPoolingBids,
     reset: stopPoolingBids,
+    isLoading: isBidsLoading,
   } = useBid({
     inscriptionId: inscription?.inscriptionId,
     output: inscription?.output,
+    nostrOrdinalsAddress: walletState.nostrOrdinalsAddress,
   });
 
   const onAction = async (startPooling) => {
@@ -87,6 +89,7 @@ const Inscription = () => {
               nostr={nostrData}
               auction={auctionData}
               bids={bids}
+              isBidsLoading={isBidsLoading}
               onAction={onAction}
             />
           )}

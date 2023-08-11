@@ -4,8 +4,9 @@ import { getNostrBid } from "@services/nosft";
 
 const delay = 5000;
 
-function useBid({ inscriptionId, output }) {
+function useBid({ inscriptionId, output, nostrOrdinalsAddress }) {
   const [bids, setBids] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isPooling, setIsPooling] = useState(false);
   const [currentInscriptionId, setCurrentInscriptionId] =
     useState(inscriptionId);
@@ -22,6 +23,7 @@ function useBid({ inscriptionId, output }) {
       output: currentOutput,
     });
     setBids(result);
+    setIsLoading(false);
   };
 
   useInterval(
@@ -32,19 +34,21 @@ function useBid({ inscriptionId, output }) {
   );
 
   useEffect(() => {
-    if (!inscriptionId || !output) return;
+    if (!inscriptionId || !output || !nostrOrdinalsAddress) return;
+    setBids([]);
     setCurrentInscriptionId(inscriptionId);
     setCurrentOutput(output);
     setIsPooling(true);
+    setIsLoading(true);
     fetchBid();
-  }, [inscriptionId, output]);
+  }, [inscriptionId, output, nostrOrdinalsAddress]);
 
   const reset = () => {
     setBids([]);
     setIsPooling(false);
   };
 
-  return { bids, isPooling, setIsPooling, reset };
+  return { bids, isPooling, setIsPooling, reset, isLoading };
 }
 
 export default useBid;

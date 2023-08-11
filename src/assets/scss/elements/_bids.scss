@@ -43,3 +43,17 @@
   justify-content: flex-start; /* left-align content within each grid item */
   align-items: center;
 }
+
+@keyframes dotAnimation {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.loadingDot {
+  animation: dotAnimation 1s infinite;
+}

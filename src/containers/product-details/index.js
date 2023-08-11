@@ -24,6 +24,7 @@ import { toast } from "react-toastify";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import BidModal from "@components/modals/bid-modal";
 import BidsModal from "@components/modals/bids-modal";
+import BidsLoadingButton from "./loading-button";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
 
@@ -49,6 +50,7 @@ const ProductDetailsArea = memo(
     bids,
     onAction,
     isSpent: isUtxoSpent,
+    isBidsLoading,
   }) => {
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
@@ -223,6 +225,8 @@ const ProductDetailsArea = memo(
         shouldShowBuyWithLightning ||
         shouldShowBuyWithBitcoin ||
         shouldShowCreateBid);
+
+    const shouldShowAvailableBids = bids?.length > 0;
 
     return (
       <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
@@ -435,7 +439,8 @@ const ProductDetailsArea = memo(
 
                       {shouldShowTakeBid && (
                         <>
-                          {bids?.length > 0 && (
+                          {isBidsLoading && <BidsLoadingButton />}
+                          {shouldShowAvailableBids && (
                             <button
                               className="pd-react-area btn-transparent"
                               type="button"
@@ -552,6 +557,7 @@ ProductDetailsArea.propTypes = {
   nostr: NostrEvenType,
   auction: PropTypes.any,
   bids: PropTypes.any,
+  isBidsLoading: PropTypes.bool,
   isSpent: PropTypes.bool,
   onAction: PropTypes.func,
 };

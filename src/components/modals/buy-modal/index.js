@@ -12,7 +12,7 @@ import {
   shortenStr,
   satsToFormattedDollarString,
   signPsbtListingForBuy,
-  getFundingUtxos,
+  getFundingUtxosForBuy,
   fetchRecommendedFee,
   DEFAULT_FEE_RATE,
 } from "@services/nosft";
@@ -55,13 +55,13 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
   const feeRateOnChange = (evt) => setBuyFeeRate(parseInt(evt.target.value));
 
-  const getPopulatedDeezyPsbt = async () => {
+  const getPopulatedDeezyPsbt = async (psbt) => {
     const { data } = await axios.post(
       `https://api${
         TESTNET ? "-testnet" : ""
       }.deezy.io/v1/ordinals/psbt/populate`,
       {
-        psbt: nostr.content, // (hex or base64)
+        psbt, // (hex or base64)
         ordinal_receive_address: ordinalsDestinationAddress,
       },
     );
@@ -93,16 +93,18 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     setIsOnBuy(true);
 
     try {
-      // Step 1 we call deezy api to get the psbt with the dummy utxos.
-      const { psbt, id } = await getPopulatedDeezyPsbt();
-      const deezyPsbt = getPsbt(psbt);
+      const sellerPsbt = getPsbt(nostr.content);
 
-      const { selectedUtxos } = await getFundingUtxos({
+      const { selectedUtxos } = await getFundingUtxosForBuy({
         address: nostrPaymentAddress,
-        price: nostr.value,
-        psbt: deezyPsbt,
+        offerPrice: nostr.value,
+        sellerPsbt: sellerPsbt,
         selectedFeeRate: buyFeeRate,
       });
+
+      // Step 1 we call deezy api to get the psbt with the dummy utxos.
+      const { psbt, id } = await getPopulatedDeezyPsbt(nostr.content);
+      const deezyPsbt = getPsbt(psbt);
 
       // Step 2, we add our payment data
       const { psbt: psbtForBuy } = await generateDeezyPSBTListingForBuy({

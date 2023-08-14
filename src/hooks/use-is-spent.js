@@ -11,6 +11,7 @@ function useIsSpent(output) {
 
   const fetchIsSpent = async () => {
     if (!currentOutput) return;
+    console.log("[useIsSpent]", currentOutput);
     const result = await isInscriptionSpent({
       output: currentOutput,
     });
@@ -27,10 +28,10 @@ function useIsSpent(output) {
 
   useEffect(() => {
     if (!output) return;
-    fetchIsSpent();
-    console.log("[useIsSpent]", output);
+    console.log("[useIsSpent] output [changed]", output);
     setCurrentOutput(output);
     setIsPooling(true);
+    fetchIsSpent();
   }, [output]);
 
   return { isSpent, isPooling, setIsPooling };

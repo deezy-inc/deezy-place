@@ -32,6 +32,8 @@ const {
   createAndSignPsbtForBoost,
   createPsbtForBoost,
   signPsbtListingForBuy,
+  signPsbtListingForBid,
+  signAcceptBid,
   signPsbtForBoost,
 } = nosft.psbt;
 const {
@@ -39,7 +41,8 @@ const {
   signAndBroadcastEvent,
   getNostrInscription,
   getNostrInscriptions,
-  getLatestNostrInscription,
+  getLatestSellNostrInscription,
+  getNostrBid,
   subscribeOrders,
   unsubscribeOrders,
 } = nosft.nostr;
@@ -55,12 +58,14 @@ const {
 } = nosft.auction;
 
 const {
-  getAvailableUtxosWithoutInscription,
-  getAvailableUtxosWithoutDummies,
+  getFundingUtxosForBuy,
+  getFundingUtxosForBid,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
+  generateBidPSBT,
   getOrderInformation,
   generateDeezyPSBTListingForBuy,
+  generateDeezyPSBTListingForBid,
   calculateRequiredFeeForBuy,
 } = nosft.openOrdex;
 
@@ -163,13 +168,16 @@ export {
   createPsbtForBoost,
   signPsbtForBoost,
   signPsbtListingForBuy,
+  signPsbtListingForBid,
+  signAcceptBid,
 
   // nostr
   publishOrder,
   signAndBroadcastEvent,
   getNostrInscription,
   getNostrInscriptions,
-  getLatestNostrInscription,
+  getLatestSellNostrInscription,
+  getNostrBid,
   subscribeOrders,
   unsubscribeOrders,
 
@@ -183,11 +191,13 @@ export {
   subscribeMyAuctions,
 
   // open ordex
-  getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
+  generateBidPSBT,
   generateDeezyPSBTListingForBuy,
-  getAvailableUtxosWithoutDummies,
+  generateDeezyPSBTListingForBid,
+  getFundingUtxosForBuy,
+  getFundingUtxosForBid,
   getOrderInformation,
   calculateRequiredFeeForBuy,
 

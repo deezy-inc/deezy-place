@@ -13,6 +13,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import useAuction from "src/hooks/use-auction";
 import useInscription from "src/hooks/use-inscription";
 import useIsSpent from "src/hooks/use-is-spent";
+import useBid from "src/hooks/use-bid";
 
 const Inscription = () => {
   const walletState = useWalletState();
@@ -28,16 +29,47 @@ const Inscription = () => {
     nostrData,
     setIsPooling: setIsPoolingInscription,
   } = useInscription(slug);
-  const { auction: auctionData, setIsPooling: setIsPoolingAuction } =
-    useAuction(inscription?.inscriptionId);
+  const {
+    auction: auctionData,
+    setIsPooling: setIsPoolingAuction,
+    reset: stopPoolingAuction,
+  } = useAuction(inscription?.inscriptionId);
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
+
+  const {
+    bids,
+    setIsPooling: setIsPoolingBids,
+    reset: stopPoolingBids,
+    isLoading: isBidsLoading,
+  } = useBid({
+    inscriptionId: inscription?.inscriptionId,
+    output: inscription?.output,
+    nostrOrdinalsAddress: walletState.nostrOrdinalsAddress,
+  });
 
   const onAction = async (startPooling) => {
     setIsPoolingAuction(startPooling);
     setIsPoolingInscription(startPooling);
     setIsPoolingIsSpent(startPooling);
+    setIsPoolingBids(startPooling);
   };
+
+  useEffect(() => {
+    if (isInscriptionSpent) {
+      stopPoolingAuction();
+      stopPoolingBids();
+      setIsPoolingIsSpent(false);
+    }
+  }, [isInscriptionSpent]);
+
+  useEffect(() => {
+    const isOwner =
+      walletState.nostrOrdinalsAddress &&
+      inscription?.owner &&
+      walletState.nostrOrdinalsAddress === inscription?.owner;
+    setIsPoolingBids(isOwner);
+  }, [walletState.nostrOrdinalsAddress, inscription?.owner]);
 
   return (
     <WalletContext.Provider value={walletState}>
@@ -49,14 +81,26 @@ const Inscription = () => {
           style={{ paddingTop: headerHeight }}
           className="d-flex align-items-center justify-content-center"
         >
-          <ProductDetailsArea
-            inscription={inscription}
-            isSpent={isInscriptionSpent}
-            collection={collection}
-            nostr={nostrData}
-            auction={auctionData}
-            onAction={onAction}
-          />
+          {inscription && (
+            <ProductDetailsArea
+              inscription={inscription}
+              isSpent={isInscriptionSpent}
+              collection={collection}
+              nostr={nostrData}
+              auction={auctionData}
+              bids={bids}
+              isBidsLoading={isBidsLoading}
+              onAction={onAction}
+            />
+          )}
+
+          {!inscription && (
+            <div className="inscription-area container">
+              <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
+                <Skeleton count={20} />
+              </SkeletonTheme>
+            </div>
+          )}
         </main>
 
         <Footer />

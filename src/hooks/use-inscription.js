@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getInscription, getLatestNostrInscription } from "@services/nosft";
+import { getInscription, getLatestSellNostrInscription } from "@services/nosft";
 import { useInterval } from "react-use";
 
 const delay = 5000;
@@ -13,26 +13,24 @@ function useInscription(inscriptionId) {
   const [isPooling, setIsPooling] = useState(true);
 
   const fetchNostrInscription = async (utxo) => {
-    const data = await getLatestNostrInscription(utxo);
-    console.log("[fetchNostrInscription] from Nostr", data);
+    if (!utxo?.inscriptionId) return;
+    const data = await getLatestSellNostrInscription(utxo);
+    console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
     setNostrData(data);
   };
 
   const fetchInscription = async () => {
+    if (!currentInscriptionId) return;
+    console.log("[useInscription]", currentInscriptionId);
     const { inscription: _inscription, collection: _collection } =
-      await getInscription(inscriptionId);
+      await getInscription(currentInscriptionId);
     const output = _inscription
       ? _inscription.output || `${_inscription.txid}:${_inscription.vout}`
       : null;
-    if (output) {
-      const utxo = { ..._inscription, output };
-      setInscription(utxo);
-      setCollection(_collection);
-      await fetchNostrInscription(utxo);
-      return;
-    }
-    setInscription(_inscription);
+    const utxo = { ..._inscription, output };
+    setInscription(utxo);
     setCollection(_collection);
+    await fetchNostrInscription(utxo);
   };
 
   useInterval(
@@ -44,14 +42,9 @@ function useInscription(inscriptionId) {
 
   useEffect(() => {
     if (!inscriptionId) return;
-    console.log("[useInscription]", inscriptionId);
-    const initialLoad = async () => {
-      await fetchInscription();
-    };
-
     setCurrentInscriptionId(inscriptionId);
     setIsPooling(true);
-    initialLoad();
+    fetchInscription();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inscriptionId]);
 

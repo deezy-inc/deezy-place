@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import {
   takeLatestInscription,
   getNostrInscriptions,
@@ -16,7 +15,6 @@ import { scan } from "rxjs/operators";
 
 import OrdinalCard from "@components/collection-inscription";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
-import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 import Slider, { SliderItem } from "@ui/slider";
 import { useWallet } from "@context/wallet-context";
 import ConnectWallet from "@components/modals/connect-wallet";
@@ -69,7 +67,7 @@ export const updateInscriptions = (acc, curr) => {
   }
 
   const existingIndex = acc.findIndex(
-    (item) => item.id === curr.id && item.num === curr.num
+    (item) => item.id === curr.id && item.num === curr.num,
   );
 
   if (existingIndex !== -1) {
@@ -158,26 +156,26 @@ const CollectionOnSale = ({
       try {
         // TODO: Change to use by collection
         const inscriptionsOnAuction = await listAuctionInscriptions(
-          collection.slug
+          collection.slug,
         );
 
         const runningInscriptions = inscriptionsOnAuction.filter(
-          (i) => i.status === "RUNNING"
+          (i) => i.status === "RUNNING",
         );
 
         const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
-          runningInscriptions.some((ni) => ni.inscriptionId === i.id)
+          runningInscriptions.some((ni) => ni.inscriptionId === i.id),
         );
 
         const inscriptions = [];
         for (const i of inscriptionsWithEvents) {
           const auctionData = runningInscriptions.find(
-            (ni) => ni.inscriptionId === i.id
+            (ni) => ni.inscriptionId === i.id,
           );
 
           let nextPriceDrop;
           const currentEvent = auctionData.metadata.find(
-            (m) => m.price === auctionData.currentPrice
+            (m) => m.price === auctionData.currentPrice,
           );
 
           const nostr = currentEvent.nostr;
@@ -223,10 +221,10 @@ const CollectionOnSale = ({
         for (let i = 0; i < totalInscriptions; i += chunkSize) {
           const inscriptionChunk = collection.inscriptions.slice(
             i,
-            i + chunkSize
+            i + chunkSize,
           );
           promises.push(
-            getNostrInscriptions(inscriptionChunk.map((i) => i.id))
+            getNostrInscriptions(inscriptionChunk.map((i) => i.id)),
           );
         }
 
@@ -235,12 +233,12 @@ const CollectionOnSale = ({
         const nostrInscriptions = nostrInscriptionsChunks.flat();
 
         const inscriptionsWithEvents = collection.inscriptions.filter((i) =>
-          nostrInscriptions.some((ni) => ni.inscriptionId === i.id)
+          nostrInscriptions.some((ni) => ni.inscriptionId === i.id),
         );
 
         const inscriptionPromises = inscriptionsWithEvents.map((i) => {
           const nostrInscription = nostrInscriptions.find(
-            (ni) => ni.inscriptionId === i.id
+            (ni) => ni.inscriptionId === i.id,
           );
 
           return {
@@ -294,7 +292,7 @@ const CollectionOnSale = ({
         "rn-product-area",
         // "upToDown",
         space === 1 && "rn-section-gapTop",
-        className
+        className,
       )}
     >
       <div className="container">

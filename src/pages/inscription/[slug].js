@@ -63,14 +63,6 @@ const Inscription = () => {
     }
   }, [isInscriptionSpent]);
 
-  useEffect(() => {
-    const isOwner =
-      walletState.nostrOrdinalsAddress &&
-      inscription?.owner &&
-      walletState.nostrOrdinalsAddress === inscription?.owner;
-    setIsPoolingBids(isOwner);
-  }, [walletState.nostrOrdinalsAddress, inscription?.owner]);
-
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>

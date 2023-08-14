@@ -57,3 +57,7 @@
 .loadingDot {
   animation: dotAnimation 1s infinite;
 }
+
+.bidListComponent .modal-content {
+  min-width: max-content;
+}

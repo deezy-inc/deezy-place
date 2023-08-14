@@ -11,7 +11,13 @@ import BidList from "@components/bids/bid-list";
 
 bitcoin.initEccLib(ecc);
 
-const BidsModal = ({ show, handleModal, utxo, onAcceptBid, bids }) => {
+const BidsModal = ({
+  show,
+  handleModal,
+  onAcceptBid,
+  bids,
+  shouldShowTakeBid,
+}) => {
   const { nostrOrdinalsAddress } = useWallet();
 
   const [isOnAcceptBid, setIsOnAcceptBid] = useState(false);
@@ -40,7 +46,7 @@ const BidsModal = ({ show, handleModal, utxo, onAcceptBid, bids }) => {
 
   return (
     <Modal
-      className="rn-popup-modal placebid-modal-wrapper"
+      className="bidListComponent rn-popup-modal placebid-modal-wrapper"
       show={show}
       onHide={handleModal}
       centered
@@ -63,6 +69,7 @@ const BidsModal = ({ show, handleModal, utxo, onAcceptBid, bids }) => {
           bids={bids}
           onTakeBid={acceptBid}
           isOnAcceptBid={isOnAcceptBid}
+          shouldShowTakeBid={shouldShowTakeBid}
         />
       </Modal.Body>
     </Modal>

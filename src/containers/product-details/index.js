@@ -268,7 +268,13 @@ const ProductDetailsArea = memo(
                         </>
                       )}
                     </div>
-                    {auction && <hr className="mt--20" />}
+                  </>
+                )}
+                {shouldShowAvailableBids && !isUtxoSpent && (
+                  <>
+                    <div className="bid mb--10">
+                      Top Bid for {toBTC(bids[0]?.price)} BTC{" "}
+                    </div>
                   </>
                 )}
 
@@ -437,23 +443,24 @@ const ProductDetailsArea = memo(
                         </button>
                       )}
 
-                      {shouldShowTakeBid && (
+                      {
                         <>
-                          {isBidsLoading && <BidsLoadingButton />}
-                          {shouldShowAvailableBids && (
+                          {shouldShowAvailableBids && !isBidsLoading ? (
                             <button
                               className="pd-react-area btn-transparent"
                               type="button"
                               onClick={handleBidsModal}
                             >
                               <div className="action">
-                                <i className="feather-plus-circle" />
+                                <i className="feather-list" />
                                 <span>View all Bids</span>
                               </div>
                             </button>
+                          ) : (
+                            <BidsLoadingButton />
                           )}
                         </>
-                      )}
+                      }
                     </div>
                   </div>
                 )}
@@ -542,6 +549,7 @@ const ProductDetailsArea = memo(
             onAcceptBid={onAcceptBid}
             nostr={nostr}
             bids={bids}
+            shouldShowTakeBid={shouldShowTakeBid}
           />
         )}
       </div>

@@ -13,7 +13,7 @@ import {
   NETWORK,
   generateDeezyPSBTListingForBid,
   signPsbtListingForBid,
-  getFundingUtxos,
+  getFundingUtxosForBid,
   DEFAULT_FEE_RATE,
   publishOrder,
   fetchRecommendedFee,
@@ -80,9 +80,10 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
         network: NETWORK,
       });
 
-      const { selectedUtxos } = await getFundingUtxos({
+      const { selectedUtxos } = await getFundingUtxosForBid({
         address: nostrPaymentAddress,
-        price: bidPrice,
+        bidPrice: bidPrice,
+        utxoPrice: utxo.value,
         psbt: populatedPsbt,
         selectedFeeRate: bidFeeRate,
       });

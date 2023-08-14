@@ -58,9 +58,8 @@ const {
 } = nosft.auction;
 
 const {
-  getAvailableUtxosWithoutInscription,
-  getAvailableUtxosWithoutDummies,
-  getFundingUtxos,
+  getFundingUtxosForBuy,
+  getFundingUtxosForBid,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
   generateBidPSBT,
@@ -192,14 +191,13 @@ export {
   subscribeMyAuctions,
 
   // open ordex
-  getAvailableUtxosWithoutInscription,
   generatePSBTListingInscriptionForBuy,
   generatePSBTListingInscriptionForSale,
   generateBidPSBT,
   generateDeezyPSBTListingForBuy,
   generateDeezyPSBTListingForBid,
-  getAvailableUtxosWithoutDummies,
-  getFundingUtxos,
+  getFundingUtxosForBuy,
+  getFundingUtxosForBid,
   getOrderInformation,
   calculateRequiredFeeForBuy,
 

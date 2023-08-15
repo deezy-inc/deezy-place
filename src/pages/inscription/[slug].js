@@ -45,7 +45,6 @@ const Inscription = () => {
   } = useBid({
     inscriptionId: inscription?.inscriptionId,
     output: inscription?.output,
-    nostrOrdinalsAddress: walletState.nostrOrdinalsAddress,
   });
 
   const onAction = async (startPooling) => {

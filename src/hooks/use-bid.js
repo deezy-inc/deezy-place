@@ -4,7 +4,7 @@ import { getNostrBid } from "@services/nosft";
 
 const delay = 5000;
 
-function useBid({ inscriptionId, output, nostrOrdinalsAddress }) {
+function useBid({ inscriptionId, output }) {
   const [bids, setBids] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPooling, setIsPooling] = useState(false);
@@ -34,13 +34,15 @@ function useBid({ inscriptionId, output, nostrOrdinalsAddress }) {
   );
 
   useEffect(() => {
-    if (!inscriptionId || !output || !nostrOrdinalsAddress) return;
+    if (!inscriptionId || !output) {
+      setBids(null);
+    }
     setCurrentInscriptionId(inscriptionId);
     setCurrentOutput(output);
     setIsPooling(true);
     setIsLoading(true);
     fetchBid();
-  }, [inscriptionId, output, nostrOrdinalsAddress]);
+  }, [inscriptionId, output]);
 
   const reset = () => {
     setBids(null);

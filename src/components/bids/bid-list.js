@@ -3,6 +3,7 @@ import { toBTC } from "@containers/product-details";
 import { shortenStr } from "@services/nosft";
 import clsx from "clsx";
 import { TailSpin } from "react-loading-icons";
+import { useWallet } from "@context/wallet-context";
 
 function timeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
@@ -42,49 +43,20 @@ const AcceptBidButton = ({ bid, onTakeBid, isOnAcceptBid }) => (
   </button>
 );
 
-const Bid = ({ bid, onTakeBid, isOnAcceptBid, className }) => (
-  <div
-    key={bid.nostr.id}
-    className={clsx(
-      "bid-wrapper d-flex justify-content-between align-items-center mb-3",
-      className,
-    )}
-  >
-    <div className="pd-property-inner flex-grow-1">
-      <span className="color-white value">{`${toBTC(bid.price)} BTC`}</span>
-    </div>
-    <div className="pd-property-inner flex-grow-1">
-      <span className="color-white value">
-        {shortenStr(bid.bidOwner || "", 4)}
-      </span>
-    </div>
-    <div className="pd-property-inner flex-grow-1">
-      <span className="color-white value">
-        {timeAgo(new Date(bid.created_at * 1000))}
-      </span>
-    </div>
-    <AcceptBidButton
-      bid={bid}
-      onTakeBid={onTakeBid}
-      isOnAcceptBid={isOnAcceptBid}
-    />
-  </div>
-);
+const gridStyles = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr) auto", // This sets up three equally wide columns and one auto-sized
+  gap: "16px",
+  alignItems: "center",
+};
 
-const BidList = ({ bids, onTakeBid, isOnAcceptBid }) => {
+const BidList = ({ bids, onTakeBid, isOnAcceptBid, shouldShowTakeBid }) => {
   return (
     <div className="rn-pd-content-area bidListComponent">
-      <div className="d-flex justify-content-between align-items-center mb-3 text-uppercase">
-        <div className="flex-grow-1">
-          <span>Price</span>
-        </div>
-        <div className="flex-grow-1">
-          <span>Buyer</span>
-        </div>
-        <div className="flex-grow-1">
-          <span>Time</span>
-        </div>
-        <div className="pd-react-area"></div>
+      <div style={gridStyles} className="mb-3 text-uppercase">
+        <span>Price</span>
+        <span>Buyer</span>
+        <span>Time</span>
       </div>
       {bids.length === 0 && <TailSpin stroke="#fec823" speed={0.75} />}
       {bids.map((bid, index) => (
@@ -94,8 +66,43 @@ const BidList = ({ bids, onTakeBid, isOnAcceptBid }) => {
           onTakeBid={onTakeBid}
           className={clsx(index === 0 && "first-bid")}
           isOnAcceptBid={isOnAcceptBid}
+          shouldShowTakeBid={shouldShowTakeBid}
         />
       ))}
+    </div>
+  );
+};
+
+const Bid = ({
+  bid,
+  onTakeBid,
+  isOnAcceptBid,
+  className,
+  shouldShowTakeBid,
+}) => {
+  const { nostrOrdinalsAddress } = useWallet();
+  return (
+    <div
+      key={bid.nostr.id}
+      style={gridStyles}
+      className={clsx("bid-wrapper mb-3", className)}
+    >
+      <span className="color-white value">{`${toBTC(bid.price)} BTC`}</span>
+      <span className="color-white value">
+        {nostrOrdinalsAddress !== bid.bidOwner
+          ? shortenStr(bid.bidOwner || "", 4)
+          : "You"}
+      </span>
+      <span className="color-white value">
+        {timeAgo(new Date(bid.created_at * 1000))}
+      </span>
+      {shouldShowTakeBid && (
+        <AcceptBidButton
+          bid={bid}
+          onTakeBid={onTakeBid}
+          isOnAcceptBid={isOnAcceptBid}
+        />
+      )}
     </div>
   );
 };

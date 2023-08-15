@@ -1,26 +1,29 @@
 import { useEffect, useState } from "react";
 
 const BidsLoadingButton = () => {
-  const [dots, setDots] = useState("");
+  const [dotCount, setDotCount] = useState(0);
 
   useEffect(() => {
-    // Start an interval to update the number of dots
     const interval = setInterval(() => {
-      if (dots.length < 3) {
-        setDots((prevDots) => prevDots + ".");
-      } else {
-        setDots(""); // Reset back to empty string to start over
-      }
+      setDotCount((prevCount) => (prevCount < 3 ? prevCount + 1 : 0));
     }, 300);
 
-    // Cleanup the interval when the component unmounts
     return () => clearInterval(interval);
-  }, [dots]);
+  }, []);
 
   return (
     <button className="pd-react-area btn-transparent" type="button">
       <div className="action">
-        <span>Searching for Bids{dots}</span>
+        <span>Searching for Bids</span>
+        <span style={{ visibility: dotCount >= 1 ? "visible" : "hidden" }}>
+          .
+        </span>
+        <span style={{ visibility: dotCount >= 2 ? "visible" : "hidden" }}>
+          .
+        </span>
+        <span style={{ visibility: dotCount >= 3 ? "visible" : "hidden" }}>
+          .
+        </span>
       </div>
     </button>
   );

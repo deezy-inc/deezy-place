@@ -195,38 +195,41 @@ const ProductDetailsArea = memo(
         return { title, nextPriceDrop };
       }, [auction]);
 
+    const isWalletConnected = ordinalsPublicKey && nostrOrdinalsAddress;
+
     const shouldShowCancelAuction =
       isOwner &&
       !isUtxoSpent &&
       auctionNextPriceDrop &&
       !isCanceling &&
       !auctionError &&
-      !auctionCanceled;
+      !auctionCanceled &&
+      isWalletConnected;
 
     const shouldShowNextTime =
       auctionNextPriceDrop &&
       auctionNextPriceDrop.scheduledTime > new Date().getTime();
 
-    const isWalletConnected = ordinalsPublicKey && nostrOrdinalsAddress;
     const hasNostrEvent = nostr && nostr.value > 0;
-    const shouldShowSend = isOwner;
-    const shouldShowSell = isOwner && !isUtxoSpent;
-    const shouldShowAuction = isOwner && !isUtxoSpent && !auctionNextPriceDrop;
+    const shouldShowSend = isOwner && isWalletConnected;
+    const shouldShowSell = isOwner && !isUtxoSpent && isWalletConnected;
+    const shouldShowAuction =
+      isOwner && !isUtxoSpent && !auctionNextPriceDrop && isWalletConnected;
     const shouldShowBuyWithLightning =
-      !isOwner && hasNostrEvent && !isUtxoSpent;
-    const shouldShowBuyWithBitcoin = hasNostrEvent && !isUtxoSpent;
-    const shouldShowCreateBid = !isOwner && !isUtxoSpent;
-    const shouldShowTakeBid = isOwner && !isUtxoSpent;
-    const shouldShowActions =
-      isWalletConnected &&
-      (shouldShowSend ||
-        shouldShowSell ||
-        shouldShowAuction ||
-        shouldShowBuyWithLightning ||
-        shouldShowBuyWithBitcoin ||
-        shouldShowCreateBid);
-
+      !isOwner && hasNostrEvent && !isUtxoSpent && isWalletConnected;
+    const shouldShowBuyWithBitcoin =
+      hasNostrEvent && !isUtxoSpent && isWalletConnected;
+    const shouldShowCreateBid = !isOwner && !isUtxoSpent && isWalletConnected;
+    const shouldShowTakeBid = isOwner && !isUtxoSpent && isWalletConnected;
     const shouldShowAvailableBids = bids?.length > 0;
+    const shouldShowActions =
+      shouldShowSend ||
+      shouldShowSell ||
+      shouldShowAuction ||
+      shouldShowBuyWithLightning ||
+      shouldShowBuyWithBitcoin ||
+      shouldShowCreateBid ||
+      shouldShowAvailableBids;
 
     return (
       <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
@@ -249,27 +252,31 @@ const ProductDetailsArea = memo(
                 />
 
                 {hasNostrEvent && !auction && (
-                  <>
-                    <div className="bid mb--10">
-                      {isUtxoSpent ? "Bought" : "Listed"} for{" "}
-                      {toBTC(nostr.value)} BTC{" "}
+                  <div className="bid mb--10">
+                    {isUtxoSpent ? "Bought" : "Listed"} for {toBTC(nostr.value)}{" "}
+                    BTC{" "}
+                    {nostr.value && bitcoinPrice && (
                       <span className="price">
                         $
                         {satsToFormattedDollarString(nostr.value, bitcoinPrice)}
                       </span>
-                      <br />
-                      {nostr.created_at && (
-                        <>
-                          {" "}
-                          at{" "}
-                          <span className="minted">
-                            {new Date(nostr.created_at * 1000).toLocaleString()}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    {auction && <hr className="mt--20" />}
-                  </>
+                    )}
+                    <br />
+                  </div>
+                )}
+                {shouldShowAvailableBids && !isUtxoSpent && (
+                  <div className="bid mb--10">
+                    Top Bid for {toBTC(bids[0]?.price)} BTC{" "}
+                    {bitcoinPrice && (
+                      <span className="price">
+                        $
+                        {satsToFormattedDollarString(
+                          bids[0]?.price,
+                          bitcoinPrice,
+                        )}
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 {collection && (
@@ -437,23 +444,24 @@ const ProductDetailsArea = memo(
                         </button>
                       )}
 
-                      {shouldShowTakeBid && (
+                      {
                         <>
-                          {isBidsLoading && <BidsLoadingButton />}
-                          {shouldShowAvailableBids && (
+                          {shouldShowAvailableBids && !isBidsLoading ? (
                             <button
                               className="pd-react-area btn-transparent"
                               type="button"
                               onClick={handleBidsModal}
                             >
                               <div className="action">
-                                <i className="feather-plus-circle" />
+                                <i className="feather-list" />
                                 <span>View all Bids</span>
                               </div>
                             </button>
+                          ) : (
+                            <BidsLoadingButton />
                           )}
                         </>
-                      )}
+                      }
                     </div>
                   </div>
                 )}
@@ -542,6 +550,7 @@ const ProductDetailsArea = memo(
             onAcceptBid={onAcceptBid}
             nostr={nostr}
             bids={bids}
+            shouldShowTakeBid={shouldShowTakeBid}
           />
         )}
       </div>

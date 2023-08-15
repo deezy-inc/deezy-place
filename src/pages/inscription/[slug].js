@@ -45,7 +45,6 @@ const Inscription = () => {
   } = useBid({
     inscriptionId: inscription?.inscriptionId,
     output: inscription?.output,
-    nostrOrdinalsAddress: walletState.nostrOrdinalsAddress,
   });
 
   const onAction = async (startPooling) => {
@@ -62,14 +61,6 @@ const Inscription = () => {
       setIsPoolingIsSpent(false);
     }
   }, [isInscriptionSpent]);
-
-  useEffect(() => {
-    const isOwner =
-      walletState.nostrOrdinalsAddress &&
-      inscription?.owner &&
-      walletState.nostrOrdinalsAddress === inscription?.owner;
-    setIsPoolingBids(isOwner);
-  }, [walletState.nostrOrdinalsAddress, inscription?.owner]);
 
   return (
     <WalletContext.Provider value={walletState}>

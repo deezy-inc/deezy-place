@@ -45,14 +45,14 @@ const Collection = ({ className, space, collection }) => {
       className={clsx(
         "rn-product-area",
         space === 1 && "rn-section-gapTop",
-        className
+        className,
       )}
     >
       <div className="container">
         <div className="row mb--50 align-items-center">
           <div className="col-lg-6 col-md-6 col-sm-6 col-12">
             <SectionTitle
-              className="mb--0 live-title"
+              className="mb--4 live-title"
               {...{ title: "Collection" }}
             />
           </div>

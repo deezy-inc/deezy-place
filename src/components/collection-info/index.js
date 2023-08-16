@@ -3,12 +3,12 @@ import Image from "next/image";
 import Anchor from "@ui/anchor";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
-const CollectionInfo = ({ collection }) => {
+const CollectionInfo = ({ collection, isLoading }) => {
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
       <div className="slider-one rn-section-gapTop">
         <div className="container">
-          <div className="row row-reverce-sm align-items-center">
+          <div className="row align-items-center">
             <div className="col-sm-6">
               <div className="slider-thumbnail small mb--30">
                 {collection?.icon && (
@@ -20,36 +20,42 @@ const CollectionInfo = ({ collection }) => {
                   />
                 )}
 
-                {!collection?.icon && (
+                {!collection?.icon && isLoading && (
                   <Skeleton circle height={108} width={108} />
                 )}
               </div>
             </div>
-
             <div>
               {collection?.name && (
                 <h4 className="title">{collection?.name}</h4>
               )}
 
-              {!collection?.name && <Skeleton width={200} count={1} />}
+              {!collection?.name && isLoading && (
+                <Skeleton width={200} count={1} />
+              )}
             </div>
-
             <div className="mb--20">
               {collection.description && <p>{collection.description}</p>}
-              {!collection.description && <Skeleton width={200} count={2} />}
+              {!collection.description && isLoading && (
+                <Skeleton width={200} count={2} />
+              )}
             </div>
 
-            {collection?.links?.length > 0 && (
-              <div>
-                {collection.links.map((link) => (
-                  <Anchor className="mr--10" path={link.url}>
-                    {link.name}
-                  </Anchor>
-                ))}
-              </div>
-            )}
-
-            {!collection?.links?.length && <Skeleton width={200} count={1} />}
+            {/* Do we need the links here? */}
+            <div className="mb--20">
+              {collection?.links?.length > 0 && (
+                <div>
+                  {collection.links.map((link) => (
+                    <Anchor className="mr--10" path={link.url}>
+                      {link.name}
+                    </Anchor>
+                  ))}
+                </div>
+              )}
+              {!collection?.links?.length && isLoading && (
+                <Skeleton width={200} count={1} />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -58,6 +64,7 @@ const CollectionInfo = ({ collection }) => {
 };
 
 CollectionInfo.propTypes = {
+  isLoading: PropTypes.bool,
   collection: PropTypes.shape({
     name: PropTypes.string,
     description: PropTypes.string,

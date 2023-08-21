@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import { getCollection } from "@services/nosft";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import { SkeletonTheme } from "react-loading-skeleton";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
 import Slider, { SliderItem } from "@ui/slider";
@@ -67,11 +67,13 @@ const Inscription = () => {
   const [collection, setCollection] = useState({});
   const [collectionInfo, setCollectionInfo] = useState();
   const [isDutchLoaded, setIsDutchLoaded] = useState(false);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     const key = `${LocalStorageKeys.COLLECTION_INFO}:${slug}`;
     const fetchCollection = async () => {
+      setIsCollectionLoading(false);
       const collectionData = await getCollection(slug, true);
 
       const links = [];
@@ -107,12 +109,14 @@ const Inscription = () => {
 
       LocalStorage.set(key, collectionInfoData);
       setCollectionInfo(collectionInfoData);
+      setIsCollectionLoading(true);
       setCollection(collectionData);
     };
 
     const collectionInfoData = LocalStorage.get(key);
     if (collectionInfoData) {
       setCollectionInfo(collectionInfoData);
+      setIsCollectionLoading(true);
     }
 
     fetchCollection();
@@ -132,7 +136,12 @@ const Inscription = () => {
         />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {collectionInfo && <CollectionInfo collection={collectionInfo} />}
+          {collectionInfo && (
+            <CollectionInfo
+              collection={collectionInfo}
+              isLoading={isCollectionLoading}
+            />
+          )}
           {collection && (
             <>
               {/* <CollectionAuction collection={collection} /> */}

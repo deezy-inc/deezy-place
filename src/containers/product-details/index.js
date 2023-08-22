@@ -2,6 +2,8 @@
 import { useState, useEffect, useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
+import Table from "react-bootstrap/Table";
+import Badge from "react-bootstrap/Badge";
 import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import SendModal from "@components/modals/send-modal";
@@ -39,11 +41,58 @@ const CountdownTimerText = dynamic(
   },
 );
 
+const SatsRangeTable = ({ product }) => {
+  const satRanges = product?.sat_ranges;
+
+  return (
+    <div className="container my-5 uninscribed-sats">
+      {satRanges && (
+        <Table responsive="md" className="table-dark table-hover">
+          <thead>
+            <tr>
+              <th>Name Range</th>
+              <th>Number Range</th>
+              <th>Satributes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from(
+              { length: Math.ceil(satRanges.length / 2) },
+              (_, i) => i * 2,
+            ).map((index) => {
+              const firstSat = satRanges[index];
+              const secondSat = satRanges[index + 1];
+
+              const rarity = firstSat?.rarity;
+
+              return (
+                <tr key={index}>
+                  <td>{`${firstSat?.name} - ${secondSat?.name}`}</td>
+                  <td>{`${firstSat?.number} - ${secondSat?.number}`}</td>
+                  <td>
+                    <Badge
+                      pill
+                      variant={rarity === "common" ? "primary" : "warning"}
+                    >
+                      {rarity.toUpperCase()}
+                    </Badge>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      )}
+    </div>
+  );
+};
+
 const ProductDetailsArea = memo(
   ({
     space,
     className,
-    inscription,
+    inscription = {},
+    uninscribedSats,
     collection,
     nostr,
     auction,
@@ -51,7 +100,38 @@ const ProductDetailsArea = memo(
     onAction,
     isSpent: isUtxoSpent,
     isBidsLoading,
+    bidsDisabled = false,
+    sellDisabled = false,
+    buyDisabled = false,
+    auctionDisabled = false,
   }) => {
+    const product = useMemo(() => {
+      if (!inscription && !uninscribedSats) return {};
+      return {
+        title: uninscribedSats
+          ? `Output ${shortenStr(uninscribedSats.output)}`
+          : `Inscription #${inscription.num}`,
+        num: uninscribedSats ? "" : inscription.num,
+        owner: uninscribedSats ? uninscribedSats.address : inscription.owner,
+        minted: uninscribedSats
+          ? ""
+          : new Date(inscription.created * 1000).toLocaleString("en-US") || "-",
+        content_type: uninscribedSats ? "" : inscription.content_type,
+        content_length: uninscribedSats
+          ? ""
+          : `${inscription.content_length} bytes`,
+        genesis_fee: uninscribedSats ? "" : inscription.genesis_fee,
+        genesis_height: uninscribedSats ? "" : inscription.genesis_height,
+        id: uninscribedSats ? "" : shortenStr(inscription.id),
+        shorten_owner: uninscribedSats
+          ? shortenStr(uninscribedSats.address)
+          : shortenStr(inscription.owner),
+        value: uninscribedSats ? uninscribedSats.value : inscription.value,
+        btcValue: uninscribedSats ? `${toBTC(uninscribedSats.value)} BTC` : "",
+        output: uninscribedSats ? shortenStr(uninscribedSats.output) : "",
+        sat_ranges: uninscribedSats ? uninscribedSats.sat_ranges : "",
+      };
+    }, [inscription, uninscribedSats]);
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
@@ -107,56 +187,63 @@ const ProductDetailsArea = memo(
       if (!nostrOrdinalsAddress || !inscription) return;
       setIsOwner(
         nostrOrdinalsAddress &&
-          inscription.owner &&
-          nostrOrdinalsAddress === inscription.owner,
+          product.owner &&
+          nostrOrdinalsAddress === product.owner,
       );
-    }, [nostrOrdinalsAddress, inscription]);
-
-    const minted =
-      new Date(inscription.created * 1000).toLocaleString("en-US") || "-";
+    }, [nostrOrdinalsAddress, product]);
 
     const properties = [
       {
         id: 8,
         type: "Owner",
-        value: shortenStr(inscription.owner),
+        value: product.shorten_owner,
+      },
+      {
+        id: 9,
+        type: "Output",
+        value: product.output,
+      },
+      {
+        id: 10,
+        type: "Value",
+        value: product.btcValue,
       },
       {
         id: 7,
         type: "Inscription Id",
-        value: shortenStr(inscription.id),
+        value: product.id,
       },
 
       {
         id: 1,
         type: "Content Type",
-        value: inscription.content_type,
+        value: product.content_type,
       },
       {
         id: 2,
         type: "Content Length",
-        value: `${inscription.content_length} bytes`,
+        value: product.content_length,
       },
 
       {
         id: 4,
         type: "Genesis Height",
-        value: inscription.genesis_height,
+        value: product.genesis_height,
       },
       {
         id: 5,
         type: "Genesis Fee",
-        value: inscription.genesis_fee,
+        value: product.genesis_fee,
       },
       {
         id: 6,
         type: "Number",
-        value: inscription.num,
+        value: product.num,
       },
       {
         id: 3,
         type: "Created",
-        value: minted,
+        value: product.minted,
       },
     ];
 
@@ -212,16 +299,27 @@ const ProductDetailsArea = memo(
 
     const hasNostrEvent = nostr && nostr.value > 0;
     const shouldShowSend = isOwner && isWalletConnected;
-    const shouldShowSell = isOwner && !isUtxoSpent && isWalletConnected;
+    const shouldShowSell =
+      !sellDisabled && isOwner && !isUtxoSpent && isWalletConnected;
     const shouldShowAuction =
-      isOwner && !isUtxoSpent && !auctionNextPriceDrop && isWalletConnected;
+      !auctionDisabled &&
+      isOwner &&
+      !isUtxoSpent &&
+      !auctionNextPriceDrop &&
+      isWalletConnected;
     const shouldShowBuyWithLightning =
-      !isOwner && hasNostrEvent && !isUtxoSpent && isWalletConnected;
+      !buyDisabled &&
+      !isOwner &&
+      hasNostrEvent &&
+      !isUtxoSpent &&
+      isWalletConnected;
     const shouldShowBuyWithBitcoin =
-      hasNostrEvent && !isUtxoSpent && isWalletConnected;
-    const shouldShowCreateBid = !isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowTakeBid = isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowAvailableBids = bids?.length > 0;
+      !buyDisabled && hasNostrEvent && !isUtxoSpent && isWalletConnected;
+    const shouldShowCreateBid =
+      !bidsDisabled && !isOwner && !isUtxoSpent && isWalletConnected;
+    const shouldShowTakeBid =
+      !bidsDisabled && isOwner && !isUtxoSpent && isWalletConnected;
+    const shouldShowAvailableBids = !bidsDisabled && bids?.length > 0;
     const shouldShowActions =
       shouldShowSend ||
       shouldShowSell ||
@@ -246,10 +344,7 @@ const ProductDetailsArea = memo(
 
             <div className=" mt_md--50 mt_sm--60">
               <div className="rn-pd-content-area">
-                <ProductTitle
-                  title={`Inscription #${inscription.num}`}
-                  likeCount={30}
-                />
+                <ProductTitle title={product.title} likeCount={30} />
 
                 {hasNostrEvent && !auction && (
                   <div className="bid mb--10">
@@ -278,6 +373,8 @@ const ProductDetailsArea = memo(
                     )}
                   </div>
                 )}
+
+                {product.sat_ranges && <SatsRangeTable product={product} />}
 
                 {collection && (
                   <div className="catagory-collection">
@@ -458,7 +555,7 @@ const ProductDetailsArea = memo(
                               </div>
                             </button>
                           ) : (
-                            <BidsLoadingButton />
+                            isBidsLoading && <BidsLoadingButton />
                           )}
                         </>
                       }
@@ -471,17 +568,19 @@ const ProductDetailsArea = memo(
                 <div className="rn-pd-bd-wrapper">
                   <div className="rn-pd-sm-property-wrapper">
                     <div className="property-wrapper">
-                      {properties.map((property) => (
-                        <div
-                          key={`${property.id}-${property.type}-${property.value}`}
-                          className="pd-property-inner"
-                        >
-                          <span className="color-body type">
-                            {property.type}
-                          </span>
-                          <span className="color-white value">{`${property.value}`}</span>
-                        </div>
-                      ))}
+                      {properties
+                        .filter((p) => p.value)
+                        .map((property) => (
+                          <div
+                            key={`${property.id}-${property.type}-${property.value}`}
+                            className="pd-property-inner"
+                          >
+                            <span className="color-body type">
+                              {property.type}
+                            </span>
+                            <span className="color-white value">{`${property.value}`}</span>
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -494,11 +593,12 @@ const ProductDetailsArea = memo(
           <SendModal
             show={showSendModal}
             handleModal={handleSendModal}
-            utxo={inscription}
-            onSale={onSend}
+            utxo={uninscribedSats || inscription}
+            isUninscribed={!!uninscribedSats}
+            onSend={onSend}
           />
         )}
-        {showSellModal && (
+        {!sellDisabled && showSellModal && (
           <SellModal
             show={showSellModal}
             handleModal={handleSellModal}
@@ -506,7 +606,7 @@ const ProductDetailsArea = memo(
             onSale={onSend}
           />
         )}
-        {showAuctionModal && (
+        {!auctionDisabled && showAuctionModal && (
           <AuctionModal
             show={showAuctionModal}
             handleModal={handleAuctionModal}
@@ -515,7 +615,7 @@ const ProductDetailsArea = memo(
             onSale={onAuction}
           />
         )}
-        {showBuyModal && (
+        {!buyDisabled && showBuyModal && (
           <BuyModal
             show={showBuyModal}
             handleModal={handleBuyModal}
@@ -524,7 +624,7 @@ const ProductDetailsArea = memo(
             nostr={nostr}
           />
         )}
-        {showBuyLightningModal && (
+        {!buyDisabled && showBuyLightningModal && (
           <BuyLightningModal
             show={showBuyLightningModal}
             handleModal={handleBuyLightningModal}
@@ -533,7 +633,7 @@ const ProductDetailsArea = memo(
             nostr={nostr}
           />
         )}
-        {showBidModal && (
+        {!bidsDisabled && showBidModal && (
           <BidModal
             show={showBidModal}
             handleModal={handleBidModal}
@@ -542,7 +642,7 @@ const ProductDetailsArea = memo(
             suggestedPrice={nostr?.value}
           />
         )}
-        {showBidsModal && (
+        {!bidsDisabled && showBidsModal && (
           <BidsModal
             show={showBidsModal}
             handleModal={handleBidsModal}
@@ -562,6 +662,7 @@ ProductDetailsArea.propTypes = {
   space: PropTypes.oneOf([1, 2]),
   className: PropTypes.string,
   inscription: PropTypes.any,
+  uninscribedSats: PropTypes.any,
   collection: PropTypes.any,
   nostr: NostrEvenType,
   auction: PropTypes.any,
@@ -569,6 +670,10 @@ ProductDetailsArea.propTypes = {
   isBidsLoading: PropTypes.bool,
   isSpent: PropTypes.bool,
   onAction: PropTypes.func,
+  bidsDisabled: PropTypes.bool,
+  sellDisabled: PropTypes.bool,
+  buyDisabled: PropTypes.bool,
+  auctionDisabled: PropTypes.bool,
 };
 
 ProductDetailsArea.defaultProps = {

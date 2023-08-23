@@ -43,11 +43,9 @@ const Inscribor = ({ className, space }) => {
     }
   };
 
-  useEffect(() => {
-    if (ordinalsPublicKey && message && !signedMessage) {
-      sign();
-    }
-  }, [ordinalsPublicKey]);
+  function onWalletConnected() {
+    setShowInscribeModal(true);
+  }
 
   const messageOnChange = (evt) => {
     setMessage(evt.target.value);
@@ -103,7 +101,7 @@ const Inscribor = ({ className, space }) => {
           </div>
         </div>
 
-        {!ordinalsPublicKey && <ConnectWallet />}
+        {!ordinalsPublicKey && <ConnectWallet callback={onWalletConnected} />}
 
         {showInscribeModal && (
           <InscribeModal

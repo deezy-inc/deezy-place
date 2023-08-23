@@ -59,6 +59,12 @@ const InscribeModal = ({ show, handleModal, message }) => {
 
   const feeRateOnChange = (evt) => setBuyFeeRate(parseInt(evt.target.value));
 
+  useEffect(() => {
+    if (nostrOrdinalsAddress && !ordinalsDestinationAddress) {
+      setOrdinalsDestinationAddress(nostrOrdinalsAddress);
+    }
+  }, [nostrOrdinalsAddress]);
+
   const textSize = textBytes(message);
   const sats = totalSats({
     fileSize: textSize,

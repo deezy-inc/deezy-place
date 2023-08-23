@@ -242,12 +242,15 @@ const InscribeModal = ({ show, handleModal, message }) => {
 
                 <span>{buyFeeRate} sat/vbyte</span>
                 <span>{btcPrice}</span>
-                {Boolean(sats) && bitcoinPrice && (
-                  <span>{`$${satsToFormattedDollarString(
-                    sats,
-                    bitcoinPrice,
-                  )}`}</span>
-                )}
+                {Boolean(sats) &&
+                  sats > 0 &&
+                  bitcoinPrice &&
+                  bitcoinPrice > 0 && (
+                    <span>{`$${satsToFormattedDollarString(
+                      sats,
+                      bitcoinPrice,
+                    )}`}</span>
+                  )}
               </div>
             </div>
           </div>

@@ -41,7 +41,7 @@ export async function signBip322MessageSimple(message) {
   // const message = await prompt("Please enter BIP322 message to sign", "");
   const publicKey = SessionStorage.get(SessionsStorageKeys.ORDINALS_PUBLIC_KEY);
 
-  const nostrScript = getAddressInfo(toXOnly(publicKey.toString()));
+  const nostrScript = await getAddressInfo(toXOnly(publicKey.toString()));
   const scriptPubkey = nostrScript.output;
   const { pubkey } = nostrScript;
 

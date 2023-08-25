@@ -48,9 +48,8 @@ export const useWalletState = () => {
         setNostrPaymentAddress(paymentAddress);
         return;
       }
-      const { address: nostrOrdinalsAddress } = await getAddressInfo(
-        ordinalsPublicKey
-      );
+      const { address: nostrOrdinalsAddress } =
+        getAddressInfo(ordinalsPublicKey);
       setNostrOrdinalsAddress(nostrOrdinalsAddress);
       setNostrPaymentAddress(nostrOrdinalsAddress);
     };
@@ -88,7 +87,7 @@ export const useWalletState = () => {
       showConnectModal,
       onConnectHandler,
       onDisconnectHandler,
-    ]
+    ],
   );
 
   return walletState;

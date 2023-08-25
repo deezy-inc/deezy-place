@@ -25,7 +25,7 @@ function hashBip322Message(message) {
       ...(typeof message === "string" || message instanceof String
         ? utf8ToBytes(message)
         : message),
-    ])
+    ]),
   );
 }
 
@@ -41,13 +41,13 @@ export async function signBip322MessageSimple(message) {
   // const message = await prompt("Please enter BIP322 message to sign", "");
   const publicKey = SessionStorage.get(SessionsStorageKeys.ORDINALS_PUBLIC_KEY);
 
-  const nostrScript = await getAddressInfo(toXOnly(publicKey.toString()));
+  const nostrScript = getAddressInfo(toXOnly(publicKey.toString()));
   const scriptPubkey = nostrScript.output;
   const { pubkey } = nostrScript;
 
   // Generate a tagged hash of message to sign
   const prevoutHash = hexToBytes(
-    "0000000000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000",
   );
   const prevoutIndex = 0xffffffff;
   const sequence = 0;
@@ -63,7 +63,7 @@ export async function signBip322MessageSimple(message) {
     Buffer.from(prevoutHash),
     prevoutIndex,
     sequence,
-    scriptSig
+    scriptSig,
   );
   virtualToSpend.addOutput(Buffer.from(scriptPubkey), 0);
 
@@ -88,7 +88,7 @@ export async function signBip322MessageSimple(message) {
     0,
     [virtualToSign.data.inputs[0].witnessUtxo.script],
     [virtualToSign.data.inputs[0].witnessUtxo.value],
-    bitcoin.Transaction.SIGHASH_DEFAULT
+    bitcoin.Transaction.SIGHASH_DEFAULT,
   );
 
   const sign = await signSigHash({ sigHash });

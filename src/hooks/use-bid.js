@@ -14,10 +14,10 @@ function useBid({ inscriptionId, output }) {
 
   const fetchBid = async () => {
     if (!inscriptionId) return;
-    console.log("[useBid]", {
-      inscriptionId: currentInscriptionId,
-      output: currentOutput,
-    });
+    // console.log("[useBid]", {
+    //   inscriptionId: currentInscriptionId,
+    //   output: currentOutput,
+    // });
     const result = await getNostrBid({
       inscriptionId: currentInscriptionId,
       output: currentOutput,

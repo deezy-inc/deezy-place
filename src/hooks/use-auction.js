@@ -12,7 +12,7 @@ function useAuction(inscriptionId) {
 
   const fetchAuction = async () => {
     if (!currentInscriptionId) return;
-    console.log("[useAuction]", currentInscriptionId);
+    // console.log("[useAuction]", currentInscriptionId);
     const auctions = await getAuctionByInscription(currentInscriptionId);
     const _auction = auctions?.find(
       (a) => a.status === "RUNNING" || a.status === "PENDING",

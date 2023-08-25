@@ -15,13 +15,13 @@ function useInscription(inscriptionId) {
   const fetchNostrInscription = async (utxo) => {
     if (!utxo?.inscriptionId) return;
     const data = await getLatestSellNostrInscription(utxo);
-    console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
+    // console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
     setNostrData(data);
   };
 
   const fetchInscription = async () => {
     if (!currentInscriptionId) return;
-    console.log("[useInscription]", currentInscriptionId);
+    // console.log("[useInscription]", currentInscriptionId);
     const { inscription: _inscription, collection: _collection } =
       await getInscription(currentInscriptionId);
     const output = _inscription

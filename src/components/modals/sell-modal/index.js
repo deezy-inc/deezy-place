@@ -49,7 +49,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
     try {
       const signedPsbt = await signPsbtMessage(
         psbt.toBase64(),
-        nostrOrdinalsAddress
+        nostrOrdinalsAddress,
       );
 
       await publishOrder({
@@ -191,7 +191,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                 {Boolean(ordinalValue) && bitcoinPrice && (
                   <span>{`$${satsToFormattedDollarString(
                     ordinalValue,
-                    bitcoinPrice
+                    bitcoinPrice,
                   )}`}</span>
                 )}
               </div>

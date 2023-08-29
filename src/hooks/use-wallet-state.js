@@ -49,7 +49,7 @@ export const useWalletState = () => {
         return;
       }
       const { address: nostrOrdinalsAddress } = await getAddressInfo(
-        ordinalsPublicKey
+        ordinalsPublicKey,
       );
       setNostrOrdinalsAddress(nostrOrdinalsAddress);
       setNostrPaymentAddress(nostrOrdinalsAddress);
@@ -88,7 +88,7 @@ export const useWalletState = () => {
       showConnectModal,
       onConnectHandler,
       onDisconnectHandler,
-    ]
+    ],
   );
 
   return walletState;

@@ -123,9 +123,7 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
       await publishOrder({
         utxo,
         ordinalValue: bidPrice,
-        signedPsbt: bitcoin.Psbt.fromHex(finalizeData.funded_signed_psbt, {
-          network: NETWORK,
-        }).toBase64(),
+        signedPsbt: finalizeData.funded_signed_psbt,
         type: "buy",
       });
 

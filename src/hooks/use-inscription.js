@@ -15,9 +15,10 @@ function useInscription(inscriptionId) {
   const fetchNostrInscription = async (utxo) => {
     if (!utxo?.inscriptionId) return;
     const data = await getLatestSellNostrInscription(utxo);
-    console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
+    // console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
     setNostrData(data);
   };
+
 
   const fetchInscription = async (id) => {
     const _currentInscriptionId = id || currentInscriptionId;

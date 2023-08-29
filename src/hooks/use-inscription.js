@@ -19,11 +19,13 @@ function useInscription(inscriptionId) {
     setNostrData(data);
   };
 
-  const fetchInscription = async () => {
-    if (!currentInscriptionId) return;
-    // console.log("[useInscription]", currentInscriptionId);
+
+  const fetchInscription = async (id) => {
+    const _currentInscriptionId = id || currentInscriptionId;
+    if (!_currentInscriptionId) return;
+    console.log("[useInscription]", _currentInscriptionId);
     const { inscription: _inscription, collection: _collection } =
-      await getInscription(currentInscriptionId);
+      await getInscription(_currentInscriptionId);
     const output = _inscription
       ? _inscription.output || `${_inscription.txid}:${_inscription.vout}`
       : null;
@@ -44,7 +46,7 @@ function useInscription(inscriptionId) {
     if (!inscriptionId) return;
     setCurrentInscriptionId(inscriptionId);
     setIsPooling(true);
-    fetchInscription();
+    fetchInscription(inscriptionId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inscriptionId]);
 

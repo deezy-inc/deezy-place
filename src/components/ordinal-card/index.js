@@ -28,10 +28,10 @@ const OrdinalCard = ({
   onClick,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
+
   const path = utxo?.inscriptionId
     ? `/inscription/${utxo?.inscriptionId}`
-    : `${MEMPOOL_API_URL}/tx/${utxo?.txid}`;
-
+    : `/output/${utxo?.txid}:${utxo?.vout}`;
 
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
@@ -79,7 +79,7 @@ const OrdinalCard = ({
               utxo &&
               type !== "send" &&
               type !== "buy" &&
-              type !== "view" && <CardOptions utxo={utxo} onSale={onSale} />}
+              type !== "view" && <CardOptions utxo={utxo} onSend={onSale} />}
           </div>
           {/* <Anchor path={`#${slug}`}>
                     <span className="product-name">{title}</span>
@@ -120,7 +120,7 @@ OrdinalCard.propTypes = {
       name: PropTypes.string.isRequired,
       slug: PropTypes.string.isRequired,
       image: ImageType.isRequired,
-    })
+    }),
   ),
   utxo: PropTypes.object,
   confirmed: PropTypes.bool,

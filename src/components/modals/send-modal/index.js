@@ -33,12 +33,18 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({ show, handleModal, utxo, onSale }) => {
+const SendModal = ({
+  show,
+  handleModal,
+  utxo,
+  onSend,
+  isUninscribed = false,
+}) => {
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
   const [sentTxId, setSentTxId] = useState(null);
-  const { ordinalsPublicKey, nostrOrdinalsAddress, walletName } = useWallet();
+  const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
   const [isSending, setIsSending] = useState(false);
 
   const [isMounted, setIsMounted] = useState(true);
@@ -69,7 +75,9 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     setDestinationBtcAddress(newaddr);
   };
 
-  const feeRateOnChange = (evt) => setSendFeeRate(evt.target.value);
+  const feeRateOnChange = (evt) => {
+    setSendFeeRate(parseInt(evt.target.value));
+  };
 
   const boostRequired =
     !!utxo &&
@@ -77,7 +85,7 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
     outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
 
   const closeModal = () => {
-    onSale();
+    onSend();
     handleModal();
   };
 
@@ -191,9 +199,11 @@ const SendModal = ({ show, handleModal, utxo, onSale }) => {
         <p>
           You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}
         </p>
-        <div className="inscription-preview">
-          <InscriptionPreview utxo={utxo} />
-        </div>
+        {!isUninscribed && (
+          <div className="inscription-preview">
+            <InscriptionPreview utxo={utxo} />
+          </div>
+        )}
 
         <div className="placebid-form-box">
           <div className="bid-content">
@@ -307,7 +317,8 @@ SendModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleModal: PropTypes.func.isRequired,
   utxo: PropTypes.object,
-  onSale: PropTypes.func.isRequired,
+  isUninscribed: PropTypes.bool,
+  onSend: PropTypes.func.isRequired,
 };
 
 export default SendModal;

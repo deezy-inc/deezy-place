@@ -1,0 +1,54 @@
+.uninscribed-sats .container {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.uninscribed-sats .table-dark {
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.uninscribed-sats .table-dark th,
+.uninscribed-sats .table-dark td {
+  padding: 12px;
+  border-color: #454d5500 !important;
+}
+
+/* Slightly different colors for the headers */
+.uninscribed-sats .table-dark th {
+  color: white;
+  text-transform: none;
+}
+
+/* Slightly different colors for the body */
+.uninscribed-sats .table-dark td {
+  color: #ddd;
+  text-transform: none;
+}
+
+/* Add rounded corners to the first and last cell in the first row */
+.uninscribed-sats .table-dark thead tr:first-child th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.uninscribed-sats .table-dark thead tr:first-child th:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Add rounded corners to the first and last cell in the last row */
+.uninscribed-sats .table-dark tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+.uninscribed-sats .table-dark tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+.uninscribed-sats .table-hover tbody tr:hover {
+  background-color: #454d55;
+}
+
+.uninscribed-sats .badge {
+  font-size: 100%;
+}

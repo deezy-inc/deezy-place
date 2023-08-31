@@ -10,7 +10,8 @@ const nosft = Nosft({ ...localConfig });
 
 const { connectWallet, onAccountChange } = nosft.wallet;
 const { getAddressInfo } = nosft.address;
-const { doesUtxoContainInscription, getAddressUtxos, isSpent } = nosft.utxo;
+const { doesUtxoContainInscription, getAddressUtxos, isSpent, getOutput } =
+  nosft.utxo;
 const {
   getInscription,
   getInscriptions,
@@ -74,6 +75,7 @@ const {
   satsToFormattedDollarString,
   fetchBitcoinPrice,
   outputValue,
+  partialOutputValue,
   toXOnly,
   sortUtxos,
   parseOutpoint,
@@ -132,6 +134,7 @@ export {
   satsToFormattedDollarString,
   fetchBitcoinPrice,
   outputValue,
+  partialOutputValue,
   toXOnly,
   sortUtxos,
   parseOutpoint,
@@ -146,6 +149,7 @@ export {
   doesUtxoContainInscription,
   getAddressUtxos,
   isSpent,
+  getOutput,
 
   // inscriptions
   getInscription,

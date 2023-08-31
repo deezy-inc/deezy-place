@@ -12,7 +12,11 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
       return;
     }
 
-    window.location.href = `/inscription/${utxo.inscriptionId}`;
+    const path = utxo?.inscriptionId
+      ? `/inscription/${utxo?.inscriptionId}`
+      : `/output/${utxo?.txid}:${utxo?.vout}`;
+
+    window.location.href = path;
     return;
   }
 

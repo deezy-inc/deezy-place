@@ -151,7 +151,7 @@ maxAuctionStartingDate.setDate(maxAuctionStartingDate.getDate() + 7);
 const auctionStartingTime = new Date();
 auctionStartingTime.setMinutes(auctionStartingTime.getMinutes() + 10);
 auctionStartingTime.setMinutes(
-  Math.ceil(auctionStartingTime.getMinutes() / 10) * 10
+  Math.ceil(auctionStartingTime.getMinutes() / 10) * 10,
 );
 
 const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
@@ -171,7 +171,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
   const [step, setStep] = useState(0);
   const [startDate, setStartDate] = useState(auctionStartingTime);
   const [selectedOption, setSelectedOption] = useState(
-    _TIME_OPTIONS_IDS.Every10Minutes
+    _TIME_OPTIONS_IDS.Every10Minutes,
   );
   const [signedEventsCounter, { inc: incCounter, reset: resetCounter }] =
     useCounter(0);
@@ -208,7 +208,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     () => import("@components/countdown-timer/countdown-timer-text"),
     {
       ssr: false,
-    }
+    },
   );
 
   const secondsBetweenEachDecrease = useMemo(() => {
@@ -263,7 +263,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         } else {
           signedPsbt = await signPsbtMessage(
             psbt.toBase64(),
-            nostrOrdinalsAddress
+            nostrOrdinalsAddress,
           );
           signedPsbt = signedPsbt.toBase64();
         }
@@ -479,7 +479,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   <InputGroup className="mb-lg-5">
                     <Form.Label>Initial price (in Sats)</Form.Label>
                     <Form.Control
-                      defaultValue={utxo.value}
+                      value={ordinalValue}
                       onChange={priceOnChange}
                       type="number"
                       placeholder="Price (in Sats)"
@@ -541,21 +541,21 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       ordinalValue,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(reservePrice) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       reservePrice,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(decreaseAmount) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       decreaseAmount,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
                 </div>
@@ -578,9 +578,9 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                           // set updatedDate to startingDate
                           const updatedDateTime = dayjs(
                             `${updatedDate} ${dayjs(startingTime).format(
-                              "HH:mm"
+                              "HH:mm",
                             )}`,
-                            "YYYY-MM-DD HH:mm"
+                            "YYYY-MM-DD HH:mm",
                           );
 
                           setStartingDate(date);
@@ -608,7 +608,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                           // set updatedDate to startingDate
                           const updatedDateTime = dayjs(
                             `${updatedDate} ${updatedTime}`,
-                            "YYYY-MM-DD HH:mm"
+                            "YYYY-MM-DD HH:mm",
                           );
 
                           setStartDate(new Date(updatedDateTime));
@@ -682,21 +682,21 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       ordinalValue,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(reservePrice) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       reservePrice,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(decreaseAmount) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       decreaseAmount,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
@@ -740,21 +740,21 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
                   {Boolean(ordinalValue) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       ordinalValue,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(reservePrice) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       reservePrice,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 
                   {Boolean(decreaseAmount) && bitcoinPrice && (
                     <span>{`$${satsToFormattedDollarString(
                       decreaseAmount,
-                      bitcoinPrice
+                      bitcoinPrice,
                     )}`}</span>
                   )}
 

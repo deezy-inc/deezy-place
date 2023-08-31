@@ -169,19 +169,19 @@ const CollectionOnSale = ({
 
         const inscriptions = [];
         for (const i of inscriptionsWithEvents) {
-          const auctionData = runningInscriptions.find(
+          const auctions = runningInscriptions.find(
             (ni) => ni.inscriptionId === i.id,
           );
 
           let nextPriceDrop;
-          const currentEvent = auctionData.metadata.find(
-            (m) => m.price === auctionData.currentPrice,
+          const currentEvent = auctions.metadata.find(
+            (m) => m.price === auctions.currentPrice,
           );
 
           const nostr = currentEvent.nostr;
 
           if (!currentEvent.isLastEvent) {
-            nextPriceDrop = auctionData.metadata[currentEvent.index + 1];
+            nextPriceDrop = auctions.metadata[currentEvent.index + 1];
             // create a new date with tomorrow
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -192,7 +192,7 @@ const CollectionOnSale = ({
           inscriptions.push({
             ...i,
             inscriptionId: i.id,
-            auction: { ...auctionData, nextPriceDrop },
+            auction: { ...auctions, nextPriceDrop },
             nostr,
           });
         }

@@ -17,6 +17,9 @@ const OrdinalCard = ({ overlay, inscription, auction, onClick }) => {
 
   const id = inscription?.id;
   const num = inscription?.num;
+  const inscriptionId = inscription?.inscriptionId
+    ? shortenStr(inscription?.inscriptionId)
+    : "";
   const { name, slug, icon } = inscription?.collection || {};
   const hasCollection = Boolean(inscription?.collection);
 
@@ -71,7 +74,7 @@ const OrdinalCard = ({ overlay, inscription, auction, onClick }) => {
               <div className="more-author-text">
                 {id && (
                   <Anchor className="logo-dark" path={path}>
-                    {num ? `#${num}` : "\u00A0"}
+                    {inscriptionId ? `${inscriptionId}` : "\u00A0"}
                   </Anchor>
                 )}
                 {!id && <Skeleton width={140} />}

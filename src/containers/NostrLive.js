@@ -1,50 +1,14 @@
 /* eslint-disable react/no-array-index-key */
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
-import { deepClone } from "@utils/methods";
 import Slider, { SliderItem } from "@ui/slider";
-import {
-  getInscription,
-  isTextInscription,
-  takeLatestInscription,
-  isSpent,
-} from "@services/nosft";
-import { Observable } from "rxjs";
-import "react-loading-skeleton/dist/skeleton.css";
-import { nostrPool } from "@utils/nostr-relay";
-import {
-  MAX_FETCH_LIMIT,
-  MAX_LIMIT_ONSALE,
-  MAX_ONSALE,
-  MIN_ONSALE,
-  ONSALE_BATCH_SIZE,
-} from "@lib/constants.config";
-import { Subject } from "rxjs";
-import { scan } from "rxjs/operators";
 import OrdinalCard from "@components/ordinal-card";
 import Anchor from "@ui/anchor";
-
 import { useWallet } from "@context/wallet-context";
 import ConnectWallet from "@components/modals/connect-wallet";
 import BuyModal from "@components/modals/buy-modal";
-
-export const updateInscriptions = (acc, curr) => {
-  const existingIndex = acc.findIndex(
-    (item) => item.inscriptionId === curr.inscriptionId && item.num === curr.num
-  );
-
-  if (existingIndex !== -1) {
-    if (takeLatestInscription(acc[existingIndex], curr)) {
-      acc[existingIndex] = curr;
-    }
-  } else {
-    acc.push(curr);
-  }
-
-  return acc.sort((a, b) => b.created_at - a.created_at).slice(0, MAX_ONSALE);
-};
 
 const collectionAuthor = [
   {
@@ -94,45 +58,10 @@ const SliderOptions = {
   ],
 };
 
-const useOpenOrdersSubscription = (observable, setter, initialData) => {
-  useEffect(() => {
-    const subscription = observable
-      .pipe(scan(updateInscriptions, initialData))
-      .subscribe(setter);
-    return () => {
-      try {
-        subscription.unsubscribe();
-        // eslint-disable-next-line no-empty
-      } catch (error) {}
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-};
-
-const NostrLive = ({ className, space, type }) => {
+const NostrLive = ({ className, space, type, openOffers }) => {
   const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
-  const [openOrders, setOpenOrders] = useState([]);
-  const [openTextOrders, setTextOpenOrders] = useState([]);
-  const addOpenOrder$ = useRef(new Subject());
-  const addTextOpenOrder$ = useRef(new Subject());
-  const orderSubscriptionRef = useRef(null);
-  const [refreshHack, setRefreshHack] = useState(false);
-  const processedEvents = useRef(new Set());
-  const fetchLimit = useRef(MAX_LIMIT_ONSALE);
-  const processedOrders = useRef(0);
-  const fetchIds = useRef([]);
   const [clickedUtxo, setClickedUtxo] = useState(null);
-  const [isWindowFocused, setIsWindowFocused] = useState(true);
   const [showBuyModal, setShowBuyModal] = useState(false);
-
-  // We can improve how we handle the orders,
-  // but for now we will just concat the text orders with the open orders
-  const orders = useMemo(() => {
-    if (openOrders.length < MIN_ONSALE) {
-      return openOrders.concat(openTextOrders).slice(0, MIN_ONSALE).reverse();
-    }
-    return openOrders.reverse();
-  }, [openOrders, openTextOrders]);
 
   const handleBuyModal = () => {
     setShowBuyModal((prev) => !prev);
@@ -143,7 +72,7 @@ const NostrLive = ({ className, space, type }) => {
   }
 
   function onCardClicked(id) {
-    const inscriptionClicked = orders.find((i) => i.inscriptionId === id);
+    const inscriptionClicked = openOffers.find((i) => i.inscriptionId === id);
     if (!inscriptionClicked) {
       return;
     }
@@ -161,124 +90,9 @@ const NostrLive = ({ className, space, type }) => {
     setRefreshHack(!refreshHack);
   };
 
-  const addNewOpenOrder = (order) => {
-    addOpenOrder$.current.next(order);
-  };
-
-  const addNewTextOpenOrder = (order) => {
-    addTextOpenOrder$.current.next(order);
-  };
-
-  const getInscriptionData = async (event) => {
-    const { inscription } = await getInscription(event.inscriptionId);
-    const forSaleInscription = deepClone({
-      ...inscription,
-      ...event,
-    });
-    return forSaleInscription;
-  };
-
-  const unsubscribeOrders = () => {
-    try {
-      orderSubscriptionRef?.current?.unsubscribe();
-    } catch (err) {
-      // eslint-disable-next-line no-empty
-    }
-  };
-
-  const shouldFetchMore = () => {
-    const limit =
-      processedEvents.current.size === fetchLimit.current &&
-      processedOrders.current < MIN_ONSALE &&
-      processedEvents.current.size <= MAX_FETCH_LIMIT;
-    // Keep {} to easy debugging
-    return limit;
-  };
-
-  const subscribeOrdersWithLimit = async (limit) => {
-    if (
-      openOrders.length >= MAX_ONSALE ||
-      processedEvents.current >= MAX_FETCH_LIMIT
-    )
-      return;
-
-    // Based on the type, we subscribe to elements that are on sale or in auction.
-    const subscription = nostrPool
-      .subscribeOrders({
-        limit,
-        type,
-      })
-      .subscribe(async (event) => {
-        if (processedEvents.current.has(event.id)) return;
-        processedEvents.current.add(event.id);
-
-        try {
-          const inscription = await getInscriptionData(event);
-          inscription.nostr = {...event};
-
-          const isSpentUtxo = await isSpent(inscription);
-          if (isSpentUtxo.spent) {
-            console.log("utxo is spent", inscription);
-            return;
-          }
-
-          if (!isTextInscription(inscription)) {
-            processedOrders.current += 1;
-            addNewOpenOrder(inscription);
-          } else {
-            addNewTextOpenOrder(inscription);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-
-        if (shouldFetchMore() && !fetchIds.current.includes(event.id)) {
-          fetchIds.current.push(event.id);
-          unsubscribeOrders();
-          nostrPool.unsubscribeOrders();
-          fetchLimit.current += ONSALE_BATCH_SIZE;
-          subscribeOrdersWithLimit(fetchLimit.current);
-        }
-      });
-
-    orderSubscriptionRef.current = subscription;
-  };
-
-  useOpenOrdersSubscription(addOpenOrder$.current, setOpenOrders, openOrders);
-  useOpenOrdersSubscription(
-    addTextOpenOrder$.current,
-    setTextOpenOrders,
-    openTextOrders
-  );
-
-  useEffect(() => {
-    if (isWindowFocused) {
-      console.log("isWindowFocused: reload");
-      subscribeOrdersWithLimit(fetchLimit.current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWindowFocused]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsWindowFocused(!document.hidden);
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    subscribeOrdersWithLimit(fetchLimit.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-
   const renderCards = () => {
-    if (orders.length) {
-      return orders.map((utxo) => (
+    if (openOffers.length) {
+      return openOffers.map((utxo) => (
         <SliderItem key={utxo.txid} className="ordinal-slide">
           <OrdinalCard
             overlay
@@ -331,18 +145,20 @@ const NostrLive = ({ className, space, type }) => {
           </div>
         </div>
 
-        {!nostrOrdinalsAddress && <ConnectWallet callback={onWalletConnected} />}
-          {showBuyModal && clickedUtxo && (
-            <BuyModal
-              show={showBuyModal}
-              handleModal={handleBuyModal}
-              utxo={clickedUtxo}
-              onSale={() => {
-                window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
-              }}
-              nostr={clickedUtxo.nostr}
-            />
-          )}
+        {!nostrOrdinalsAddress && (
+          <ConnectWallet callback={onWalletConnected} />
+        )}
+        {showBuyModal && clickedUtxo && (
+          <BuyModal
+            show={showBuyModal}
+            handleModal={handleBuyModal}
+            utxo={clickedUtxo}
+            onSale={() => {
+              window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
+            }}
+            nostr={clickedUtxo.nostr}
+          />
+        )}
 
         <div className="row">
           <div className="col-lg-12">

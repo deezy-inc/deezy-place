@@ -27,25 +27,14 @@ const Inscription = () => {
     inscription,
     collection,
     nostrData,
+    bids,
+    isLoading,
+    auction: auctionData,
     setIsPooling: setIsPoolingInscription,
   } = useInscription(slug);
-  const {
-    auction: auctions,
-    setIsPooling: setIsPoolingAuction,
-    reset: stopPoolingAuction,
-  } = useAuction(inscription?.inscriptionId);
+  
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
-
-  const {
-    bids,
-    setIsPooling: setIsPoolingBids,
-    reset: stopPoolingBids,
-    isLoading: isBidsLoading,
-  } = useBid({
-    inscriptionId: inscription?.inscriptionId,
-    output: inscription?.output,
-  });
 
   const onAction = async (startPooling) => {
     setIsPoolingAuction(startPooling);
@@ -80,7 +69,7 @@ const Inscription = () => {
               nostr={nostrData}
               auction={auctions}
               bids={bids}
-              isBidsLoading={isBidsLoading}
+              isBidsLoading={isLoading}
               onAction={onAction}
             />
           )}

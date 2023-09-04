@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getInscription, getLatestSellNostrInscription } from "@services/nosft";
+import {  getLatestSellNostrInscription } from "@services/nosft";
 import { useInterval } from "react-use";
+import { getInscription} from "../services/nitrous-api"
 
 const delay = 5000;
 
@@ -9,30 +10,31 @@ function useInscription(inscriptionId) {
   const [currentInscriptionId, setCurrentInscriptionId] =
     useState(inscriptionId);
   const [nostrData, setNostrData] = useState();
+  const [bids, setBids] = useState(null);
+  const [auction, setAuction] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [collection, setCollection] = useState();
   const [isPooling, setIsPooling] = useState(true);
-
-  const fetchNostrInscription = async (utxo) => {
-    if (!utxo?.inscriptionId) return;
-    const data = await getLatestSellNostrInscription(utxo);
-    // console.log("[fetchNostrInscription]", utxo?.inscriptionId, data);
-    setNostrData(data);
-  };
-
 
   const fetchInscription = async (id) => {
     const _currentInscriptionId = id || currentInscriptionId;
     if (!_currentInscriptionId) return;
     console.log("[useInscription]", _currentInscriptionId);
-    const { inscription: _inscription, collection: _collection } =
-      await getInscription(_currentInscriptionId);
+    const result = await getInscription(_currentInscriptionId);
+    const { inscription: _inscription, collection: _collection, nostr: _nostr, bids: _bids, auction: _auction  } = result;
+    console.log('[useInscription]', id, JSON.stringify({ _auction }))
+    
     const output = _inscription
-      ? _inscription.output || `${_inscription.txid}:${_inscription.vout}`
+      ? _inscription.output || `${_inscription.txid}:${_inscription.  vout}`
       : null;
     const utxo = { ..._inscription, output };
+
+    setIsLoading(false);
     setInscription(utxo);
     setCollection(_collection);
-    await fetchNostrInscription(utxo);
+    setNostrData(_nostr);
+    setBids(_bids);
+    setAuction(_auction)
   };
 
   useInterval(
@@ -50,7 +52,7 @@ function useInscription(inscriptionId) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inscriptionId]);
 
-  return { inscription, collection, nostrData, isPooling, setIsPooling };
+  return { inscription, collection, nostrData, isPooling, setIsPooling, bids, isLoading, auction };
 }
 
 export default useInscription;

@@ -29,10 +29,10 @@ const Inscription = () => {
     nostrData,
     bids,
     isLoading,
-    auction: auctionData,
+    auction: auctions,
     setIsPooling: setIsPoolingInscription,
   } = useInscription(slug);
-  
+
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
 

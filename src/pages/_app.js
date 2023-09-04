@@ -11,30 +11,30 @@ import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
 
 const MyApp = ({ Component, pageProps }) => {
-    const router = useRouter();
-    useEffect(() => {
-        sal({ threshold: 0.1, once: true });
-    }, [router.asPath]);
+  const router = useRouter();
+  useEffect(() => {
+    sal({ threshold: 0.1, once: true });
+  }, [router.asPath]);
 
-    useEffect(() => {
-        sal();
-    }, []);
-    useEffect(() => {
-        document.body.className = `${pageProps.className}`;
-    });
-    return (
-        <ThemeProvider defaultTheme="dark">
-            <GoogleAnalytics trackPageViews />
-            <Component {...pageProps} />
-        </ThemeProvider>
-    );
+  useEffect(() => {
+    sal();
+  }, []);
+  useEffect(() => {
+    document.body.className = `${pageProps.className}`;
+  });
+  return (
+    <ThemeProvider defaultTheme="dark">
+      <GoogleAnalytics trackPageViews />
+      <Component {...pageProps} />
+    </ThemeProvider>
+  );
 };
 
 MyApp.propTypes = {
-    Component: PropTypes.elementType,
-    pageProps: PropTypes.shape({
-        className: PropTypes.string,
-    }),
+  Component: PropTypes.elementType,
+  pageProps: PropTypes.shape({
+    className: PropTypes.string,
+  }),
 };
 
 export default MyApp;

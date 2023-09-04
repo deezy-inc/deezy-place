@@ -12,7 +12,7 @@ import homepageData from "@data/general/home.json";
 
 import NostrLive from "@containers/NostrLive";
 import MainCollections from "@containers/MainCollections";
-import { useWalletState, useHeaderHeight } from "@hooks";
+import { useWalletState, useHeaderHeight, useHome } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 
 export async function getStaticProps() {
@@ -24,6 +24,7 @@ const App = () => {
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
+  const { sales, auctions, loading } = useHome();
 
   const content = normalizedData(homepageData?.content || []);
 
@@ -37,10 +38,12 @@ const App = () => {
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           {!userLoggedIn && <HeroArea data={content["hero-section"]} />}
-          <MainCollections />
-          <NostrLive type="bidding" />
-          <NostrLive />
-          {userLoggedIn && <OrdinalsArea />}
+          <>
+            <MainCollections />
+            <NostrLive type="bidding" openOffers={auctions} loading={loading} />
+            <NostrLive openOffers={sales} loading={loading} />
+            {userLoggedIn && <OrdinalsArea />}
+          </>
         </main>
 
         <Footer />

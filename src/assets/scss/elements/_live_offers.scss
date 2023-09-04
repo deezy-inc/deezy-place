@@ -1,0 +1,15 @@
+.live-offers .item-enter {
+  opacity: 0;
+}
+.live-offers .item-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.live-offers .item-exit {
+  opacity: 1;
+}
+.live-offers .item-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}

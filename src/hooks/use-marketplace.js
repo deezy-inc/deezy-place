@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useAsync } from "react-use";
+import { NOSFT_BASE_API_URL } from "@services/nosft";
 
-const base = "https://w8rejxzn8k.us-east-1.awsapprunner.com/api/v1/marketplace";
+const base = `https://${NOSFT_BASE_API_URL}/api/v1/marketplace`;
 
 const getOffers = async () => {
   const { data } = await axios.get(base);

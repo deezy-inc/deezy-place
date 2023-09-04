@@ -1,8 +1,8 @@
+import { NOSFT_BASE_API_URL } from "@services/nosft";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const wsLink = "wss://w8rejxzn8k.us-east-1.awsapprunner.com";
-// const wsLink = "ws://localhost:4005";
+const wsLink = `wss://${NOSFT_BASE_API_URL}`;
 
 export default function useDeezySockets({
   onSale = false,

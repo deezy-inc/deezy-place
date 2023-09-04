@@ -1,12 +1,13 @@
 import { useDeezySockets } from "@hooks";
+import { NOSFT_BASE_API_URL } from "@services/nosft";
 
 import axios from "axios";
 import { useMemo } from "react";
 import { useAsync } from "react-use";
 
-const getHome = async () => {
+const getAuctions = async () => {
   const { data } = await axios.get(
-    "https://w8rejxzn8k.us-east-1.awsapprunner.com/api/v1/auctions",
+    `https://${NOSFT_BASE_API_URL}/api/v1/auctions`,
   );
   return {
     auctions: data.auctions,

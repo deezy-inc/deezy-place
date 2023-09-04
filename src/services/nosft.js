@@ -6,6 +6,8 @@ const localConfig = {
   ...constants,
 };
 
+const NOSFT_BASE_API_URL = "deezy-nostr-client-valf2v35cq-uc.a.run.app";
+
 const nosft = Nosft({ ...localConfig });
 
 const { connectWallet, onAccountChange } = nosft.wallet;
@@ -235,4 +237,5 @@ export {
   FEE_LEVEL,
   DEEZY_BOOST_API,
   INSCRIBOR_URL,
+  NOSFT_BASE_API_URL,
 };

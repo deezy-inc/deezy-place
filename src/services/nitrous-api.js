@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 function mapInscription(obj) {
+  console.log("[obj]", obj);
   return {
     content_length: String(obj.contentLength),
     content_type: obj.contentType,
@@ -14,7 +15,7 @@ function mapInscription(obj) {
     output: obj.output,
     offset: String(obj.offset),
     inscriptionId: obj.inscriptionId,
-    vout: obj.vout ? Number(obj.vout) : undefined,
+    vout: Number(obj.vout),
     txid: obj.txid,
     value: obj.value,
   };

@@ -14,6 +14,7 @@ import useAuction from "src/hooks/use-auction";
 import useInscription from "src/hooks/use-inscription";
 import useIsSpent from "src/hooks/use-is-spent";
 import useBid from "src/hooks/use-bid";
+import { useSimpleScrollTop } from "src/hooks/use-simple-scroll-top";
 
 const Inscription = () => {
   const walletState = useWalletState();
@@ -22,6 +23,7 @@ const Inscription = () => {
 
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
+  useSimpleScrollTop();
 
   const {
     inscription,

@@ -1,6 +1,6 @@
 {
   "name": "nosft",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",

@@ -4,7 +4,7 @@ import { NOSFT_BASE_API_URL } from "@services/nosft";
 import axios from "axios";
 import { useMemo } from "react";
 
-const auctionsApiUrl = `https://${NOSFT_BASE_API_URL}/api/v1/auctions`;
+const auctionsApiUrl = `https://${NOSFT_BASE_API_URL}/auctions`;
 
 const fetcher = async () => {
   const { data } = await axios.get(auctionsApiUrl);

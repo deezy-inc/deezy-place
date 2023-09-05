@@ -4,11 +4,11 @@ import { useMemo } from "react";
 import { NOSFT_BASE_API_URL } from "@services/nosft";
 import useDeezySockets from "./use-sockets";
 
-const marketplaceApiUrl = `https://${NOSFT_BASE_API_URL}/api/v1/marketplace`;
+const marketplaceApiUrl = `https://${NOSFT_BASE_API_URL}/inscriptions-for-sale`;
 
 const fetcher = async (url) => {
   const { data } = await axios.get(url);
-  return data.marketplace;
+  return data;
 };
 
 export default function useMarketplace() {

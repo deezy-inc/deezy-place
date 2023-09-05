@@ -4,18 +4,28 @@ import { useDeezySockets } from "@hooks";
 import axios from "axios";
 import { NOSFT_BASE_API_URL } from "@services/nosft";
 
-const homeApiUrl = `https://${NOSFT_BASE_API_URL}/api/v1/home`;
+const auctionsUrl = `https://${NOSFT_BASE_API_URL}/auctions`;
+const salesUrl = `https://${NOSFT_BASE_API_URL}/inscriptions-for-sale`;
 
-const fetcher = async () => {
-  const { data } = await axios.get(homeApiUrl);
-  return {
-    auctions: data.auctions,
-    sales: data.marketplace,
-  };
+const fetchAuctions = async () => {
+  const { data } = await axios.get(auctionsUrl);
+  return data.auctions;
+};
+
+const fetchSales = async () => {
+  const { data } = await axios.get(salesUrl);
+  return data;
 };
 
 export default function useHome() {
-  const { data: cache, isValidating } = useSWR(homeApiUrl, fetcher);
+  const { data: auctionsCache, isValidating: isValidatingAuctions } = useSWR(
+    auctionsUrl,
+    fetchAuctions,
+  );
+  const { data: salesCache, isValidating: isValidatingSales } = useSWR(
+    salesUrl,
+    fetchSales,
+  );
 
   const { sales, auctions, loadingAuctions, loadingSales } = useDeezySockets({
     onSale: true,
@@ -27,9 +37,9 @@ export default function useHome() {
   const home = useMemo(() => {
     const hasAuctions = auctions && auctions.length > 0;
     const hasSales = sales && sales.length > 0;
-    const hasCache = cache && cache.auctions && cache.sales;
+    const hasAuctionsCache = auctionsCache && auctionsCache.length > 0;
+    const hasSalesCache = salesCache && salesCache.length > 0;
 
-    // Prioritize real-time data from WebSocket
     if (hasAuctions || hasSales) {
       return {
         fromCache: false,
@@ -39,24 +49,35 @@ export default function useHome() {
       };
     }
 
-    // Fall back to cached data if WebSocket data isn't available
-    if (hasCache) {
+    if (hasAuctionsCache || hasSalesCache) {
       return {
         fromCache: true,
-        auctions: cache.auctions || [],
-        sales: cache.sales || [],
+        auctions: auctionsCache || [],
+        sales: salesCache || [],
         loading: false,
       };
     }
 
-    // If neither is available, indicate loading state
     return {
       fromCache: false,
       auctions: [],
       sales: [],
-      loading: loadingAuctions && loadingSales && isValidating,
+      loading:
+        loadingAuctions &&
+        loadingSales &&
+        isValidatingAuctions &&
+        isValidatingSales,
     };
-  }, [loadingAuctions, loadingSales, auctions, sales, cache]);
+  }, [
+    loadingAuctions,
+    loadingSales,
+    isValidatingAuctions,
+    isValidatingSales,
+    auctions,
+    sales,
+    auctionsCache,
+    salesCache,
+  ]);
 
   return home;
 }

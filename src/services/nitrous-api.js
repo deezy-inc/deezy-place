@@ -14,9 +14,9 @@ function mapInscription(obj) {
     output: obj.output,
     offset: String(obj.offset),
     inscriptionId: obj.inscriptionId,
-    vout: 0, // default value as it's not present in the second object
-    txid: '', // default value as it's not present in the second object
-    value: 0, // default value as it's not present in the second object
+    vout: obj.vout,
+    txid: obj.txid, 
+    value: obj.value 
   };
 }
 

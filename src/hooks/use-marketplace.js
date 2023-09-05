@@ -1,21 +1,45 @@
+import useSWR from "swr";
 import axios from "axios";
-import { useAsync } from "react-use";
+import { useMemo } from "react";
 import { NOSFT_BASE_API_URL } from "@services/nosft";
+import useDeezySockets from "./use-sockets";
 
-const base = `https://${NOSFT_BASE_API_URL}/api/v1/marketplace`;
+const marketplaceApiUrl = `https://${NOSFT_BASE_API_URL}/api/v1/marketplace`;
 
-const getOffers = async () => {
-  const { data } = await axios.get(base);
+const fetcher = async (url) => {
+  const { data } = await axios.get(url);
   return data.marketplace;
 };
 
 export default function useMarketplace() {
   const {
-    value: openOrders,
+    data: cache,
     error,
-    loading,
-  } = useAsync(async () => {
-    return getOffers();
-  }, []);
-  return { loading, openOrders: openOrders || [], error };
+    isValidating,
+  } = useSWR(marketplaceApiUrl, fetcher);
+
+  const { sales: orders, loadingSales } = useDeezySockets({
+    onSale: true,
+    limitSaleResults: false,
+  });
+
+  const openOrders = useMemo(() => {
+    if (orders && orders.length > 0) {
+      console.log("before return orders");
+      return orders;
+    } else if (cache && cache.length > 0) {
+      console.log("before return cache");
+      return cache;
+    } else {
+      return [];
+    }
+  }, [orders, cache]);
+
+  const loading = loadingSales && isValidating;
+
+  return {
+    loading: openOrders && openOrders.length > 0 ? false : loading,
+    openOrders: openOrders || [],
+    error,
+  };
 }

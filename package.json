@@ -53,6 +53,7 @@
     "rxjs": "^7.8.1",
     "sal.js": "^0.8.5",
     "socket.io-client": "^4.7.2",
+    "swr": "^2.2.2",
     "tiny-secp256k1": "^2.2.3",
     "varuint-bitcoin": "^1.1.2"
   },

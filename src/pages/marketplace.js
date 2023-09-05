@@ -19,14 +19,7 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
-  const { openOrders: cache, loading: loadingCache } = useMarketplace();
-
-  const { sales: openOrders, loadingSales } = useDeezySockets({
-    onSale: true,
-    limitSaleResults: false,
-  });
-
-  const loading = loadingCache && loadingSales;
+  const { openOrders, loading } = useMarketplace();
 
   return (
     <WalletContext.Provider value={walletState}>
@@ -34,11 +27,7 @@ const App = () => {
         <SEO pageTitle="Deezy" />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          <NostrLiveAll
-            openOrders={openOrders}
-            loading={loading}
-            cache={cache}
-          />
+          <NostrLiveAll openOrders={openOrders} loading={loading} />
         </main>
 
         <Footer />

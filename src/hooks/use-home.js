@@ -1,12 +1,13 @@
+import useSWR from "swr";
+import { useMemo } from "react";
 import { useDeezySockets } from "@hooks";
+import axios from "axios";
 import { NOSFT_BASE_API_URL } from "@services/nosft";
 
-import axios from "axios";
-import { useMemo } from "react";
-import { useAsync } from "react-use";
+const homeApiUrl = `https://${NOSFT_BASE_API_URL}/api/v1/home`;
 
-const getHome = async () => {
-  const { data } = await axios.get(`https://${NOSFT_BASE_API_URL}/api/v1/home`);
+const fetcher = async () => {
+  const { data } = await axios.get(homeApiUrl);
   return {
     auctions: data.auctions,
     sales: data.marketplace,
@@ -14,6 +15,8 @@ const getHome = async () => {
 };
 
 export default function useHome() {
+  const { data: cache, isValidating } = useSWR(homeApiUrl, fetcher);
+
   const { sales, auctions, loadingAuctions, loadingSales } = useDeezySockets({
     onSale: true,
     onAuction: true,
@@ -21,31 +24,39 @@ export default function useHome() {
     limitSaleResults: true,
   });
 
-  const { value: cache, loading: loadingCache } = useAsync(async () => {
-    return getHome();
-  }, []);
-
   const home = useMemo(() => {
-    if (
-      cache &&
-      cache.auctions &&
-      cache.sales &&
-      (loadingAuctions || loadingSales)
-    ) {
+    const hasAuctions = auctions && auctions.length > 0;
+    const hasSales = sales && sales.length > 0;
+    const hasCache = cache && cache.auctions && cache.sales;
+
+    // Prioritize real-time data from WebSocket
+    if (hasAuctions || hasSales) {
       return {
-        auctions: cache.auctions || [],
-        sales: cache.sales || [],
-        fromCache: true,
+        fromCache: false,
+        auctions: auctions || [],
+        sales: sales || [],
         loading: false,
       };
     }
+
+    // Fall back to cached data if WebSocket data isn't available
+    if (hasCache) {
+      return {
+        fromCache: true,
+        auctions: cache.auctions || [],
+        sales: cache.sales || [],
+        loading: false,
+      };
+    }
+
+    // If neither is available, indicate loading state
     return {
       fromCache: false,
-      auctions: auctions || [],
-      sales: sales || [],
-      loading: loadingCache || loadingAuctions || loadingSales,
+      auctions: [],
+      sales: [],
+      loading: loadingAuctions && loadingSales && isValidating,
     };
-  }, [loadingCache, loadingSales, auctions, sales, cache]);
+  }, [loadingAuctions, loadingSales, auctions, sales, cache]);
 
   return home;
 }

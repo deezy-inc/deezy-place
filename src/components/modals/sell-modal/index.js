@@ -39,6 +39,8 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const sale = async () => {
     setIsOnSale(true);
 
+    console.log("[utxo]", utxo);
+
     const psbt = await generatePSBTListingInscriptionForSale({
       utxo,
       paymentAddress: destinationBtcAddress,

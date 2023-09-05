@@ -1,22 +1,22 @@
-const axios = require('axios');
+const axios = require("axios");
 
 function mapInscription(obj) {
   return {
     content_length: String(obj.contentLength),
     content_type: obj.contentType,
-    created: String(obj.created),
+    created: obj.created ? Number(obj.created) : 0,
     genesis_fee: String(obj.genesisFee),
     genesis_height: String(obj.genesisHeight),
-    id: obj.id,
+    id: String(obj.id),
     num: String(obj.num),
     owner: obj.owner,
     sats: String(obj.sats),
     output: obj.output,
     offset: String(obj.offset),
     inscriptionId: obj.inscriptionId,
-    vout: obj.vout,
-    txid: obj.txid, 
-    value: obj.value 
+    vout: obj.vout ? Number(obj.vout) : undefined,
+    txid: obj.txid,
+    value: obj.value,
   };
 }
 
@@ -41,7 +41,7 @@ function mapBidEvent(obj) {
     ordinalOwner: obj.ordinalOwner,
     output: obj.output,
     created_at: Number(obj.bidCreatedAt),
-    nostr: mapNostrEvent(obj.nostr)
+    nostr: mapNostrEvent(obj.nostr),
   };
 }
 
@@ -70,7 +70,9 @@ function mapAuction(obj) {
 
 async function getInscription(inscriptionId) {
   try {
-    const response = await axios.get(`https://9nukpegt2c.execute-api.us-east-1.amazonaws.com/inscription/${inscriptionId}`);
+    const response = await axios.get(
+      `https://9nukpegt2c.execute-api.us-east-1.amazonaws.com/inscription/${inscriptionId}`,
+    );
     const inscriptionData = await response.data;
 
     const _auction = inscriptionData.auctions?.find(
@@ -80,14 +82,15 @@ async function getInscription(inscriptionId) {
     return {
       ...inscriptionData,
       inscription: mapInscription(inscriptionData.inscription),
-      nostr: inscriptionData.sellEvents?.[0] ? mapNostrEvent(inscriptionData.sellEvents?.[0]) : undefined,
+      nostr: inscriptionData.sellEvents?.[0]
+        ? mapNostrEvent(inscriptionData.sellEvents?.[0])
+        : undefined,
       bids: inscriptionData.bids?.map(mapBidEvent),
-      auction: mapAuction(_auction)
-    }
-  
+      auction: mapAuction(_auction),
+    };
   } catch (error) {
     console.error(error);
   }
 }
 
-module.exports = {getInscription};
+module.exports = { getInscription };

@@ -6,7 +6,8 @@ const localConfig = {
   ...constants,
 };
 
-const NOSFT_BASE_API_URL = "deezy-nostr-client-valf2v35cq-uc.a.run.app";
+const NOSFT_BASE_API_URL =
+  "deezy-nostr-client-service.dev.deezy-nostr-client.espaciofuturo.co";
 
 const nosft = Nosft({ ...localConfig });
 

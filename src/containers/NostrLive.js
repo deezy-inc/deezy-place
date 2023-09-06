@@ -58,7 +58,7 @@ const SliderOptions = {
   ],
 };
 
-const NostrLive = ({ className, space, type, openOffers }) => {
+const NostrLive = ({ className, space, type, openOffers, loading }) => {
   const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [clickedUtxo, setClickedUtxo] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
@@ -121,6 +121,8 @@ const NostrLive = ({ className, space, type, openOffers }) => {
     );
   };
 
+  console.log("openOffers", type, openOffers?.length, { loading });
+
   return (
     <div className={clsx(space === 1 && "rn-section-gapTop", className)}>
       <div className="container">
@@ -176,6 +178,7 @@ NostrLive.propTypes = {
   className: PropTypes.string,
   space: PropTypes.oneOf([1, 2]),
   type: PropTypes.oneOf(["bidding", "live"]),
+  loading: PropTypes.bool,
 };
 
 NostrLive.defaultProps = {

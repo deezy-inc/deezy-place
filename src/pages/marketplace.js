@@ -7,8 +7,7 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import NostrLiveAll from "@containers/NostrLiveAll";
 import { WalletContext } from "@context/wallet-context";
-import { useWalletState, useHeaderHeight, useDeezySockets } from "@hooks";
-import useMarketplace from "src/hooks/use-marketplace";
+import { useWalletState, useHeaderHeight, useStaticMarketplace } from "@hooks";
 
 export async function getStaticProps() {
   return { props: { className: "template-color-1" } };
@@ -19,7 +18,7 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
-  const { openOrders, loading } = useMarketplace();
+  const { openOrders, loading } = useStaticMarketplace();
 
   return (
     <WalletContext.Provider value={walletState}>

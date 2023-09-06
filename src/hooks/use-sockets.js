@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 const wsLink = `wss://${NOSFT_WSS}`;
 
 export default function useDeezySockets({
+  live = false,
   onSale = false,
   limitSaleResults = false,
   onAuction = false,
@@ -20,7 +21,7 @@ export default function useDeezySockets({
   useEffect(() => {
     const limitOnSale = limitSaleResults ? ":10" : "";
     const limitOnAuction = limitAuctionResults ? ":10" : "";
-    if (!socket.current) {
+    if (live && !socket.current) {
       socket.current = io(wsLink);
 
       const onConnect = () => {

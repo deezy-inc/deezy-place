@@ -16,7 +16,7 @@ import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { useDebounce } from "react-use";
 import LoadingAnimation from "@components/loading-animation";
 
-const NostrLive = ({ className, space, type, openOrders, loading = true }) => {
+const NostrLive = ({ className, space, type, openOrders, loading }) => {
   const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [clickedUtxo, setClickedUtxo] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
@@ -79,6 +79,7 @@ const NostrLive = ({ className, space, type, openOrders, loading = true }) => {
     openOrders: openOrders.length,
     filteredUtxos: filteredUtxos.length,
     loading,
+    openOrders,
   });
 
   return (

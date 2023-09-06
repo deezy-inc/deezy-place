@@ -12,7 +12,7 @@ import homepageData from "@data/general/home.json";
 
 import NostrLive from "@containers/NostrLive";
 import MainCollections from "@containers/MainCollections";
-import { useWalletState, useHeaderHeight, useHome } from "@hooks";
+import { useWalletState, useHeaderHeight, useStaticHome } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 
 export async function getStaticProps() {
@@ -24,7 +24,7 @@ const App = () => {
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
-  const { sales, auctions, loading } = useHome();
+  const { sales, auctions, loading } = useStaticHome();
 
   const content = normalizedData(homepageData?.content || []);
 

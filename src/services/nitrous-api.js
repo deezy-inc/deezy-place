@@ -1,7 +1,6 @@
 const axios = require("axios");
 
 function mapInscription(obj) {
-  console.log("[obj]", obj);
   return {
     content_length: String(obj.contentLength),
     content_type: obj.contentType,
@@ -94,4 +93,31 @@ async function getInscription(inscriptionId) {
   }
 }
 
-module.exports = { getInscription };
+async function parseInscriptonData(inscriptionData) {
+  try {
+    const inscriptionData = await response.data;
+
+    const _auction = inscriptionData.auctions?.find(
+      (a) => a.status === "RUNNING" || a.status === "PENDING",
+    );
+
+    return {
+      ...inscriptionData,
+      inscription: mapInscription(inscriptionData.inscription),
+      nostr: inscriptionData.sellEvents?.[0]
+        ? mapNostrEvent(inscriptionData.sellEvents?.[0])
+        : undefined,
+      bids: inscriptionData.bids?.map(mapBidEvent),
+      auction: mapAuction(_auction),
+    };
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+module.exports = {
+  getInscription,
+  mapInscription,
+  mapAuction,
+  parseInscriptonData,
+};

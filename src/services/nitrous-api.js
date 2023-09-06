@@ -93,27 +93,7 @@ async function getInscription(inscriptionId) {
   }
 }
 
-async function parseInscriptonData(inscriptionData) {
-  try {
-    const inscriptionData = await response.data;
-
-    const _auction = inscriptionData.auctions?.find(
-      (a) => a.status === "RUNNING" || a.status === "PENDING",
-    );
-
-    return {
-      ...inscriptionData,
-      inscription: mapInscription(inscriptionData.inscription),
-      nostr: inscriptionData.sellEvents?.[0]
-        ? mapNostrEvent(inscriptionData.sellEvents?.[0])
-        : undefined,
-      bids: inscriptionData.bids?.map(mapBidEvent),
-      auction: mapAuction(_auction),
-    };
-  } catch (error) {
-    console.error(error);
-  }
-}
+async function parseInscriptonData(inscriptionData) {}
 
 module.exports = {
   getInscription,

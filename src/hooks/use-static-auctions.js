@@ -7,6 +7,7 @@ const auctionsUrl = `https://${NOSFT_BASE_API_URL}/auctions`;
 
 const fetchAuctions = async () => {
   const { data } = await axios.get(auctionsUrl);
+  // @nosfter please continue
   return data.map((data) => parseInscriptonData(data.auctions));
 };
 

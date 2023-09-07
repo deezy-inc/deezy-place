@@ -8,7 +8,7 @@ const marketplaceApiUrl = `https://${NOSFT_BASE_API_URL}/marketplace`;
 
 const fetcher = async (url) => {
   const { data } = await axios.get(url);
-  return data;
+  return data.marketplace;
 };
 
 export default function useMarketplace({ realtime = true }) {

@@ -21,7 +21,7 @@ const App = () => {
 
   const { openOrders, loading, sourse } = useMarketplace({ realtime: false });
 
-  console.log({ openOrders: openOrders.length, loading, sourse });
+  console.log({ sourse, openOrders: openOrders.length, loading });
 
   return (
     <WalletContext.Provider value={walletState}>

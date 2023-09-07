@@ -24,18 +24,14 @@ const App = () => {
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
-  const { sales, auctions, loading, sourse } = useHome({ realtime: true });
+  const { sourse, sales, auctions, loading } = useHome({ realtime: false });
 
-  //   TODO: remove
-  //     console.log(
-  //       sourse,
-  //       "sales",
-  //       sales.length,
-  //       "auctions",
-  //       auctions,
-  //       auctions.length,
-  //       loading,
-  //     );
+  console.log({
+    sourse,
+    sales: sales.length,
+    auctions: auctions.length,
+    loading,
+  });
 
   const content = normalizedData(homepageData?.content || []);
 

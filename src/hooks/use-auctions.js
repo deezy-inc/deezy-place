@@ -13,43 +13,44 @@ const fetcher = async () => {
   };
 };
 
-export default function useLiveAuctions() {
-  const { data: cache, isValidating } = useSWR(auctionsApiUrl, fetcher);
+export default function useAuctions({ realtime = true }) {
+  const { data: staticAuctions, isValidating: isLoadingStaticAuctions } =
+    useSWR(auctionsApiUrl, fetcher);
 
-  const { auctions, loadingAuctions } = useDeezySockets({
+  const { auctions: liveAuctions, loadingAuctions } = useDeezySockets({
     onAuction: true,
     limitSaleResults: false,
   });
 
   const auctionsResult = useMemo(() => {
-    const hasAuctions = auctions && auctions.length > 0;
-    const hasCache = cache && cache.auctions;
+    const hasLiveAuctions = liveAuctions && liveAuctions.length > 0;
+    const hasStaticAuctions = staticAuctions && staticAuctions.auctions;
 
-    // Prioritize real-time data from WebSocket
-    if (hasAuctions) {
+    // Prioritize real-time data from WebSocket if it's ready
+    if (realtime && !loadingAuctions && hasLiveAuctions) {
       return {
-        fromCache: false,
-        auctions: auctions,
+        source: "sockets",
+        auctions: liveAuctions,
         loading: false,
       };
     }
 
-    // Fall back to cached data if WebSocket data isn't available
-    if (hasCache) {
+    // Fall back to staticAuctions data if WebSocket data isn't ready
+    if (hasStaticAuctions) {
       return {
-        fromCache: true,
-        auctions: cache.auctions,
-        loading: false,
+        source: "api",
+        auctions: staticAuctions.auctions,
+        loading: isLoadingStaticAuctions,
       };
     }
 
     // If neither is available, indicate loading state
     return {
-      fromCache: false,
+      source: "",
       auctions: [],
-      loading: isValidating && loadingAuctions && isValidating,
+      loading: isLoadingStaticAuctions || loadingAuctions,
     };
-  }, [isValidating, loadingAuctions, auctions, cache]);
+  }, [isLoadingStaticAuctions, loadingAuctions, liveAuctions, staticAuctions]);
 
   return auctionsResult;
 }

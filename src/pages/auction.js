@@ -7,7 +7,7 @@ import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import NostrLiveAll from "@containers/NostrLiveAll";
 import { WalletContext } from "@context/wallet-context";
-import { useWalletState, useHeaderHeight, useLiveAuctions } from "@hooks";
+import { useWalletState, useHeaderHeight, useAuctions } from "@hooks";
 
 export async function getStaticProps() {
   return { props: { className: "template-color-1" } };
@@ -18,7 +18,13 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
-  const { auctions: openOrders, loading } = useLiveAuctions();
+  const {
+    auctions: openOrders,
+    loading,
+    source,
+  } = useAuctions({ realtime: false });
+
+  console.log({ source, openOrders: openOrders.length, loading });
 
   return (
     <WalletContext.Provider value={walletState}>

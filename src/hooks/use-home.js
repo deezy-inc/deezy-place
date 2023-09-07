@@ -32,7 +32,7 @@ export default function useHome({ realtime = true }) {
 
   const home = useMemo(() => {
     // Prioritize the sockets result if it's ready
-    if (!isLoadingLiveAuctions && !isLoadingLiveSales && realtime) {
+    if (realtime && !isLoadingLiveAuctions && !isLoadingLiveSales) {
       return {
         sourse: "sockets",
         auctions: liveAuctions || [],

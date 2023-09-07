@@ -19,7 +19,9 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
-  const { openOrders, loading } = useMarketplace();
+  const { openOrders, loading, sourse } = useMarketplace({ realtime: false });
+
+  console.log({ openOrders: openOrders.length, loading, sourse });
 
   return (
     <WalletContext.Provider value={walletState}>

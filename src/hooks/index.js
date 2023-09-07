@@ -10,4 +10,4 @@ export { default as useDeezySockets } from "./use-sockets";
 export { default as useMarketplace } from "./use-marketplace";
 export { default as useOfferFilters } from "./use-offer-filters";
 export { default as useHome } from "./use-home";
-export { default as useLiveAuctions } from "./use-live-auctions";
+export { default as useLiveAuctions } from "./use-auctions";

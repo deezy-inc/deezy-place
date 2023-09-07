@@ -6,10 +6,8 @@ const localConfig = {
   ...constants,
 };
 
-const NOSFT_WSS =
-  "deezy-nostr-client-service.dev.deezy-nostr-client.espaciofuturo.co";
-
-const NOSFT_BASE_API_URL = "9nukpegt2c.execute-api.us-east-1.amazonaws.com";
+const NOSFT_WSS = "nostr-service.deezy.place";
+const NOSFT_BASE_API_URL = "api-testnet.deezy.place";
 
 const nosft = Nosft({ ...localConfig });
 

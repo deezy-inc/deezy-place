@@ -1,82 +1,70 @@
-import useSWR from "swr";
-import { useMemo } from "react";
 import { useDeezySockets } from "@hooks";
-import axios from "axios";
+import useSWR from "swr";
 import { NOSFT_BASE_API_URL } from "@services/nosft";
 
-const auctionsUrl = `https://${NOSFT_BASE_API_URL}/auctions`;
-const salesUrl = `https://${NOSFT_BASE_API_URL}/inscriptions-for-sale`;
+import axios from "axios";
+import { useMemo } from "react";
 
-const fetchAuctions = async () => {
-  const { data } = await axios.get(auctionsUrl);
-  return data.auctions;
+const homeApiUrl = `https://${NOSFT_BASE_API_URL}/home`;
+
+const fetcher = async () => {
+  const { data } = await axios.get(homeApiUrl);
+  return {
+    auctions: data.auctions,
+    sales: data.marketplace,
+  };
 };
 
-const fetchSales = async () => {
-  const { data } = await axios.get(salesUrl);
-  return data;
-};
-
-export default function useHome() {
-  const { data: auctionsCache, isValidating: isValidatingAuctions } = useSWR(
-    auctionsUrl,
-    fetchAuctions,
-  );
-  const { data: salesCache, isValidating: isValidatingSales } = useSWR(
-    salesUrl,
-    fetchSales,
-  );
-
-  const { sales, auctions, loadingAuctions, loadingSales } = useDeezySockets({
+export default function useHome({ realtime = true }) {
+  const {
+    sales: liveSales,
+    auctions: liveAuctions,
+    loadingAuctions: isLoadingLiveAuctions,
+    loadingSales: isLoadingLiveSales,
+  } = useDeezySockets({
     onSale: true,
     onAuction: true,
     limitAuctionResults: true,
     limitSaleResults: true,
   });
 
+  const { data: staticHome, isLoading } = useSWR(homeApiUrl, fetcher);
+
   const home = useMemo(() => {
-    const hasAuctions = auctions && auctions.length > 0;
-    const hasSales = sales && sales.length > 0;
-    const hasAuctionsCache = auctionsCache && auctionsCache.length > 0;
-    const hasSalesCache = salesCache && salesCache.length > 0;
-
-    if (hasAuctions || hasSales) {
+    // Prioritize the sockets result if it's ready
+    if (!isLoadingLiveAuctions && !isLoadingLiveSales && realtime) {
       return {
-        fromCache: false,
-        auctions: auctions || [],
-        sales: sales || [],
-        loading: false,
+        sourse: "sockets",
+        auctions: liveAuctions || [],
+        sales: liveSales || [],
+        loading: isLoadingLiveAuctions || isLoadingLiveSales,
       };
     }
 
-    if (hasAuctionsCache || hasSalesCache) {
+    // If sockets result is not ready, use staticHome
+    if (staticHome && staticHome.auctions && staticHome.sales) {
       return {
-        fromCache: true,
-        auctions: auctionsCache || [],
-        sales: salesCache || [],
-        loading: false,
+        auctions: staticHome.auctions || [],
+        sales: staticHome.sales || [],
+        sourse: "api",
+        loading: isLoading,
       };
     }
 
+    // Default return if none of the above conditions are met
     return {
-      fromCache: false,
       auctions: [],
       sales: [],
-      loading:
-        loadingAuctions &&
-        loadingSales &&
-        isValidatingAuctions &&
-        isValidatingSales,
+      sourse: "",
+      loading: true,
     };
   }, [
-    loadingAuctions,
-    loadingSales,
-    isValidatingAuctions,
-    isValidatingSales,
-    auctions,
-    sales,
-    auctionsCache,
-    salesCache,
+    isLoadingLiveAuctions,
+    isLoadingLiveSales,
+    liveAuctions,
+    liveSales,
+    staticHome,
+    isLoading,
   ]);
 
   return home;

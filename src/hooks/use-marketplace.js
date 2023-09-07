@@ -12,7 +12,7 @@ const fetcher = async (url) => {
 };
 
 export default function useMarketplace({ realtime = true }) {
-  const { data: statisSaleOffers, isLoading: isLoadingStaticSaleOffers } =
+  const { data: staticSaleOffers, isLoading: isLoadingStaticSaleOffers } =
     useSWR(marketplaceApiUrl, fetcher);
 
   const { sales: liveSaleOffers, loadingSales: isLoadingLiveSaleOffers } =
@@ -23,18 +23,18 @@ export default function useMarketplace({ realtime = true }) {
 
   const { openOrders, sourse } = useMemo(() => {
     if (
+      realtime &&
       liveSaleOffers &&
       liveSaleOffers.length > 0 &&
-      !isLoadingLiveSaleOffers &&
-      realtime
+      !isLoadingLiveSaleOffers
     ) {
       return {
         openOrders: liveSaleOffers,
         sourse: "sockets",
       };
-    } else if (statisSaleOffers && statisSaleOffers.length > 0) {
+    } else if (staticSaleOffers && staticSaleOffers.length > 0) {
       return {
-        openOrders: statisSaleOffers,
+        openOrders: staticSaleOffers,
         sourse: "api",
       };
     } else {
@@ -43,7 +43,7 @@ export default function useMarketplace({ realtime = true }) {
         sourse: "",
       };
     }
-  }, [liveSaleOffers, statisSaleOffers]);
+  }, [liveSaleOffers, staticSaleOffers]);
 
   const isLoading = isLoadingStaticSaleOffers && isLoadingLiveSaleOffers;
 

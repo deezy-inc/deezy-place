@@ -1,15 +1,13 @@
 /* eslint-disable react/forbid-prop-types */
-import { useState } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
-import { matchSorter } from "match-sorter";
 import { TiArrowSortedDown, TiArrowSortedUp } from "react-icons/ti";
 import { Form } from "react-bootstrap";
 import { HIDE_TEXT_UTXO_OPTION } from "@lib/constants.config";
 
 const OrdinalFilter = ({
-  ownedUtxos,
-  setFilteredOwnedUtxos,
+  searchQuery,
+  setSearchQuery,
   setActiveSort,
   setSortAsc,
   activeSort,
@@ -20,7 +18,9 @@ const OrdinalFilter = ({
   showOnlyOrdinals,
   setShowOnlyOrdinals,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const onSearchByKeyWord = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
   const onFilterByValue = () => {
     if (activeSort === "value") {
@@ -62,23 +62,7 @@ const OrdinalFilter = ({
         <input
           placeholder="Search"
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            const filteredUtxos = matchSorter(ownedUtxos, e.target.value, {
-              keys: [
-                "inscriptionId",
-                "key",
-                "txid",
-                "vout",
-                "value",
-                "num",
-                "status.block_time",
-                "status.block_height",
-                "status.confirmed",
-              ],
-            });
-            setFilteredOwnedUtxos(filteredUtxos);
-          }}
+          onChange={onSearchByKeyWord}
         />
       </div>
       <div className="col">
@@ -86,7 +70,7 @@ const OrdinalFilter = ({
           type="button"
           className={clsx(
             "sort-button d-flex flex-row justify-content-center",
-            activeSort === "date" && "active"
+            activeSort === "date" && "active",
           )}
           onClick={onFilterByDate}
         >
@@ -101,7 +85,7 @@ const OrdinalFilter = ({
           type="button"
           className={clsx(
             "sort-button d-flex flex-row justify-content-center",
-            activeSort === "value" && "active"
+            activeSort === "value" && "active",
           )}
           onClick={onFilterByValue}
         >
@@ -116,7 +100,7 @@ const OrdinalFilter = ({
           type="button"
           className={clsx(
             "sort-button d-flex flex-row justify-content-center",
-            activeSort === "num" && "active"
+            activeSort === "num" && "active",
           )}
           onClick={onFilterByNum}
         >

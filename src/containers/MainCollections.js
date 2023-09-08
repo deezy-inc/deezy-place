@@ -25,7 +25,7 @@ const MainCollections = ({ className, space }) => {
     const fetchCollections = async () => {
       // get all collections using promise.all
       const promises = mainCollections.map((collection) =>
-        getCollection(collection)
+        getCollection(collection),
       );
       const collections = await Promise.all(promises);
 
@@ -39,14 +39,16 @@ const MainCollections = ({ className, space }) => {
 
     return (
       <div className="row">
-        {collections.map((collection) => (
-          <div
-            className="col-lg-3 col-md-6 col-sm-6 col-12 mb--20"
-            key={collection.slug}
-          >
-            <CollectionCard collection={collection} />
-          </div>
-        ))}
+        {collections
+          .filter((c) => c)
+          .map((collection) => (
+            <div
+              className="col-lg-3 col-md-6 col-sm-6 col-12 mb--20"
+              key={collection.slug}
+            >
+              <CollectionCard collection={collection} />
+            </div>
+          ))}
       </div>
     );
   };

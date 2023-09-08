@@ -6,6 +6,18 @@ const localConfig = {
   ...constants,
 };
 
+// REDIS API
+const NOSFT_WSS = "wss://nostr-service.deezy.place";
+const NOSFT_BASE_API_URL = "https://nostr-service.deezy.place/api/v1";
+
+// POSTGRES API
+// const NOSFT_WSS = "wss://nostr-service.deezy.place";
+// const NOSFT_BASE_API_URL = "https://nostr-service.deezy.place/api/v1";
+
+// LOCAL
+// const NOSFT_WSS = "ws://0.0.0.0:4005";
+// const NOSFT_BASE_API_URL = "http://0.0.0.0:4005/api/v1";
+
 const nosft = Nosft({ ...localConfig });
 
 const { connectWallet, onAccountChange } = nosft.wallet;
@@ -235,4 +247,6 @@ export {
   FEE_LEVEL,
   DEEZY_BOOST_API,
   INSCRIBOR_URL,
+  NOSFT_BASE_API_URL,
+  NOSFT_WSS,
 };

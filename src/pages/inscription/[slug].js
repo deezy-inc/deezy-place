@@ -14,6 +14,7 @@ import useAuction from "src/hooks/use-auction";
 import useInscription from "src/hooks/use-inscription";
 import useIsSpent from "src/hooks/use-is-spent";
 import useBid from "src/hooks/use-bid";
+import { useSimpleScrollTop } from "src/hooks/use-simple-scroll-top";
 
 const Inscription = () => {
   const walletState = useWalletState();
@@ -22,36 +23,24 @@ const Inscription = () => {
 
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
+  useSimpleScrollTop();
 
   const {
     inscription,
     collection,
     nostrData,
+    bids,
+    isLoading,
+    auction: auctions,
     setIsPooling: setIsPoolingInscription,
   } = useInscription(slug);
-  const {
-    auction: auctionData,
-    setIsPooling: setIsPoolingAuction,
-    reset: stopPoolingAuction,
-  } = useAuction(inscription?.inscriptionId);
+
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
 
-  const {
-    bids,
-    setIsPooling: setIsPoolingBids,
-    reset: stopPoolingBids,
-    isLoading: isBidsLoading,
-  } = useBid({
-    inscriptionId: inscription?.inscriptionId,
-    output: inscription?.output,
-  });
-
   const onAction = async (startPooling) => {
-    setIsPoolingAuction(startPooling);
     setIsPoolingInscription(startPooling);
     setIsPoolingIsSpent(startPooling);
-    setIsPoolingBids(startPooling);
   };
 
   useEffect(() => {
@@ -78,9 +67,9 @@ const Inscription = () => {
               isSpent={isInscriptionSpent}
               collection={collection}
               nostr={nostrData}
-              auction={auctionData}
+              auction={auctions}
               bids={bids}
-              isBidsLoading={isBidsLoading}
+              isBidsLoading={isLoading}
               onAction={onAction}
             />
           )}

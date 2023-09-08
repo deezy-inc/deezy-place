@@ -35,6 +35,8 @@ const OrdinalCard = ({
 
   const num = utxo?.num ? `#${utxo?.num}` : "";
 
+  console.log("[utxo]", utxo);
+
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
       <Anchor className="logo-dark" path={utxo?.content ? path : null}>

@@ -38,6 +38,9 @@ const Inscription = () => {
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
 
+  const setIsPoolingAuction = () => {};
+  const setIsPoolingBids = () => {};
+
   const onAction = async (startPooling) => {
     setIsPoolingAuction(startPooling);
     setIsPoolingInscription(startPooling);

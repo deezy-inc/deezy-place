@@ -2,7 +2,7 @@ import { NOSFT_WSS } from "@services/nosft";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const wsLink = `wss://${NOSFT_WSS}`;
+const wsLink = `${NOSFT_WSS}`;
 
 export default function useDeezySockets({
   onSale = false,
@@ -45,7 +45,9 @@ export default function useDeezySockets({
           setSales(data.payload);
           setLoadingSales(false);
         } else if (data.channel.startsWith("onAuction")) {
-          setAuctions(data.payload);
+          setAuctions(
+            data.payload.map((auction) => ({ ...auction, auction: true })),
+          );
           setLoadingAuctions(false);
         }
       };

@@ -5,12 +5,12 @@ import { NOSFT_BASE_API_URL } from "@services/nosft";
 import axios from "axios";
 import { useMemo } from "react";
 
-const homeApiUrl = `https://${NOSFT_BASE_API_URL}/home`;
+const homeApiUrl = `${NOSFT_BASE_API_URL}/home`;
 
 const fetcher = async () => {
   const { data } = await axios.get(homeApiUrl);
   return {
-    auctions: data.auctions,
+    auctions: data.auctions.map((auction) => ({ ...auction, auction: true })),
     sales: data.marketplace,
   };
 };

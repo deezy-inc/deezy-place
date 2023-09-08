@@ -13,7 +13,7 @@ const fetcher = async () => {
   };
 };
 
-export default function useAuctions({ realtime = false }) {
+export default function useAuctions({ realtime = true }) {
   const { data: staticAuctions, isValidating: isLoadingStaticAuctions } =
     useSWR(auctionsApiUrl, fetcher);
 

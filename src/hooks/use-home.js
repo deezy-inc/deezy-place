@@ -15,7 +15,7 @@ const fetcher = async () => {
   };
 };
 
-export default function useHome({ realtime = false }) {
+export default function useHome({ realtime = true }) {
   const {
     sales: liveSales,
     auctions: liveAuctions,

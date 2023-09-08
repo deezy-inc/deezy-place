@@ -19,7 +19,7 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
 
-  const { openOrders, loading, sourse } = useMarketplace({ realtime: false });
+  const { openOrders, loading, sourse } = useMarketplace({ realtime: true });
 
   console.log({ sourse, openOrders: openOrders.length, loading });
 

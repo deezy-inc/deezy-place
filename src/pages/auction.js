@@ -22,7 +22,7 @@ const App = () => {
     auctions: openOrders,
     loading,
     source,
-  } = useAuctions({ realtime: false });
+  } = useAuctions({ realtime: true });
 
   console.log({ source, openOrders: openOrders.length, loading });
 

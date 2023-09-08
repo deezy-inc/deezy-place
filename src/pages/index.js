@@ -24,7 +24,7 @@ const App = () => {
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
-  const { sourse, sales, auctions, loading } = useHome({ realtime: false });
+  const { sourse, sales, auctions, loading } = useHome({ realtime: true });
 
   console.log({
     sourse,

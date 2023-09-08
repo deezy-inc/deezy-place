@@ -37,8 +37,6 @@ const MainCollections = ({ className, space }) => {
   const renderCards = () => {
     if (!collections.length) return null;
 
-    console.log({ collections });
-
     return (
       <div className="row">
         {collections

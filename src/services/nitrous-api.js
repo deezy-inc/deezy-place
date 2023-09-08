@@ -1,5 +1,7 @@
 const axios = require("axios");
 
+const NITROUS_BASE_API_URL = "api-testnet.deezy.place";
+
 function mapInscription(obj) {
   console.log("[obj]", obj);
   return {
@@ -72,7 +74,7 @@ function mapAuction(obj) {
 async function getInscription(inscriptionId) {
   try {
     const response = await axios.get(
-      `https://9nukpegt2c.execute-api.us-east-1.amazonaws.com/inscription/${inscriptionId}`,
+      `https://${NITROUS_BASE_API_URL}/inscription/${inscriptionId}`,
     );
     const inscriptionData = await response.data;
 

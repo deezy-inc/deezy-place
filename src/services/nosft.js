@@ -7,7 +7,9 @@ const localConfig = {
 };
 
 const NOSFT_WSS = "nostr-service.deezy.place";
-const NOSFT_BASE_API_URL = "api-testnet.deezy.place";
+const NOSFT_BASE_API_URL = "nostr-service.deezy.place/api/v1";
+
+// const NOSFT_BASE_API_URL = "api-testnet.deezy.place";
 
 const nosft = Nosft({ ...localConfig });
 

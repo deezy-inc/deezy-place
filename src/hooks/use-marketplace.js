@@ -11,7 +11,7 @@ const fetcher = async (url) => {
   return data.marketplace;
 };
 
-export default function useMarketplace({ realtime = true }) {
+export default function useMarketplace({ realtime = false }) {
   const { data: staticSaleOffers, isLoading: isLoadingStaticSaleOffers } =
     useSWR(marketplaceApiUrl, fetcher);
 

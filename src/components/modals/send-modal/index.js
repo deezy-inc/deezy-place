@@ -246,7 +246,7 @@ const SendModal = ({
                     <Form.Range
                       min="330"
                       max="10000"
-                      defaultValue={boostOutputValue}
+                      value={boostOutputValue}
                       onChange={boostOutputValueChange}
                     />
                   </InputGroup>

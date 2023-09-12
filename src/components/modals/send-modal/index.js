@@ -43,6 +43,7 @@ const SendModal = ({
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
+  const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE)
   const [sentTxId, setSentTxId] = useState(null);
   const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
   const [isSending, setIsSending] = useState(false);
@@ -79,6 +80,10 @@ const SendModal = ({
     setSendFeeRate(parseInt(evt.target.value));
   };
 
+  const boostOutputValueChange = (evt) => {
+    setBoostOutputValue(parseInt(evt.target.value));
+  }
+
   const boostRequired =
     !!utxo &&
     !!sendFeeRate &&
@@ -102,6 +107,7 @@ const SendModal = ({
           pubKey: ordinalsPublicKey,
           utxo,
           destinationBtcAddress,
+          outputValue: boostOutputValue,
           sighashType:
             provider === "unisat.io"
               ? bitcoin.Transaction.SIGHASH_SINGLE |
@@ -234,9 +240,20 @@ const SendModal = ({
                     onChange={feeRateOnChange}
                   />
                 </InputGroup>
+                { boostRequired ?
+                  <InputGroup className="mb-3">
+                    <Form.Label>Select an output value</Form.Label>
+                    <Form.Range
+                      min="330"
+                      max="10000"
+                      value={boostOutputValue}
+                      onChange={boostOutputValueChange}
+                    />
+                  </InputGroup>
+                  : <></>
+                }
               </div>
             </div>
-
             <div className="bid-content-mid">
               <div className="bid-content-left">
                 {!!destinationBtcAddress && <span>Destination</span>}
@@ -250,7 +267,8 @@ const SendModal = ({
                 <span>{sendFeeRate} sat/vbyte</span>
                 <span>
                   {boostRequired
-                    ? BOOST_UTXO_VALUE
+                    ?
+                    boostOutputValue
                     : utxo &&
                       sendFeeRate &&
                       outputValue(utxo, sendFeeRate)}{" "}

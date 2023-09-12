@@ -45,8 +45,6 @@ const Inscription = () => {
 
   useEffect(() => {
     if (isInscriptionSpent) {
-      stopPoolingAuction();
-      stopPoolingBids();
       setIsPoolingIsSpent(false);
     }
   }, [isInscriptionSpent]);

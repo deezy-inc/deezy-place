@@ -602,7 +602,8 @@ const ProductDetailsArea = memo(
           <SellModal
             show={showSellModal}
             handleModal={handleSellModal}
-            utxo={inscription}
+            utxo={uninscribedSats || inscription}
+            isUninscribed={!!uninscribedSats}
             onSale={onSend}
           />
         )}

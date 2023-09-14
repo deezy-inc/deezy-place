@@ -1,16 +1,16 @@
 import { getOutput } from "@services/nosft";
-import { useAsync } from "react-use";
+import useSWR from "swr";
 
-function useOutput(output) {
-  const state = useAsync(async () => {
-    if (!output) return undefined;
-    const data = await getOutput(output);
-    const [txid = "", vout = ""] = output.split(":");
-    // console.log("[useOutput]", { ...data, output, txid, vout });
-    return { ...data, output, txid, vout: parseInt(vout) };
-  }, [output]);
+const fetcher = async (output) => {
+  if (!output) return undefined;
+  const data = await getOutput(output);
+  const [txid = "", vout = ""] = output.split(":");
+  return { ...data, output, txid, vout: parseInt(vout) };
+};
 
-  return state;
+function useOutput({ output }) {
+  const { data, error, isLoading } = useSWR(output, fetcher);
+  return { value: data, error, isLoading };
 }
 
 export default useOutput;

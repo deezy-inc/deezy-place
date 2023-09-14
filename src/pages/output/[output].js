@@ -19,7 +19,7 @@ const OutputPage = () => {
 
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
-  const { value: uninscribedSats, loading } = useOutput(output);
+  const { value: uninscribedSats, isLoading } = useOutput({ output });
   const onAction = async () => {};
 
   return (
@@ -38,14 +38,14 @@ const OutputPage = () => {
               bids={[]}
               isBidsLoading={false}
               bidsDisabled
-              sellDisabled
+              sellDisabled={uninscribedSats.value < 10000}
               buyDisabled
               auctionDisabled
               onAction={onAction}
             />
           )}
 
-          {(loading || !uninscribedSats) && (
+          {(isLoading || !uninscribedSats) && (
             <div className="inscription-area container">
               <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
                 <Skeleton count={20} />

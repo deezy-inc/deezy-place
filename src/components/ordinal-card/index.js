@@ -8,9 +8,25 @@ import ClientAvatar from "@ui/client-avatar";
 import ProductBid from "@components/product-bid";
 import { useWallet } from "@context/wallet-context";
 import { ImageType } from "@utils/types";
-import { shortenStr, MEMPOOL_API_URL } from "@services/nosft";
+import { shortenStr } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import { toBTC } from "@containers/product-details";
+import useRatity from "src/hooks/use-rarity";
+import { Badge } from "react-bootstrap";
+import { rarityOptions } from "@utils/utxo";
+
+const getOutputValue = (utxo) => {
+  if (utxo?.inscriptionId) {
+    return "";
+  }
+
+  if (utxo?.txid && utxo?.vout) {
+    return `${utxo.txid}:${utxo.vout}`;
+  }
+
+  return "";
+};
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
   ssr: false,
@@ -29,13 +45,37 @@ const OrdinalCard = ({
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
+  const { value: rarity, isLoading: isRarityLoading } = useRatity({
+    output: getOutputValue(utxo),
+  });
+
   const path = utxo?.inscriptionId
     ? `/inscription/${utxo?.inscriptionId}`
     : `/output/${utxo?.txid}:${utxo?.vout}`;
 
-  const num = utxo?.num ? `#${utxo?.num}` : "";
+  const details = () => {
+    const num = utxo?.num
+      ? `#${utxo?.num}`
+      : utxo?.value
+      ? `${toBTC(utxo?.value)} BTC`
+      : "";
 
-  console.log("[utxo]", utxo);
+    return (
+      utxo && (
+        <div className="inscription-number">
+          {utxo?.meta?.name || num}
+          {rarity && rarity !== "common" && !isRarityLoading && (
+            <>
+              {` - `}
+              <Badge pill variant={"primary"}>
+                {rarity?.toUpperCase()}
+              </Badge>
+            </>
+          )}
+        </div>
+      )
+    );
+  };
 
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
@@ -50,11 +90,7 @@ const OrdinalCard = ({
             )}
           </div>
           <div className="inscription-details-area">
-            {utxo && (
-              <div className="inscription-number">
-                {utxo?.meta?.name || num}
-              </div>
-            )}
+            {details()}
             {!utxo && <Skeleton width={50} />}
           </div>
           <div className="product-share-wrapper">

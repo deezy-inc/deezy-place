@@ -93,7 +93,7 @@ async function getInscription(inscriptionId) {
 
     const result = {
       ...inscriptionData,
-      inscription: inscriptionData.inscription,
+      inscription: mapInscription(inscriptionData.inscription),
       nostr: inscriptionData.sellEvents?.[0]
         ? mapNostrEvent(inscriptionData.sellEvents?.[0])
         : undefined,

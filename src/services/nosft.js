@@ -8,7 +8,7 @@ const localConfig = {
 
 // REDIS API
 const NOSFT_WSS = "wss://nostr-service.deezy.place";
-const NOSFT_BASE_API_URL = "https://api-testnet.deezy.place";
+const NOSFT_BASE_API_URL = "https://sv8sa61d52.execute-api.us-east-1.amazonaws.com";
 
 // POSTGRES API
 // const NOSFT_WSS = "wss://nostr-service.deezy.place";

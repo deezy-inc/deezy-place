@@ -17,16 +17,33 @@ const Collection = ({ className, space, collection }) => {
 
   const [utxosType, setUtxosType] = useState("");
 
+  const formatInscriptionToUtxo = (item) => {
+    const auction = item?.auctions?.[0];
+    if (auction) {    
+      const currentEvent = auction?.metadata.find(
+        (m) => m.price == auction.currentPrice,
+      );
+      auction.nextPriceDrop  = currentEvent ? auction?.metadata[currentEvent.index + 1]: undefined;
+    }
+
+    if (item?.sellEvents?.length) {
+      item.inscription.nostr = item.sellEvents[0];
+    }
+    
+    return {...item.inscription, auction: auction, bids: item.bids, sellEvents: item.sellEvents };
+  }
+
   useMemo(() => {
     const filteredUtxos = applyFilters({
-      utxos: collection.inscriptions || [],
+      utxos: collection.inscriptions?.map(formatInscriptionToUtxo) || [],
       activeSort,
       sortAsc,
       utxosType,
     });
-
+  
     setFilteredOwnedUtxos(filteredUtxos);
   }, [collection?.inscriptions, activeSort, sortAsc, utxosType]);
+  
 
   let { author: name, slug, icon } = collectionAuthor || {};
   if (name) {
@@ -87,6 +104,7 @@ const Collection = ({ className, space, collection }) => {
                       ...inscription,
                       inscriptionId: inscription.id,
                     }}
+                    auction={inscription.auction}
                   />
                 </div>
               ))}

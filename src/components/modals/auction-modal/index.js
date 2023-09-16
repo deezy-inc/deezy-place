@@ -33,6 +33,7 @@ import {
 } from "@services/nosft";
 import { useCounter } from "react-use";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
+import { refreshInscription } from "@services/nitrous-api";
 
 bitcoin.initEccLib(ecc);
 
@@ -310,8 +311,11 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         collection: utxo.collection?.slug,
       };
       const auction = await createAuction(dutchAuction);
-      console.log({ auction });
+      await refreshInscription(utxo.inscriptionId);
+
+
       toast.info(`Order successfully scheduled to be published to Nostr!`);
+
     } catch (e) {
       toast.error(e.response?.data?.message || e.message);
       setIsOnSale(false);

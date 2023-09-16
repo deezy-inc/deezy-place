@@ -35,8 +35,8 @@ const CollectionInfo = ({ collection, isLoading }) => {
               )}
             </div>
             <div className="mb--20">
-              {collection.description && <p>{collection.description}</p>}
-              {!collection.description && isLoading && (
+              {collection?.description && <p>{collection.description}</p>}
+              {!collection?.description && isLoading && (
                 <Skeleton width={200} count={2} />
               )}
             </div>

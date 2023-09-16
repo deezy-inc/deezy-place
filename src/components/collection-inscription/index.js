@@ -49,6 +49,13 @@ const OrdinalCard = ({ overlay, inscription, auction, onClick }) => {
                 <p>Live Auction</p>
               </div>
             )}
+
+          {!auction?.nextPriceDrop?.scheduledTime && inscription?.nostr?.value && (
+              // <CountdownTimer time={auction.nextPriceDrop.scheduledTime} />
+              <div className="card-tag">
+                <p>For Sale</p>
+              </div>
+            )}
           </div>
           <div className="inscription-details-area">
             {inscription && (

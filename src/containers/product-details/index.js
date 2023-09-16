@@ -145,7 +145,8 @@ const ProductDetailsArea = memo(
     const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
     const cancelAuctionAndRefreshInscription = async(_inscriptionId) => {
-      await cancelAuction(_inscriptionId);
+      
+      await cancelAuction(_inscriptionId).catch(console.error);
       // Tracker service doesn't know about this change. so we should trigger the event manually
       await refreshInscription(_inscriptionId);
 

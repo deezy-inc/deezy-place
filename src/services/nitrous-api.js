@@ -90,15 +90,18 @@ async function getInscription(inscriptionId) {
       (a) => a.status === "RUNNING" || a.status === "PENDING",
     );
 
-    return {
+
+    const result = {
       ...inscriptionData,
-      inscription: mapInscription(inscriptionData.inscription),
+      inscription: inscriptionData.inscription,
       nostr: inscriptionData.sellEvents?.[0]
         ? mapNostrEvent(inscriptionData.sellEvents?.[0])
         : undefined,
       bids: inscriptionData.bids?.map(mapBidEvent),
       auction: mapAuction(_auction),
     };
+
+    return result;
   } catch (error) {
     console.error(error);
   }

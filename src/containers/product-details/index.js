@@ -329,6 +329,8 @@ const ProductDetailsArea = memo(
       shouldShowCreateBid ||
       shouldShowAvailableBids;
 
+    const currentProduct = uninscribedSats || inscription;
+
     return (
       <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
         <div className="container">
@@ -593,7 +595,7 @@ const ProductDetailsArea = memo(
           <SendModal
             show={showSendModal}
             handleModal={handleSendModal}
-            utxo={uninscribedSats || inscription}
+            utxo={currentProduct}
             isUninscribed={!!uninscribedSats}
             onSend={onSend}
           />
@@ -602,7 +604,7 @@ const ProductDetailsArea = memo(
           <SellModal
             show={showSellModal}
             handleModal={handleSellModal}
-            utxo={uninscribedSats || inscription}
+            utxo={currentProduct}
             isUninscribed={!!uninscribedSats}
             onSale={onSend}
           />
@@ -611,7 +613,10 @@ const ProductDetailsArea = memo(
           <AuctionModal
             show={showAuctionModal}
             handleModal={handleAuctionModal}
-            utxo={{ ...inscription, value: nostr?.value || inscription.value }}
+            utxo={{
+              ...currentProduct,
+              value: nostr?.value || currentProduct.value,
+            }}
             isSpent={isUtxoSpent}
             onSale={onAuction}
           />
@@ -620,8 +625,9 @@ const ProductDetailsArea = memo(
           <BuyModal
             show={showBuyModal}
             handleModal={handleBuyModal}
-            utxo={inscription}
+            utxo={currentProduct}
             onSale={onSend}
+            isUninscribed={!!uninscribedSats}
             nostr={nostr}
           />
         )}
@@ -629,7 +635,7 @@ const ProductDetailsArea = memo(
           <BuyLightningModal
             show={showBuyLightningModal}
             handleModal={handleBuyLightningModal}
-            utxo={inscription}
+            utxo={currentProduct}
             onSale={onSend}
             nostr={nostr}
           />
@@ -638,7 +644,7 @@ const ProductDetailsArea = memo(
           <BidModal
             show={showBidModal}
             handleModal={handleBidModal}
-            utxo={inscription}
+            utxo={currentProduct}
             onBid={onBid}
             suggestedPrice={nostr?.value}
           />
@@ -647,7 +653,7 @@ const ProductDetailsArea = memo(
           <BidsModal
             show={showBidsModal}
             handleModal={handleBidsModal}
-            utxo={inscription}
+            utxo={currentProduct}
             onAcceptBid={onAcceptBid}
             nostr={nostr}
             bids={bids}

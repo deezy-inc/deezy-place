@@ -32,7 +32,14 @@ import { invalidateOutputsCache, getPsbt } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 
-const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
+const BuyModal = ({
+  show,
+  handleModal,
+  utxo,
+  onSale,
+  nostr,
+  isUninscribed = false,
+}) => {
   const {
     nostrOrdinalsAddress,
     nostrPaymentAddress,
@@ -88,6 +95,12 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     };
     fetchFee();
   }, [ordinalsDestinationAddress]);
+
+  const title = `Buy ${shortenStr(
+    isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
+  )}`;
+
+  console.log("[title]", title, utxo);
 
   const buy = async () => {
     setIsOnBuy(true);
@@ -183,7 +196,9 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     return (
       <div className={clsx(!isMounted && "hide-animated")}>
-        <p>You are about to buy this Ordinal</p>
+        <p>
+          You are about to buy this {utxo.inscriptionId ? "ordinal" : "UTXO"}
+        </p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>
@@ -283,7 +298,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       {showDiv && (
         <Modal.Header>
           <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
-            Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}
+            {title}
           </h3>
         </Modal.Header>
       )}
@@ -298,5 +313,6 @@ BuyModal.propTypes = {
   utxo: PropTypes.object,
   onSale: PropTypes.func,
   nostr: NostrEvenType,
+  isUninscribed: PropTypes.bool,
 };
 export default BuyModal;

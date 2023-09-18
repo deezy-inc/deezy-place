@@ -24,6 +24,8 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
+const partialUtxoSell = false;
+
 const SellModal = ({
   show,
   handleModal,
@@ -45,12 +47,13 @@ const SellModal = ({
   const sale = async () => {
     setIsOnSale(true);
 
-    const uninscribedOptions = isUninscribed
-      ? {
-          amountToSpend: 10000,
-          ownerOrdinalsAddress: nostrOrdinalsAddress,
-        }
-      : {};
+    const uninscribedOptions =
+      isUninscribed && partialUtxoSell
+        ? {
+            amountToSpend: 10000, // TODO: enable sell of partial UTXOs
+            ownerOrdinalsAddress: nostrOrdinalsAddress,
+          }
+        : {};
 
     debugger;
 

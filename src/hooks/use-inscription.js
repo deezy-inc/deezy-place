@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import {  getLatestSellNostrInscription } from "@services/nosft";
+import { getLatestSellNostrInscription } from "@services/nosft";
 import { useInterval } from "react-use";
-import { getInscription} from "../services/nitrous-api"
+import { getInscription } from "../services/nitrous-api";
 
 const delay = 5000;
 
@@ -21,20 +21,30 @@ function useInscription(inscriptionId) {
     if (!_currentInscriptionId) return;
     console.log("[useInscription]", _currentInscriptionId);
     const result = await getInscription(_currentInscriptionId);
-    const { inscription: _inscription, collection: _collection, nostr: _nostr, bids: _bids, auction: _auction  } = result;
-    console.log('[useInscription]', id, JSON.stringify({ _auction }))
-    
+    const {
+      inscription: _inscription,
+      collection: _collection,
+      nostr: _nostr,
+      bids: _bids,
+      auction: _auction,
+    } = result;
+    console.log("[useInscription]", id, JSON.stringify({ _auction }));
+
     const output = _inscription
-      ? _inscription.output || `${_inscription.txid}:${_inscription.  vout}`
+      ? _inscription.output || `${_inscription.txid}:${_inscription.vout}`
       : null;
-    const utxo = { ..._inscription, output };
+    const utxo = {
+      ..._inscription,
+      output,
+      value: parseInt(_inscription.value),
+    };
 
     setIsLoading(false);
     setInscription(utxo);
     setCollection(_collection);
     setNostrData(_nostr);
     setBids(_bids);
-    setAuction(_auction)
+    setAuction(_auction);
   };
 
   useInterval(
@@ -52,7 +62,16 @@ function useInscription(inscriptionId) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inscriptionId]);
 
-  return { inscription, collection, nostrData, isPooling, setIsPooling, bids, isLoading, auction };
+  return {
+    inscription,
+    collection,
+    nostrData,
+    isPooling,
+    setIsPooling,
+    bids,
+    isLoading,
+    auction,
+  };
 }
 
 export default useInscription;

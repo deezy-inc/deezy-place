@@ -47,22 +47,11 @@ const SellModal = ({
   const sale = async () => {
     setIsOnSale(true);
 
-    const uninscribedOptions =
-      isUninscribed && partialUtxoSell
-        ? {
-            amountToSpend: 10000, // TODO: enable sell of partial UTXOs
-            ownerOrdinalsAddress: nostrOrdinalsAddress,
-          }
-        : {};
-
-    debugger;
-
     const psbt = await generatePSBTListingInscriptionForSale({
       utxo,
       paymentAddress: destinationBtcAddress,
       pubkey: ordinalsPublicKey,
       price: ordinalValue,
-      ...uninscribedOptions,
     });
 
     console.log("[psbt]", psbt.toBase64());

@@ -100,8 +100,6 @@ const BuyModal = ({
     isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
   )}`;
 
-  console.log("[title]", title, utxo);
-
   const buy = async () => {
     setIsOnBuy(true);
 

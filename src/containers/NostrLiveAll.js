@@ -168,7 +168,6 @@ const NostrLive = ({ className, space, type, openOrders, loading = true }) => {
               onSale={() => {
                 window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
               }}
-              nostr={clickedUtxo.nostr}
             />
           )}
         </div>

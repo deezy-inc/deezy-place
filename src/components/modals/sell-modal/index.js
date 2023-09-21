@@ -24,15 +24,7 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
-const partialUtxoSell = false;
-
-const SellModal = ({
-  show,
-  handleModal,
-  utxo,
-  onSale,
-  isUninscribed = false,
-}) => {
+const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const { nostrOrdinalsAddress, nostrPaymentAddress, ordinalsPublicKey } =
     useWallet();
 
@@ -43,6 +35,8 @@ const SellModal = ({
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnSale, setIsOnSale] = useState(false);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
+
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
 
   const sale = async () => {
     setIsOnSale(true);
@@ -242,6 +236,5 @@ SellModal.propTypes = {
   handleModal: PropTypes.func.isRequired,
   utxo: PropTypes.object,
   onSale: PropTypes.func,
-  isUninscribed: PropTypes.bool,
 };
 export default SellModal;

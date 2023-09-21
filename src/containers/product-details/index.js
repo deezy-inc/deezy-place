@@ -596,7 +596,6 @@ const ProductDetailsArea = memo(
             show={showSendModal}
             handleModal={handleSendModal}
             utxo={currentProduct}
-            isUninscribed={!!uninscribedSats}
             onSend={onSend}
           />
         )}
@@ -605,7 +604,6 @@ const ProductDetailsArea = memo(
             show={showSellModal}
             handleModal={handleSellModal}
             utxo={currentProduct}
-            isUninscribed={!!uninscribedSats}
             onSale={onSend}
           />
         )}
@@ -627,7 +625,6 @@ const ProductDetailsArea = memo(
             handleModal={handleBuyModal}
             utxo={currentProduct}
             onSale={onSend}
-            isUninscribed={!!uninscribedSats}
             nostr={nostr}
           />
         )}

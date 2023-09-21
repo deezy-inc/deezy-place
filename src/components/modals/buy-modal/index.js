@@ -32,14 +32,7 @@ import { invalidateOutputsCache, getPsbt } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 
-const BuyModal = ({
-  show,
-  handleModal,
-  utxo,
-  onSale,
-  nostr,
-  isUninscribed = false,
-}) => {
+const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
   const {
     nostrOrdinalsAddress,
     nostrPaymentAddress,
@@ -61,6 +54,20 @@ const BuyModal = ({
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const feeRateOnChange = (evt) => setBuyFeeRate(parseInt(evt.target.value));
+
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
+  const nostr = _nostr
+    ? _nostr
+    : {
+        content: utxo?.content,
+        created_at: utxo?.created_at,
+        id: utxo?.id,
+        kind: utxo?.kind,
+        pubkey: utxo?.pubkey,
+        sig: utxo?.sig,
+        tags: utxo?.tags,
+        value: utxo?.value,
+      };
 
   const getPopulatedDeezyPsbt = async (psbt) => {
     const { data } = await axios.post(
@@ -104,7 +111,10 @@ const BuyModal = ({
     setIsOnBuy(true);
 
     try {
+      console.log("[nostr]", nostr);
       const sellerPsbt = getPsbt(nostr.content);
+
+      debugger;
 
       const { selectedUtxos } = await getFundingUtxosForBuy({
         address: nostrPaymentAddress,
@@ -311,6 +321,5 @@ BuyModal.propTypes = {
   utxo: PropTypes.object,
   onSale: PropTypes.func,
   nostr: NostrEvenType,
-  isUninscribed: PropTypes.bool,
 };
 export default BuyModal;

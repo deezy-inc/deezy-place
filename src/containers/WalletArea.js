@@ -128,8 +128,6 @@ const WalletArea = ({
     loadUtxos();
   }, [refreshHack, nostrOrdinalsAddress]);
 
-  console.log("filteredOwnedUtxos", filteredOwnedUtxos);
-
   return (
     <div
       id="your-collection"

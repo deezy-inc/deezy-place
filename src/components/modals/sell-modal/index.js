@@ -48,8 +48,6 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
       price: ordinalValue,
     });
 
-    console.log("[psbt]", psbt.toBase64());
-
     try {
       const signedPsbt = await signPsbtMessage(
         psbt.toBase64(),

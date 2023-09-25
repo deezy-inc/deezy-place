@@ -129,7 +129,7 @@ const ProductDetailsArea = memo(
         value: uninscribedSats ? uninscribedSats.value : inscription.value,
         btcValue: uninscribedSats ? `${toBTC(uninscribedSats.value)} BTC` : "",
         output: uninscribedSats ? shortenStr(uninscribedSats.output) : "",
-        sat_ranges: uninscribedSats ? uninscribedSats.sat_ranges : "",
+        sat_ranges: uninscribedSats ? uninscribedSats.sat_ranges : [],
       };
     }, [inscription, uninscribedSats]);
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();

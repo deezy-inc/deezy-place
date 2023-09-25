@@ -107,11 +107,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
     isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
   )}`;
 
+  const subtitle = `You are about to buy this ${
+    utxo.inscriptionId ? "ordinal" : "UTXO"
+  }`;
+
   const buy = async () => {
     setIsOnBuy(true);
 
     try {
-      console.log("[nostr]", nostr);
       const sellerPsbt = getPsbt(nostr.content);
 
       debugger;
@@ -204,9 +207,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
 
     return (
       <div className={clsx(!isMounted && "hide-animated")}>
-        <p>
-          You are about to buy this {utxo.inscriptionId ? "ordinal" : "UTXO"}
-        </p>
+        <p>{subtitle}</p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>

@@ -197,6 +197,8 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
     });
   }, [ordinalValue, decreaseAmount, selectedOption, reservePrice, startDate]);
 
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
+
   const validAuction =
     ordinalValue > 0 &&
     ordinalValue > reservePrice &&
@@ -306,7 +308,7 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         output: utxo.output || `${utxo.txid}:${utxo.vout}`,
         utxoNum: utxo.num,
         utxoCreatedAt: utxo.created,
-        inscriptionId: utxo.inscriptionId,
+        inscriptionId: utxo.inscriptionId ? utxo.inscriptionId : "",
         collection: utxo.collection?.slug,
       };
       const auction = await createAuction(dutchAuction);
@@ -402,6 +404,12 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
   };
 
   const action = step === 0 || step === 1 ? "Next" : "Create Auction";
+  const modalTitle = `You are about to sell this ${
+    isUninscribed ? "UTXO" : "ordinal"
+  } by Dutch Auction`;
+  const headerTitle = `Sell ${shortenStr(
+    (isUninscribed ? utxo?.output : utxo?.inscriptionId) || "",
+  )}`;
 
   return (
     <Modal
@@ -421,12 +429,10 @@ const AuctionModal = ({ show, handleModal, utxo, onSale, isSpent }) => {
         </button>
       )}
       <Modal.Header>
-        <h3 className="modal-title">
-          Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}
-        </h3>
+        <h3 className="modal-title">{headerTitle}</h3>
       </Modal.Header>
       <Modal.Body>
-        <p>You are about to sell this Ordinal by Dutch Auction</p>
+        <p>{modalTitle}</p>
         {step === 0 && (
           <div className="inscription-preview">
             <InscriptionPreview utxo={utxo} />

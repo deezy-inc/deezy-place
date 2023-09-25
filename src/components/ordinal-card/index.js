@@ -35,7 +35,7 @@ const CardOptions = dynamic(() => import("@components/card-options"), {
 const OrdinalCard = ({
   overlay,
   price,
-  type,
+  type: _type,
   utxo,
   authors,
   confirmed,
@@ -45,7 +45,14 @@ const OrdinalCard = ({
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
+  const isOwner =
+    utxo?.owner === nostrOrdinalsAddress ||
+    utxo?.address === nostrOrdinalsAddress;
+
+  const type = isOwner ? "view" : _type;
+
   const { value: rarity, isLoading: isRarityLoading } = useRatity({
+    utxo,
     output: getOutputValue(utxo),
   });
 
@@ -64,7 +71,15 @@ const OrdinalCard = ({
       utxo && (
         <div className="inscription-number">
           {utxo?.meta?.name || num}
-          {rarity && rarity !== "common" && !isRarityLoading && (
+          {/* {rarity && rarity !== "common" && !isRarityLoading && (
+            <>
+              {` - `}
+              <Badge pill variant={"primary"}>
+                {rarity?.toUpperCase()}
+              </Badge>
+            </>
+          )} */}
+          {rarity && !isRarityLoading && (
             <>
               {` - `}
               <Badge pill variant={"primary"}>

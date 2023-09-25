@@ -39,8 +39,6 @@ const OutputPage = () => {
   );
   const onAction = async () => {};
 
-  console.log("[uninscribedSats]", uninscribedSats);
-
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
@@ -51,10 +49,12 @@ const OutputPage = () => {
           style={{ paddingTop: headerHeight }}
           className="d-flex align-items-center justify-content-center"
         >
-          {uninscribedSats && (
+          {uninscribedSats && !isSpent && (
             <ProductDetailsArea
               isSpent={isSpent}
               uninscribedSats={uninscribedSats}
+              bidsDisabled
+              auctionDisabled
               bids={[]}
               nostr={nostr}
               isBidsLoading={false}
@@ -75,9 +75,9 @@ const OutputPage = () => {
               <div className="row">
                 <div className="col-12">
                   <div className="inscription-area__content">
-                    <h1 className="inscription-area__title">
-                      Uninscribed Sats not found
-                    </h1>
+                    <p className="inscription-area__title">
+                      Uninscribed Sats not found or it has been spent
+                    </p>
                   </div>
                 </div>
               </div>

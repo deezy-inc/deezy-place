@@ -32,7 +32,7 @@ import { invalidateOutputsCache, getPsbt } from "@services/nosft";
 
 bitcoin.initEccLib(ecc);
 
-const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
+const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
   const {
     nostrOrdinalsAddress,
     nostrPaymentAddress,
@@ -54,6 +54,20 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
   const feeRateOnChange = (evt) => setBuyFeeRate(parseInt(evt.target.value));
+
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
+  const nostr = _nostr
+    ? _nostr
+    : {
+        content: utxo?.content,
+        created_at: utxo?.created_at,
+        id: utxo?.id,
+        kind: utxo?.kind,
+        pubkey: utxo?.pubkey,
+        sig: utxo?.sig,
+        tags: utxo?.tags,
+        value: utxo?.value,
+      };
 
   const getPopulatedDeezyPsbt = async (psbt) => {
     const { data } = await axios.post(
@@ -88,6 +102,14 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
     };
     fetchFee();
   }, [ordinalsDestinationAddress]);
+
+  const title = `Buy ${shortenStr(
+    isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
+  )}`;
+
+  const subtitle = `You are about to buy this ${
+    utxo.inscriptionId ? "ordinal" : "UTXO"
+  }`;
 
   const buy = async () => {
     setIsOnBuy(true);
@@ -183,7 +205,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
 
     return (
       <div className={clsx(!isMounted && "hide-animated")}>
-        <p>You are about to buy this Ordinal</p>
+        <p>{subtitle}</p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>
@@ -283,7 +305,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr }) => {
       {showDiv && (
         <Modal.Header>
           <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
-            Buy {shortenStr(utxo && `${utxo.inscriptionId}`)}
+            {title}
           </h3>
         </Modal.Header>
       )}

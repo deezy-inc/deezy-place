@@ -44,5 +44,5 @@ labs/
 # Sentry Auth Token
 .sentryclirc
 
-.bk.js
+*.bk.js
 

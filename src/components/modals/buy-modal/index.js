@@ -124,6 +124,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
         offerPrice: nostr.value,
         sellerPsbt: sellerPsbt,
         selectedFeeRate: buyFeeRate,
+        isUninscribed,
       });
 
       // Step 1 we call deezy api to get the psbt with the dummy utxos.
@@ -141,6 +142,7 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
         sellerSignedPsbt: deezyPsbt,
         psbt: deezyPsbt,
         selectedFeeRate: buyFeeRate,
+        isUninscribed,
       });
 
       // Step 3, we sign the psbt

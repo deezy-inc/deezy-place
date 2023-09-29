@@ -35,6 +35,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const [ordinalValue, setOrdinalValue] = useState(utxo.value);
   const [isOnSale, setIsOnSale] = useState(false);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
+  const [errorMessage, setErrorMessage] = useState("");
 
   const isUninscribed = !Boolean(utxo?.inscriptionId);
 
@@ -95,7 +96,19 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
       return;
     }
 
-    setOrdinalValue(Number(newValue));
+    const offerPrice = Number(newValue);
+
+    if (offerPrice < utxo?.value) {
+      setIsBtcAmountValid(false);
+      setErrorMessage(
+        `Price must be greater or equal than ${utxo.value} stats`,
+      );
+      setOrdinalValue(offerPrice);
+      return;
+    }
+    setErrorMessage("");
+    setIsBtcAmountValid(true);
+    setOrdinalValue(offerPrice);
   };
 
   const addressOnChange = (evt) => {
@@ -152,7 +165,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                 <InputGroup className="mb-lg-5 omg">
                   <Form.Label>Address to receive payment</Form.Label>
                   <Form.Control
-                    defaultValue={nostrPaymentAddress}
+                    value={destinationBtcAddress}
                     onChange={addressOnChange}
                     placeholder="Paste BTC address to receive your payment here"
                     aria-label="Paste BTC address to receive your payment here"
@@ -171,7 +184,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
                 <InputGroup className="mb-lg-5">
                   <Form.Label>Price (in Sats)</Form.Label>
                   <Form.Control
-                    defaultValue={utxo.value}
+                    value={ordinalValue}
                     onChange={priceOnChange}
                     type="number"
                     placeholder="Price (in Sats)"
@@ -183,7 +196,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
 
                   <Form.Control.Feedback type="invalid">
                     <br />
-                    Invalid amount
+                    Invalid amount {errorMessage ? `: ${errorMessage}` : ""}
                   </Form.Control.Feedback>
                 </InputGroup>
               </div>
@@ -215,7 +228,7 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!destinationBtcAddress}
+              disabled={!destinationBtcAddress || !isBtcAmountValid}
               autoFocus
               className={isOnSale ? "btn-loading" : ""}
               onClick={submit}

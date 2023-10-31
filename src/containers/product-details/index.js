@@ -376,11 +376,16 @@ const ProductDetailsArea = memo(
 
                 {product.sat_ranges && <SatsRangeTable product={product} />}
 
-                {collection && (
+                {
+                  collection ? (
                   <div className="catagory-collection">
                     <InscriptionCollection collection={collection} />
                   </div>
-                )}
+                ) :
+                  <div className="catagory-collection">
+                      <b>This item is NOT part of a known collection</b>
+                  </div>
+                }
 
                 {auctionTitle && nostr?.value && (
                   <div className="dutchAuction">

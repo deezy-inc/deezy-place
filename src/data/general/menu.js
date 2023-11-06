@@ -24,7 +24,7 @@ export default function (inscriborLink) {
     {
       id: 5,
       text: "Inscribe",
-      path: inscriborLink,
+      path: "/tools/inscribor",
     },
     {
       id: 6,

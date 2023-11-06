@@ -33,3 +33,5 @@ export const DEFAULT_UTXO_OPTIONS = [
   ...DEFAULT_UTXO_TYPES,
   OTHER_UTXO_OPTION,
 ];
+
+export const MAX_FILE_SIZE = 510976; // 499 KB

@@ -343,7 +343,9 @@ const CollectionOnSale = ({
             </Slider>
           )}
 
-          {!nostrOrdinalsAddress && <ConnectWallet cb={onWalletConnected} />}
+          {!nostrOrdinalsAddress && (
+            <ConnectWallet callback={onWalletConnected} />
+          )}
           {showBuyModal && (
             <BuyModal
               show={showBuyModal}

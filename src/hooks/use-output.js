@@ -1,16 +1,32 @@
-import { getOutput } from "@services/nosft";
-import { useAsync } from "react-use";
+import { NOSFT_BASE_API_URL, getOutput } from "@services/nosft";
+import useSWR from "swr";
+import axios from "axios";
 
-function useOutput(output) {
-  const state = useAsync(async () => {
-    if (!output) return undefined;
-    const data = await getOutput(output);
-    const [txid = "", vout = ""] = output.split(":");
-    // console.log("[useOutput]", { ...data, output, txid, vout });
-    return { ...data, output, txid, vout: parseInt(vout) };
-  }, [output]);
+const fetcher = async (output) => {
+  let outputData = {};
+  if (!output) return undefined;
+  try {
+    outputData = await getOutput(output);
+  } catch (error) {
+    console.log("[error]", error.message);
+    return null;
+  }
+  let nostr;
+  try {
+    const {
+      data: { item },
+    } = await axios.get(`${NOSFT_BASE_API_URL}/uninscribed/${output}`);
+    nostr = item;
+  } catch (error) {
+    nostr = null;
+  }
+  const [txid = "", vout = ""] = output.split(":");
+  return { ...outputData, output, txid, vout: parseInt(vout), nostr };
+};
 
-  return state;
+function useOutput({ output }) {
+  const { data, error, isLoading } = useSWR(output, fetcher);
+  return { value: data, error, isLoading };
 }
 
 export default useOutput;

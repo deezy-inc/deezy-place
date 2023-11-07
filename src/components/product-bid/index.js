@@ -7,7 +7,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
   function onActionClicked(e) {
     e.preventDefault();
 
-    if (onClick) {
+    if (onClick && type !== "view") {
       onClick(utxo.inscriptionId);
       return;
     }

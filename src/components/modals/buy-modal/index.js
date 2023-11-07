@@ -117,6 +117,8 @@ const BuyModal = ({ show, handleModal, utxo, onSale, nostr: _nostr }) => {
     try {
       const sellerPsbt = getPsbt(nostr.content);
 
+      debugger;
+
       const { selectedUtxos } = await getFundingUtxosForBuy({
         address: nostrPaymentAddress,
         offerPrice: nostr.value,

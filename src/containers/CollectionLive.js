@@ -81,13 +81,7 @@ export const updateInscriptions = (acc, curr) => {
   return acc.sort((a, b) => b.created - a.created).slice(0, MAX_ONSALE);
 };
 
-const CollectionOnSale = ({
-  className,
-  space,
-  type,
-  collection,
-  onDutchLoaded,
-}) => {
+const CollectionOnSale = ({ className, space, collection, onDutchLoaded }) => {
   const { nostrOrdinalsAddress, onShowConnectModal } = useWallet();
   const [openOrders, setOpenOrders] = useState([]);
   const addOpenOrder$ = useRef(new Subject());

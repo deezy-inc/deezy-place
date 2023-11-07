@@ -36,21 +36,28 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
   const [isOnSale, setIsOnSale] = useState(false);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
+
   const sale = async () => {
     setIsOnSale(true);
 
     const psbt = await generatePSBTListingInscriptionForSale({
       utxo,
       paymentAddress: destinationBtcAddress,
-      price: ordinalValue,
       pubkey: ordinalsPublicKey,
+      price: ordinalValue,
     });
 
     try {
       const signedPsbt = await signPsbtMessage(
         psbt.toBase64(),
         nostrOrdinalsAddress,
+        false,
+        false,
+        true,
       );
+
+      utxo.inscriptionId = utxo.inscriptionI || "";
 
       await publishOrder({
         utxo,
@@ -104,6 +111,10 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
     setDestinationBtcAddress(newaddr);
   };
 
+  const title = `Sell ${shortenStr(
+    isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
+  )}`;
+
   return (
     <Modal
       className="rn-popup-modal placebid-modal-wrapper"
@@ -122,15 +133,17 @@ const SellModal = ({ show, handleModal, utxo, onSale }) => {
         </button>
       )}
       <Modal.Header>
-        <h3 className="modal-title">
-          Sell {shortenStr(utxo && `${utxo.inscriptionId}`)}
-        </h3>
+        <h3 className="modal-title">{title}</h3>
       </Modal.Header>
       <Modal.Body>
-        <p>You are about to sell this Ordinal</p>
-        <div className="inscription-preview">
-          <InscriptionPreview utxo={utxo} />
-        </div>
+        <p>
+          You are about to sell this {utxo.inscriptionId ? "ordinal" : "UTXO"}
+        </p>
+        {!isUninscribed && (
+          <div className="inscription-preview">
+            <InscriptionPreview utxo={utxo} />
+          </div>
+        )}
 
         <div className="placebid-form-box">
           <div className="bid-content">

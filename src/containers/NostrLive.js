@@ -156,7 +156,6 @@ const NostrLive = ({ className, space, type, openOffers }) => {
             onSale={() => {
               window.location.href = `/inscription/${clickedUtxo.inscriptionId}`;
             }}
-            nostr={clickedUtxo.nostr}
           />
         )}
 

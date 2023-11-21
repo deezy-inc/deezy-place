@@ -23,6 +23,14 @@ const ConnectWallet = ({ callback }) => {
         onConnect("nosft.xyz", callback);
       },
     },
+       {
+      name: "OneKey",
+      image: "/images/logo/onekey.png",
+      provider: "unisat",
+      onClick: () => {
+        onConnect("unisat.io", callback);
+      },
+    },
     {
       name: "Ordswap",
       image: "/images/logo/ordswap.svg",

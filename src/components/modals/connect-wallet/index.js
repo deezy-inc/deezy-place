@@ -42,6 +42,15 @@ const ConnectWallet = ({ callback }) => {
       },
     },
     {
+      name: "OneKey",
+      image: "/images/logo/onekey.png",
+      provider: "onekey",
+
+      onClick: () => {
+        onConnect("unisat.io", callback);
+      },
+    },
+    {
       name: "UniSat",
       image: "/images/logo/unisat.png",
       provider: "unisat",
@@ -74,7 +83,8 @@ const ConnectWallet = ({ callback }) => {
       if (
         (wallet.provider === "xverse" && !window.BitcoinProvider) ||
         (!ethProvider && wallet.ethereum) ||
-        (wallet.provider === "unisat" && !window.unisat)
+        (wallet.provider === "unisat" && !window.unisat) ||
+        (wallet.provider === "onekey" && !window.$onekey)
       ) {
         return;
       }

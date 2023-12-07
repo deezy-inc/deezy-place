@@ -47,7 +47,7 @@ const ConnectWallet = ({ callback }) => {
       provider: "onekey",
 
       onClick: () => {
-        onConnect("unisat.io", callback);
+        onConnect("onekey", callback);
       },
     },
     {

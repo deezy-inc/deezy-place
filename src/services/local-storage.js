@@ -9,7 +9,12 @@ const LocalStorage = {
             return undefined;
         }
 
-        window.localStorage.setItem(id, JSON.stringify(data));
+        try {
+            window.localStorage.setItem(id, JSON.stringify(data));
+        } catch(e) {
+            console.error(e);
+        }
+        
         return undefined;
     },
     get: (id) => {

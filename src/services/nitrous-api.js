@@ -1,7 +1,5 @@
 const axios = require("axios");
-
-const NITROUS_BASE_API_URL = "api-testnet.deezy.place";
-
+const NOSFT_BASE_API_URL = "https://sv8sa61d52.execute-api.us-east-1.amazonaws.com";
 function mapInscription(obj) {
   console.log("[obj]", obj);
   return {
@@ -71,10 +69,20 @@ function mapAuction(obj) {
   };
 }
 
+async function refreshInscription(inscriptionId) {
+  try {
+    await axios.post(
+      `${NOSFT_BASE_API_URL}/inscription/${inscriptionId}/refresh`,
+    );
+  } catch(e) {
+    console.error(e);
+  } 
+}
+
 async function getInscription(inscriptionId) {
   try {
     const response = await axios.get(
-      `https://${NITROUS_BASE_API_URL}/inscription/${inscriptionId}`,
+      `${NOSFT_BASE_API_URL}/inscription/${inscriptionId}`,
     );
     const inscriptionData = await response.data;
 
@@ -82,7 +90,8 @@ async function getInscription(inscriptionId) {
       (a) => a.status === "RUNNING" || a.status === "PENDING",
     );
 
-    return {
+
+    const result = {
       ...inscriptionData,
       inscription: mapInscription(inscriptionData.inscription),
       nostr: inscriptionData.sellEvents?.[0]
@@ -91,9 +100,20 @@ async function getInscription(inscriptionId) {
       bids: inscriptionData.bids?.map(mapBidEvent),
       auction: mapAuction(_auction),
     };
+
+    return result;
   } catch (error) {
     console.error(error);
   }
 }
 
-module.exports = { getInscription };
+async function getCollection(slug) {
+  try {
+    const response = await axios.get(`${NOSFT_BASE_API_URL}/collection/${slug}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+module.exports = { getInscription, refreshInscription, getCollection };

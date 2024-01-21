@@ -175,7 +175,7 @@ const CollectionOnSale = ({
 
           let nextPriceDrop;
           const currentEvent = auctions.metadata.find(
-            (m) => m.price === auctions.currentPrice,
+            (m) => m.price == auctions.currentPrice,
           );
 
           const nostr = currentEvent.nostr;

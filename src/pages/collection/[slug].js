@@ -10,7 +10,7 @@ import CollectionInfo from "@components/collection-info";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
-import { getCollection } from "@services/nosft";
+import { getCollection } from "@services/nitrous-api";
 import { SkeletonTheme } from "react-loading-skeleton";
 import clsx from "clsx";
 import SectionTitle from "@components/section-title";
@@ -18,6 +18,8 @@ import Slider, { SliderItem } from "@ui/slider";
 import OrdinalCard from "@components/collection-inscription";
 import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
+// Saves up to the amount in storage for faster refresh load.
+const LOCAL_STORAGE_INSCRIPTIONS_SIZE = 20;
 const SliderOptions = {
   infinite: true,
   slidesToShow: 5,
@@ -66,67 +68,76 @@ const Inscription = () => {
 
   const [collection, setCollection] = useState({});
   const [collectionInfo, setCollectionInfo] = useState();
-  const [isDutchLoaded, setIsDutchLoaded] = useState(false);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
     const key = `${LocalStorageKeys.COLLECTION_INFO}:${slug}`;
     const fetchCollection = async () => {
-      setIsCollectionLoading(false);
-      const collectionData = await getCollection(slug, true);
+      setIsCollectionLoading(true);
+      
+      const { inscriptions, collection: collectionData } = await getCollection(slug, true);
 
       const links = [];
 
-      if (collectionData.website_link) {
+      if (collectionData.websiteLink) {
         links.push({
           name: "Website",
-          url: collectionData.website_link,
+          url: collectionData.websiteLink,
         });
       }
 
-      if (collectionData.twitter_link) {
+      if (collectionData.twitterLink) {
         links.push({
           name: "Twitter",
-          url: collectionData.twitter_link,
+          url: collectionData.twitterLink,
         });
       }
 
-      if (collectionData.discord_link) {
+      if (collectionData.discordLink) {
         links.push({
           name: "Discord",
-          url: collectionData.discord_link,
+          url: collectionData.discordLink,
         });
       }
 
-      // collectionData.inscriptions = collectionInscriptions.slice(0, 50);
       collectionData.links = links;
+      
+      const collectionInfoData = {
+        ...collectionData,
+        inscriptions: [],
+      };
+      
+      LocalStorage.set(key, {
+        collection: collectionData,
+        inscriptions: inscriptions.slice(0, LOCAL_STORAGE_INSCRIPTIONS_SIZE)
+      });
+      
+      
+      collectionData.inscriptions = inscriptions;
+      setCollectionInfo(collectionInfoData);
+      setIsCollectionLoading(false);
+      setCollection(collectionData);
+    };
+
+    const cacheCollection = LocalStorage.get(key);
+    if (cacheCollection) {
+      const collectionData = cacheCollection.collection;
+      const inscriptionsData = cacheCollection.inscriptions;
 
       const collectionInfoData = {
         ...collectionData,
         inscriptions: [],
       };
 
-      LocalStorage.set(key, collectionInfoData);
+      collectionData.inscriptions = inscriptionsData;
       setCollectionInfo(collectionInfoData);
-      setIsCollectionLoading(true);
       setCollection(collectionData);
-    };
-
-    const collectionInfoData = LocalStorage.get(key);
-    if (collectionInfoData) {
-      setCollectionInfo(collectionInfoData);
-      setIsCollectionLoading(true);
+      setIsCollectionLoading(false);
     }
 
     fetchCollection();
   }, [slug]);
-
-  const onDutchLoaded = () => {
-    setTimeout(() => {
-      setIsDutchLoaded(true);
-    }, 800);
-  };
 
   return (
     <WalletContext.Provider value={walletState}>
@@ -136,23 +147,14 @@ const Inscription = () => {
         />
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {collectionInfo && (
             <CollectionInfo
               collection={collectionInfo}
               isLoading={isCollectionLoading}
             />
+          {collection?.inscriptions?.length > 0 && (
+            <Collection collection={collection} />
           )}
-          {collection && (
-            <>
-              {/* <CollectionAuction collection={collection} /> */}
-              <CollectionLive
-                collection={collection}
-                onDutchLoaded={onDutchLoaded}
-              />
-              {isDutchLoaded && <Collection collection={collection} />}
-            </>
-          )}
-          {!isDutchLoaded && collectionInfo && (
+          {!collection?.inscriptions?.length > 0 && (
             <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
               <div
                 id="your-collection"
@@ -182,7 +184,7 @@ const Inscription = () => {
                 </div>
               </div>
             </SkeletonTheme>
-          )}
+          )} 
         </main>
 
         <Footer />

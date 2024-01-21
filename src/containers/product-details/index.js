@@ -27,6 +27,7 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import BidModal from "@components/modals/bid-modal";
 import BidsModal from "@components/modals/bids-modal";
 import BidsLoadingButton from "./loading-button";
+import { refreshInscription } from "../../services/nitrous-api";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
 
@@ -143,8 +144,16 @@ const ProductDetailsArea = memo(
     const [auctionCanceled, setAuctionCanceled] = useState(false);
     const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
+    const cancelAuctionAndRefreshInscription = async(_inscriptionId) => {
+      
+      await cancelAuction(_inscriptionId).catch(console.error);
+      // Tracker service doesn't know about this change. so we should trigger the event manually
+      await refreshInscription(_inscriptionId);
+
+    }
+
     const [{ loading: isCanceling, error: auctionError }, doCancelAction] =
-      useAsyncFn(cancelAuction, []);
+      useAsyncFn(cancelAuctionAndRefreshInscription, []);
 
     const handleSendModal = () => {
       setShowSendModal((prev) => !prev);

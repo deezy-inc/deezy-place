@@ -33,3 +33,7 @@ export const DEFAULT_UTXO_OPTIONS = [
   ...DEFAULT_UTXO_TYPES,
   OTHER_UTXO_OPTION,
 ];
+
+export const MEMPOOL_API_URL = process.env.MEMPOOL_API_URL || 
+    (process.env.TESTNET === 'true' ? 'https://mempool.space/testnet' : 'https://mempool.space');
+

@@ -75,11 +75,7 @@ function mapAuction(obj) {
 async function getInscription(inscriptionId) {
   try {
     const response = await axios.get(
-      `https://${NITROUS_BASE_API_URL}/inscription/${inscriptionId}`, {
-        headers: {
-          accept: 'application/json'
-        }
-      }
+      `https://${NITROUS_BASE_API_URL}/inscription/${inscriptionId}`,
     );
     const inscriptionData = await response.data;
 

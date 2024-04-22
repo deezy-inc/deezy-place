@@ -15,7 +15,7 @@ function mapInscription(obj) {
     num: String(obj.number),
     owner: obj.address,
     sats: String(obj.value),
-    output: `${txid}:${vout}`
+    output: `${txid}:${vout}`,
     offset: offset,
     inscriptionId: obj.id,
     vout: Number(vout),

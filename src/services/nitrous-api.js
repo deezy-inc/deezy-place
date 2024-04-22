@@ -83,13 +83,15 @@ async function getInscription(inscriptionId) {
     );
     const inscriptionData = await response.data;
 
+    // Note: auctions are disabled
     const _auction = inscriptionData.auctions?.find(
       (a) => a.status === "RUNNING" || a.status === "PENDING",
     );
 
     return {
       ...inscriptionData,
-      inscription: mapInscription(inscriptionData.inscription),
+      inscription: mapInscription(inscriptionData),
+      // Note: sellEvents and bids are disabled
       nostr: inscriptionData.sellEvents?.[0]
         ? mapNostrEvent(inscriptionData.sellEvents?.[0])
         : undefined,

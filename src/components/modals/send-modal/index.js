@@ -144,7 +144,7 @@ const SendModal = ({
           result = await window.webln.sendPayment(data.bolt11_invoice);
           navigator.clipboard.writeText(result.paymentHash);
           toast.success(
-            `Transaction sent: ${result.paymentHash}, copied to clipboard`,
+            `Transaction sent: ${fundedPsbt.extractTransaction().getId()}, copied to clipboard`,
           );
         } else {
           result = data.bolt11_invoice;

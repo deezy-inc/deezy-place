@@ -1,25 +1,24 @@
 const axios = require("axios");
 
-const NITROUS_BASE_API_URL = "ordinals-api-lb.deezy.io";
+const NITROUS_BASE_API_URL = "api-testnet.deezy.place";
 
 function mapInscription(obj) {
   console.log("[obj]", obj);
-  const [txid, vout, offset] = obj.satpoint.split(':')
   return {
-    content_length: String(obj.content_length),
-    content_type: obj.content_type,
-    created: obj.created ? Number(obj.timestamp) : 0,
-    genesis_fee: String(obj.fee),
-    genesis_height: String(obj.height),
+    content_length: String(obj.contentLength),
+    content_type: obj.contentType,
+    created: obj.created ? Number(obj.created) : 0,
+    genesis_fee: String(obj.genesisFee),
+    genesis_height: String(obj.genesisHeight),
     id: String(obj.id),
-    num: String(obj.number),
-    owner: obj.address,
-    sats: String(obj.value),
-    output: `${txid}:${vout}`
-    offset: offset,
-    inscriptionId: obj.id,
-    vout: Number(vout),
-    txid: txid,
+    num: String(obj.num),
+    owner: obj.owner,
+    sats: String(obj.sats),
+    output: obj.output,
+    offset: String(obj.offset),
+    inscriptionId: obj.inscriptionId,
+    vout: Number(obj.vout),
+    txid: obj.txid,
     value: obj.value,
   };
 }

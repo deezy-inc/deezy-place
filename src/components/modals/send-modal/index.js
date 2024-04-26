@@ -142,9 +142,9 @@ const SendModal = ({
         if (window.webln) {
           if (!window.webln.enabled) await window.webln.enable();
           result = await window.webln.sendPayment(data.bolt11_invoice);
-          navigator.clipboard.writeText(result.paymentHash);
+          navigator.clipboard.writeText(destinationBtcAddress);
           toast.success(
-            `Transaction sent: ${fundedPsbt.extractTransaction().getId()}, copied to clipboard`,
+            `Transaction sent! Destination address copied to clipboard`,
           );
         } else {
           result = data.bolt11_invoice;

@@ -18,7 +18,7 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 import Slider, { SliderItem } from "@ui/slider";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
-import SendModal from "@components/modals/send-bulk-modal";
+import SendBulkModal from "@components/modals/send-bulk-modal";
 
 const SliderOptions = {
 	infinite: true,
@@ -72,8 +72,17 @@ const WalletArea = ({
 	const [refreshHack, setRefreshHack] = useState(false);
 	const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 	const [showSendModal, setShowSendModal] = useState(false);
+	const [selectedUtxos, setSelectedUtxos] = useState([]);
 
 	const onSend = async (utxo, amount, address) => {};
+
+	const handleUtxoSelection = (utxo, isSelected) => {
+		if (isSelected) {
+			setSelectedUtxos([...selectedUtxos, utxo]);
+		} else {
+			setSelectedUtxos(selectedUtxos.filter((u) => u.txid !== utxo.txid));
+		}
+	};
 
 	const handleRefreshHack = () => {
 		setRefreshHack(!refreshHack);
@@ -194,6 +203,24 @@ const WalletArea = ({
 								{" "}
 								{shortenStr(nostrOrdinalsAddress)}
 							</button>
+
+							<div className="form-check mt-2">
+								<input
+									className="form-check-input"
+									type="checkbox"
+									id={"checkbox-select-all"}
+									checked={selectedUtxos.length === filteredOwnedUtxos.length}
+									onChange={(e) =>
+										setSelectedUtxos(e.target.checked ? filteredOwnedUtxos : [])
+									}
+								/>
+								<label
+									className="form-check-label"
+									htmlFor={"checkbox-select-all"}
+								>
+									Select for sending
+								</label>
+							</div>
 						</span>
 					</div>
 				</div>
@@ -219,6 +246,25 @@ const WalletArea = ({
 										utxo={inscription}
 										onSale={handleRefreshHack}
 									/>
+									<div className="form-check mt-2">
+										<input
+											className="form-check-input"
+											type="checkbox"
+											id={`checkbox-${inscription.txid}`}
+											checked={selectedUtxos.some(
+												(selected) => selected.txid === inscription.txid,
+											)}
+											onChange={(e) =>
+												handleUtxoSelection(inscription, e.target.checked)
+											}
+										/>
+										<label
+											className="form-check-label"
+											htmlFor={`checkbox-${inscription.txid}`}
+										>
+											Select for sending
+										</label>
+									</div>
 								</div>
 							))}
 							{filteredOwnedUtxos.length === 0 && (
@@ -250,7 +296,8 @@ const WalletArea = ({
 				</div>
 			</div>
 			{showSendModal && (
-				<SendModal
+				<SendBulkModal
+					ownedUtxos={ownedUtxos}
 					show={showSendModal}
 					handleModal={handleSendModal}
 					utxo={""}

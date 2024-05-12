@@ -7,16 +7,16 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-  signAndBroadcastUtxo,
-  shortenStr,
-  outputValue,
-  fetchRecommendedFee,
-  createPsbtForBoost,
-  signPsbtForBoost,
-  TESTNET,
-  DEFAULT_FEE_RATE,
-  MIN_OUTPUT_VALUE,
-  BOOST_UTXO_VALUE,
+	signAndBroadcastUtxo,
+	shortenStr,
+	outputValue,
+	fetchRecommendedFee,
+	createPsbtForBoost,
+	signPsbtForBoost,
+	TESTNET,
+	DEFAULT_FEE_RATE,
+	MIN_OUTPUT_VALUE,
+	BOOST_UTXO_VALUE,
 } from "@services/nosft";
 import axios from "axios";
 
@@ -34,309 +34,311 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 bitcoin.initEccLib(ecc);
 
 const SendModal = ({
-  show,
-  handleModal,
-  utxo,
-  onSend,
-  isUninscribed = false,
+	show,
+	handleModal,
+	utxo,
+	onSend,
+	isUninscribed = false,
+	ownedUtxos,
 }) => {
-  const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
-  const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
-  const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-  const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE)
-  const [sentTxId, setSentTxId] = useState(null);
-  const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
-  const [isSending, setIsSending] = useState(false);
+	const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
+	const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
+	const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
+	const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE);
+	const [sentTxId, setSentTxId] = useState(null);
+	const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
+	const [isSending, setIsSending] = useState(false);
 
-  const [isMounted, setIsMounted] = useState(true);
-  const showDiv = useDelayUnmount(isMounted, 500);
+	const [isMounted, setIsMounted] = useState(true);
+	const showDiv = useDelayUnmount(isMounted, 500);
 
-  useEffect(() => {
-    const fetchFee = async () => {
-      const fee = await fetchRecommendedFee();
-      setSendFeeRate(fee);
-    };
+	useEffect(() => {
+		const fetchFee = async () => {
+			const fee = await fetchRecommendedFee();
+			setSendFeeRate(fee);
+		};
 
-    fetchFee();
-  }, []);
+		fetchFee();
+	}, []);
 
-  const addressOnChange = (evt) => {
-    const newaddr = evt.target.value;
+	const addressOnChange = (evt) => {
+		const newaddr = evt.target.value;
 
-    if (newaddr === "") {
-      setIsBtcInputAddressValid(true);
-      return;
-    }
-    if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
-      setIsBtcInputAddressValid(false);
-      return;
-    }
+		if (newaddr === "") {
+			setIsBtcInputAddressValid(true);
+			return;
+		}
+		if (!validate(newaddr, TESTNET ? Network.testnet : Network.mainnet)) {
+			setIsBtcInputAddressValid(false);
+			return;
+		}
 
-    setIsBtcInputAddressValid(true);
-    setDestinationBtcAddress(newaddr);
-  };
+		setIsBtcInputAddressValid(true);
+		setDestinationBtcAddress(newaddr);
+	};
 
-  const feeRateOnChange = (evt) => {
-    setSendFeeRate(parseInt(evt.target.value));
-  };
+	const feeRateOnChange = (evt) => {
+		setSendFeeRate(parseInt(evt.target.value));
+	};
 
-  const boostOutputValueChange = (evt) => {
-    setBoostOutputValue(parseInt(evt.target.value));
-  }
+	const boostOutputValueChange = (evt) => {
+		setBoostOutputValue(parseInt(evt.target.value));
+	};
 
-  const boostRequired =
-    !!utxo &&
-    !!sendFeeRate &&
-    outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
+	const boostRequired =
+		!!utxo &&
+		!!sendFeeRate &&
+		outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
 
-  const closeModal = () => {
-    onSend();
-    handleModal();
-  };
+	const closeModal = () => {
+		onSend();
+		handleModal();
+	};
 
-  const submit = async () => {
-    setIsSending(true);
+	const submit = async () => {
+		setIsSending(true);
 
-    const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+		const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
 
-    if (boostRequired) {
-      try {
-        let result;
-        // Step 1, create PSBT
-        const signedTxHex = await createPsbtForBoost({
-          pubKey: ordinalsPublicKey,
-          utxo,
-          destinationBtcAddress,
-          outputValue: boostOutputValue,
-          sighashType:
-            provider === "unisat.io"
-              ? bitcoin.Transaction.SIGHASH_SINGLE |
-                bitcoin.Transaction.SIGHASH_ANYONECANPAY
-              : undefined,
-        });
+		if (boostRequired) {
+			try {
+				let result;
+				// Step 1, create PSBT
+				const signedTxHex = await createPsbtForBoost({
+					pubKey: ordinalsPublicKey,
+					utxo,
+					destinationBtcAddress,
+					outputValue: boostOutputValue,
+					sighashType:
+						provider === "unisat.io"
+							? bitcoin.Transaction.SIGHASH_SINGLE |
+								bitcoin.Transaction.SIGHASH_ANYONECANPAY
+							: undefined,
+				});
 
-        // Step 2, add deezy inputs/outputs
-        const { data } = await axios.post(
-          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-          {
-            psbt: signedTxHex,
-            fee_rate: sendFeeRate,
-          },
-        );
-        // Step 3, sign our input
-        const { funded_unsigned_psbt, id } = data;
-        const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
-        const signedPsbt = await signPsbtForBoost({
-          address: nostrOrdinalsAddress,
-          psbt: fundedPsbt,
-        });
-        // Step 4, update deezy with our signed input
-        await axios.put(
-          `https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-          {
-            id,
-            psbt: signedPsbt,
-          },
-        );
-        // Step 5, pay Deezy's invoice
-        if (window.webln) {
-          if (!window.webln.enabled) await window.webln.enable();
-          result = await window.webln.sendPayment(data.bolt11_invoice);
-          navigator.clipboard.writeText(destinationBtcAddress);
-          toast.success(
-            `Transaction sent! Destination address copied to clipboard`,
-          );
-        } else {
-          result = data.bolt11_invoice;
-          navigator.clipboard.writeText(result);
-          toast.success(
-            `Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`,
-          );
-        }
-        // There is no confirmation modal to show since there is no tx id. Just close the modal
-        closeModal();
-      } catch (e) {
-        console.error(e);
-        toast.error(e.message);
-      } finally {
-        setIsSending(false);
-      }
-      return;
-    }
+				// Step 2, add deezy inputs/outputs
+				const { data } = await axios.post(
+					`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
+					{
+						psbt: signedTxHex,
+						fee_rate: sendFeeRate,
+					},
+				);
+				// Step 3, sign our input
+				const { funded_unsigned_psbt, id } = data;
+				const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
+				const signedPsbt = await signPsbtForBoost({
+					address: nostrOrdinalsAddress,
+					psbt: fundedPsbt,
+				});
+				// Step 4, update deezy with our signed input
+				await axios.put(
+					`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
+					{
+						id,
+						psbt: signedPsbt,
+					},
+				);
+				// Step 5, pay Deezy's invoice
+				if (window.webln) {
+					if (!window.webln.enabled) await window.webln.enable();
+					result = await window.webln.sendPayment(data.bolt11_invoice);
+					navigator.clipboard.writeText(destinationBtcAddress);
+					toast.success(
+						`Transaction sent! Destination address copied to clipboard`,
+					);
+				} else {
+					result = data.bolt11_invoice;
+					navigator.clipboard.writeText(result);
+					toast.success(
+						`Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`,
+					);
+				}
+				// There is no confirmation modal to show since there is no tx id. Just close the modal
+				closeModal();
+			} catch (e) {
+				console.error(e);
+				toast.error(e.message);
+			} finally {
+				setIsSending(false);
+			}
+			return;
+		}
 
-    try {
-      const txId = await signAndBroadcastUtxo({
-        pubKey: ordinalsPublicKey,
-        address: nostrOrdinalsAddress,
-        utxo,
-        destinationBtcAddress,
-        sendFeeRate,
-      });
+		try {
+			const txId = await signAndBroadcastUtxo({
+				pubKey: ordinalsPublicKey,
+				address: nostrOrdinalsAddress,
+				utxo,
+				destinationBtcAddress,
+				sendFeeRate,
+			});
 
-      setSentTxId(txId);
-      toast.success(`Transaction sent: ${txId}, copied to clipboard`);
-      navigator.clipboard.writeText(txId);
+			setSentTxId(txId);
+			toast.success(`Transaction sent: ${txId}, copied to clipboard`);
+			navigator.clipboard.writeText(txId);
 
-      // Display confirmation component
-      setIsMounted(!isMounted);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message);
-    } finally {
-      setIsSending(false);
-    }
-  };
+			// Display confirmation component
+			setIsMounted(!isMounted);
+		} catch (error) {
+			console.error(error);
+			toast.error(error.message);
+		} finally {
+			setIsSending(false);
+		}
+	};
 
-  const renderBody = () => {
-    if (!showDiv) {
-      return (
-        <div className="show-animated">
-          <TransactionSent
-            txId={sentTxId}
-            onClose={closeModal}
-            title="Transaction Sent"
-          />
-        </div>
-      );
-    }
+	const renderBody = () => {
+		if (!showDiv) {
+			return (
+				<div className="show-animated">
+					<TransactionSent
+						txId={sentTxId}
+						onClose={closeModal}
+						title="Transaction Sent"
+					/>
+				</div>
+			);
+		}
 
-    return (
-      <div className={clsx(!isMounted && "hide-animated")}>
-        <p>
-          You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}
-        </p>
-        {!isUninscribed && (
-          <div className="inscription-preview">
-            <InscriptionPreview utxo={utxo} />
-          </div>
-        )}
+		return (
+			<div className={clsx(!isMounted && "hide-animated")}>
+				<p>
+					You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}
+				</p>
+				{!isUninscribed && (
+					<div className="inscription-preview">
+						<InscriptionPreview utxo={utxo} />
+					</div>
+				)}
 
-        <div className="placebid-form-box">
-          <div className="bid-content">
-            <div className="bid-content-top">
-              <div className="bid-content-left">
-                <InputGroup className="mb-lg-5">
-                  <Form.Control
-                    onChange={addressOnChange}
-                    placeholder="Paste BTC address here"
-                    aria-label="Paste BTC address heres"
-                    aria-describedby="basic-addon2"
-                    isInvalid={!isBtcInputAddressValid}
-                    autoFocus
-                  />
+				<div className="placebid-form-box">
+					<div className="bid-content">
+						<div className="bid-content-top">
+							<div className="bid-content-left">
+								<InputGroup className="mb-lg-5">
+									<Form.Control
+										onChange={addressOnChange}
+										placeholder="Paste BTC address here"
+										aria-label="Paste BTC address heres"
+										aria-describedby="basic-addon2"
+										isInvalid={!isBtcInputAddressValid}
+										autoFocus
+									/>
 
-                  <Form.Control.Feedback type="invalid">
-                    <br />
-                    That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC
-                    address
-                  </Form.Control.Feedback>
-                </InputGroup>
-                <InputGroup className="mb-3">
-                  <Form.Label>Select a fee rate</Form.Label>
-                  <Form.Range
-                    min="1"
-                    max="1200"
-                    defaultValue={sendFeeRate}
-                    onChange={feeRateOnChange}
-                  />
-                </InputGroup>
-                { boostRequired ?
-                  <InputGroup className="mb-3">
-                    <Form.Label>Select an output value</Form.Label>
-                    <Form.Range
-                      min="330"
-                      max="10000"
-                      value={boostOutputValue}
-                      onChange={boostOutputValueChange}
-                    />
-                  </InputGroup>
-                  : <></>
-                }
-              </div>
-            </div>
-            <div className="bid-content-mid">
-              <div className="bid-content-left">
-                {!!destinationBtcAddress && <span>Destination</span>}
-                <span>Fee rate</span>
-                <span>Output Value</span>
-              </div>
-              <div className="bid-content-right">
-                {!!destinationBtcAddress && (
-                  <span>{shortenStr(destinationBtcAddress)}</span>
-                )}
-                <span>{sendFeeRate} sat/vbyte</span>
-                <span>
-                  {boostRequired
-                    ?
-                    boostOutputValue
-                    : utxo &&
-                      sendFeeRate &&
-                      outputValue(utxo, sendFeeRate)}{" "}
-                  sats
-                </span>
-              </div>
-            </div>
-            {boostRequired && (
-              <span>
-                Sending will require a small lightning payment to boost the utxo
-                value
-                <br />
-                <br />
-              </span>
-            )}
-          </div>
+									<Form.Control.Feedback type="invalid">
+										<br />
+										That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC
+										address
+									</Form.Control.Feedback>
+								</InputGroup>
+								<InputGroup className="mb-3">
+									<Form.Label>Select a fee rate</Form.Label>
+									<Form.Range
+										min="1"
+										max="1200"
+										defaultValue={sendFeeRate}
+										onChange={feeRateOnChange}
+									/>
+								</InputGroup>
+								{boostRequired ? (
+									<InputGroup className="mb-3">
+										<Form.Label>Select an output value</Form.Label>
+										<Form.Range
+											min="330"
+											max="10000"
+											value={boostOutputValue}
+											onChange={boostOutputValueChange}
+										/>
+									</InputGroup>
+								) : (
+									<></>
+								)}
+							</div>
+						</div>
+						<div className="bid-content-mid">
+							<div className="bid-content-left">
+								{!!destinationBtcAddress && <span>Destination</span>}
+								<span>Fee rate</span>
+								<span>Output Value</span>
+							</div>
+							<div className="bid-content-right">
+								{!!destinationBtcAddress && (
+									<span>{shortenStr(destinationBtcAddress)}</span>
+								)}
+								<span>{sendFeeRate} sat/vbyte</span>
+								<span>
+									{boostRequired
+										? boostOutputValue
+										: utxo &&
+											sendFeeRate &&
+											outputValue(utxo, sendFeeRate)}{" "}
+									sats
+								</span>
+							</div>
+						</div>
+						{boostRequired && (
+							<span>
+								Sending will require a small lightning payment to boost the utxo
+								value
+								<br />
+								<br />
+							</span>
+						)}
+					</div>
 
-          <div className="bit-continue-button">
-            <Button
-              size="medium"
-              fullwidth
-              disabled={!destinationBtcAddress}
-              className={isSending ? "btn-loading" : ""}
-              onClick={submit}
-            >
-              {isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Send"}
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+					<div className="bit-continue-button">
+						<Button
+							size="medium"
+							fullwidth
+							disabled={!destinationBtcAddress}
+							className={isSending ? "btn-loading" : ""}
+							onClick={submit}
+						>
+							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Send"}
+						</Button>
+					</div>
+				</div>
+			</div>
+		);
+	};
 
-  return (
-    <Modal
-      className="rn-popup-modal placebid-modal-wrapper"
-      show={show}
-      onHide={handleModal}
-      centered
-    >
-      {show && (
-        <button
-          type="button"
-          className="btn-close"
-          aria-label="Close"
-          onClick={handleModal}
-        >
-          <i className="feather-x" />
-        </button>
-      )}
-      {showDiv && (
-        <Modal.Header>
-          <h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
-            Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
-          </h3>
-        </Modal.Header>
-      )}
-      <Modal.Body>{renderBody()}</Modal.Body>
-    </Modal>
-  );
+	return (
+		<Modal
+			className="rn-popup-modal placebid-modal-wrapper"
+			show={show}
+			onHide={handleModal}
+			centered
+		>
+			{show && (
+				<button
+					type="button"
+					className="btn-close"
+					aria-label="Close"
+					onClick={handleModal}
+				>
+					<i className="feather-x" />
+				</button>
+			)}
+			{showDiv && (
+				<Modal.Header>
+					<h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
+						Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
+					</h3>
+				</Modal.Header>
+			)}
+			<Modal.Body>{renderBody()}</Modal.Body>
+		</Modal>
+	);
 };
 
 SendModal.propTypes = {
-  show: PropTypes.bool.isRequired,
-  handleModal: PropTypes.func.isRequired,
-  utxo: PropTypes.object,
-  isUninscribed: PropTypes.bool,
-  onSend: PropTypes.func.isRequired,
+	show: PropTypes.bool.isRequired,
+	handleModal: PropTypes.func.isRequired,
+	utxo: PropTypes.object,
+	isUninscribed: PropTypes.bool,
+	onSend: PropTypes.func.isRequired,
+	ownedUtxos: PropTypes.array,
 };
 
 export default SendModal;

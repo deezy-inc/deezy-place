@@ -33,20 +33,16 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({
-  show,
-  handleModal,
-  utxo,
-  onSend,
-  isUninscribed = false,
-}) => {
+const SendModal = ({ show, handleModal, utxo, onSend }) => {
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-  const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE)
+  const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE);
   const [sentTxId, setSentTxId] = useState(null);
   const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
   const [isSending, setIsSending] = useState(false);
+
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
@@ -82,7 +78,7 @@ const SendModal = ({
 
   const boostOutputValueChange = (evt) => {
     setBoostOutputValue(parseInt(evt.target.value));
-  }
+  };
 
   const boostRequired =
     !!utxo &&
@@ -240,7 +236,7 @@ const SendModal = ({
                     onChange={feeRateOnChange}
                   />
                 </InputGroup>
-                { boostRequired ?
+                {boostRequired ? (
                   <InputGroup className="mb-3">
                     <Form.Label>Select an output value</Form.Label>
                     <Form.Range
@@ -250,8 +246,9 @@ const SendModal = ({
                       onChange={boostOutputValueChange}
                     />
                   </InputGroup>
-                  : <></>
-                }
+                ) : (
+                  <></>
+                )}
               </div>
             </div>
             <div className="bid-content-mid">
@@ -267,8 +264,7 @@ const SendModal = ({
                 <span>{sendFeeRate} sat/vbyte</span>
                 <span>
                   {boostRequired
-                    ?
-                    boostOutputValue
+                    ? boostOutputValue
                     : utxo &&
                       sendFeeRate &&
                       outputValue(utxo, sendFeeRate)}{" "}
@@ -335,7 +331,6 @@ SendModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleModal: PropTypes.func.isRequired,
   utxo: PropTypes.object,
-  isUninscribed: PropTypes.bool,
   onSend: PropTypes.func.isRequired,
 };
 

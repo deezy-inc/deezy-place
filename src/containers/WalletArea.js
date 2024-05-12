@@ -109,11 +109,11 @@ const WalletArea = ({
         utxosWithInscriptionData = await getInscriptions(nostrOrdinalsAddress);
         if (displayOnlyInscriptions) {
           utxosWithInscriptionData = utxosWithInscriptionData.filter(
-            (utxo) => !!utxo.inscriptionId
+            (utxo) => !!utxo.inscriptionId,
           );
         }
         setBalance(
-          utxosWithInscriptionData.reduce((acc, utxo) => acc + utxo.value, 0)
+          utxosWithInscriptionData.reduce((acc, utxo) => acc + utxo.value, 0),
         );
       } catch (error) {
         console.error(error);
@@ -135,7 +135,7 @@ const WalletArea = ({
         "rn-product-area",
         "wallet",
         space === 1 && "rn-section-gapTop",
-        className
+        className,
       )}
     >
       <div className="container">

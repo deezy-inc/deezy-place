@@ -29,7 +29,13 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 
 bitcoin.initEccLib(ecc);
 
-const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
+const BuyLightningModal = ({
+  show,
+  handleModal,
+  utxo,
+  onSale,
+  nostr: _nostr,
+}) => {
   const { nostrOrdinalsAddress } = useWallet();
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [isLNInputAddressValid, setIsLNInputAddressValid] = useState(true);
@@ -42,6 +48,19 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
   const [isOnBuy, setIsOnBuy] = useState(false);
   const [buyTxId, setBuyTxId] = useState(null);
   const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
+
+  const nostr = _nostr
+    ? _nostr
+    : {
+        content: utxo?.content,
+        created_at: utxo?.created_at,
+        id: utxo?.id,
+        kind: utxo?.kind,
+        pubkey: utxo?.pubkey,
+        sig: utxo?.sig,
+        tags: utxo?.tags,
+        value: utxo?.value,
+      };
 
   const [isMounted, setIsMounted] = useState(true);
   const showDiv = useDelayUnmount(isMounted, 500);
@@ -118,14 +137,14 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
         if (!window.webln.enabled) await window.webln.enable();
         const result = await window.webln.sendPayment(bolt11_invoice);
         toast.success(
-          `Transaction sent: ${result.paymentHash}, copied to clipboard`
+          `Transaction sent: ${result.paymentHash}, copied to clipboard`,
         );
 
         navigator.clipboard.writeText(result.paymentHash);
       } else {
         navigator.clipboard.writeText(bolt11_invoice);
         toast.success(
-          `Please pay the following LN invoice to complete your payment: ${bolt11_invoice}, copied to clipboard`
+          `Please pay the following LN invoice to complete your payment: ${bolt11_invoice}, copied to clipboard`,
         );
       }
 
@@ -239,7 +258,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
                 {Boolean(nostr.value) && bitcoinPrice && (
                   <span>{`$${satsToFormattedDollarString(
                     nostr.value,
-                    bitcoinPrice
+                    bitcoinPrice,
                   )}`}</span>
                 )}
                 <span>{sendFeeRate} sat/vbyte</span>

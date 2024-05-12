@@ -54,6 +54,8 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
     fetchFee();
   }, []);
 
+  const ownerAddresss = utxo?.owner || utxo?.address;
+
   const bid = async () => {
     setIsOnBid(true);
 
@@ -62,7 +64,7 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
       // add output: payment to seller of ordinal (address where ordinal currently lives)
       const basePsbt = await generateBidPSBT({
         utxo,
-        ownerAddresss: utxo.owner,
+        ownerAddresss,
         price: bidPrice,
       });
 
@@ -121,7 +123,7 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
         throw new Error("Unexpected error from API.");
 
       await publishOrder({
-        utxo,
+        utxo: { ...utxo, inscriptionId: utxo.inscriptionId || "" },
         ordinalValue: bidPrice,
         signedPsbt: finalizeData.funded_signed_psbt,
         type: "buy",
@@ -158,6 +160,11 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
     setBidPrice(Number(newValue));
   };
 
+  const isUninscribed = !Boolean(utxo?.inscriptionId);
+  const title = `Bid ${shortenStr(
+    isUninscribed ? utxo.output : `${utxo ? utxo.inscriptionId : ""}`,
+  )}`;
+
   return (
     <Modal
       className="rn-popup-modal placebid-modal-wrapper"
@@ -176,12 +183,12 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
         </button>
       )}
       <Modal.Header>
-        <h3 className="modal-title">
-          Bid {shortenStr(utxo && `${utxo.inscriptionId}`)}
-        </h3>
+        <h3 className="modal-title">{title}</h3>
       </Modal.Header>
       <Modal.Body>
-        <p>You are about to Bid on this Ordinal</p>
+        <p>
+          You are about to Bid on this {utxo.inscriptionId ? "ordinal" : "UTXO"}
+        </p>
         <div className="inscription-preview">
           <InscriptionPreview utxo={utxo} />
         </div>
@@ -245,7 +252,6 @@ const BidModal = ({ show, handleModal, utxo, onBid, suggestedPrice }) => {
             <Button
               size="medium"
               fullwidth
-              disabled={!utxo.owner}
               autoFocus
               className={isOnBid ? "btn-loading" : ""}
               onClick={submit}

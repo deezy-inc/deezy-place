@@ -7,18 +7,15 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-	signAndBroadcastUtxo,
+	signAndBroadcastMultipleUtxos,
 	shortenStr,
 	outputValue,
 	fetchRecommendedFee,
-	createPsbtForBoost,
-	signPsbtForBoost,
 	TESTNET,
 	DEFAULT_FEE_RATE,
 	MIN_OUTPUT_VALUE,
 	BOOST_UTXO_VALUE,
 } from "@services/nosft";
-import axios from "axios";
 
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
@@ -29,17 +26,35 @@ import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
-import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
-const SendModal = ({
+const getTitle = (sendingInscriptions, sendingUtxos) => {
+    const inscriptionCount = sendingInscriptions.length;
+    const utxoCount = sendingUtxos.length;
+    const inscriptionText = `inscription${inscriptionCount !== 1 ? 's' : ''}`;
+    const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
+
+    if (inscriptionCount && utxoCount) {
+        return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}`;
+    }
+    if (inscriptionCount) {
+        return `You are about to send ${inscriptionCount} ${inscriptionText}`;
+    }
+    if (utxoCount) {
+        return `You are about to send ${utxoCount} ${utxoText}`;
+    }
+    return '';
+};
+
+const SendBulkModal = ({
 	show,
 	handleModal,
 	utxo,
 	onSend,
 	isUninscribed = false,
 	ownedUtxos,
+	selectedUtxos,
 }) => {
 	const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
 	const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
@@ -78,11 +93,11 @@ const SendModal = ({
 	};
 
 	const feeRateOnChange = (evt) => {
-		setSendFeeRate(parseInt(evt.target.value));
+		setSendFeeRate(Number.parseInt(evt.target.value));
 	};
 
 	const boostOutputValueChange = (evt) => {
-		setBoostOutputValue(parseInt(evt.target.value));
+		setBoostOutputValue(Number.parseInt(evt.target.value));
 	};
 
 	const boostRequired =
@@ -98,83 +113,20 @@ const SendModal = ({
 	const submit = async () => {
 		setIsSending(true);
 
-		const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-
-		if (boostRequired) {
-			try {
-				let result;
-				// Step 1, create PSBT
-				const signedTxHex = await createPsbtForBoost({
-					pubKey: ordinalsPublicKey,
-					utxo,
-					destinationBtcAddress,
-					outputValue: boostOutputValue,
-					sighashType:
-						provider === "unisat.io"
-							? bitcoin.Transaction.SIGHASH_SINGLE |
-								bitcoin.Transaction.SIGHASH_ANYONECANPAY
-							: undefined,
-				});
-
-				// Step 2, add deezy inputs/outputs
-				const { data } = await axios.post(
-					`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-					{
-						psbt: signedTxHex,
-						fee_rate: sendFeeRate,
-					},
-				);
-				// Step 3, sign our input
-				const { funded_unsigned_psbt, id } = data;
-				const fundedPsbt = bitcoin.Psbt.fromHex(funded_unsigned_psbt);
-				const signedPsbt = await signPsbtForBoost({
-					address: nostrOrdinalsAddress,
-					psbt: fundedPsbt,
-				});
-				// Step 4, update deezy with our signed input
-				await axios.put(
-					`https://api${TESTNET ? "-testnet" : ""}.deezy.io/v1/boost-tx`,
-					{
-						id,
-						psbt: signedPsbt,
-					},
-				);
-				// Step 5, pay Deezy's invoice
-				if (window.webln) {
-					if (!window.webln.enabled) await window.webln.enable();
-					result = await window.webln.sendPayment(data.bolt11_invoice);
-					navigator.clipboard.writeText(destinationBtcAddress);
-					toast.success(
-						`Transaction sent! Destination address copied to clipboard`,
-					);
-				} else {
-					result = data.bolt11_invoice;
-					navigator.clipboard.writeText(result);
-					toast.success(
-						`Please pay the following LN invoice to complete your payment: ${result}, copied to clipboard`,
-					);
-				}
-				// There is no confirmation modal to show since there is no tx id. Just close the modal
-				closeModal();
-			} catch (e) {
-				console.error(e);
-				toast.error(e.message);
-			} finally {
-				setIsSending(false);
-			}
-			return;
-		}
-
 		try {
-			const txId = await signAndBroadcastUtxo({
+			debugger;
+			const {txId} = await signAndBroadcastMultipleUtxos({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
-				utxo,
+				selectedUtxos,
+				ownedUtxos,
 				destinationBtcAddress,
 				sendFeeRate,
 			});
 
-			setSentTxId(txId);
+			debugger;
+
+			setSentTxId(txId || "");
 			toast.success(`Transaction sent: ${txId}, copied to clipboard`);
 			navigator.clipboard.writeText(txId);
 
@@ -204,7 +156,7 @@ const SendModal = ({
 		return (
 			<div className={clsx(!isMounted && "hide-animated")}>
 				<p>
-					You are about to send this {utxo.inscriptionId ? "ordinal" : "UTXO"}
+					{getTitle(sendingInscriptions, sendingUtxos)}
 				</p>
 				{!isUninscribed && (
 					<div className="inscription-preview">
@@ -303,6 +255,9 @@ const SendModal = ({
 		);
 	};
 
+	const sendingInscriptions = selectedUtxos.filter((utxo) => utxo.inscriptionId);
+	const sendingUtxos = selectedUtxos.filter((utxo) => !Boolean(utxo.inscriptionId));
+
 	return (
 		<Modal
 			className="rn-popup-modal placebid-modal-wrapper"
@@ -332,13 +287,14 @@ const SendModal = ({
 	);
 };
 
-SendModal.propTypes = {
+SendBulkModal.propTypes = {
 	show: PropTypes.bool.isRequired,
 	handleModal: PropTypes.func.isRequired,
 	utxo: PropTypes.object,
 	isUninscribed: PropTypes.bool,
 	onSend: PropTypes.func.isRequired,
 	ownedUtxos: PropTypes.array,
+	selectedUtxos: PropTypes.array,
 };
 
-export default SendModal;
+export default SendBulkModal;

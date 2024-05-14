@@ -33,6 +33,7 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
+const DEFAULT_BOOST_UTXO_VALUE = 546;
 const SendModal = ({
   show,
   handleModal,
@@ -43,7 +44,7 @@ const SendModal = ({
   const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
   const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
   const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-  const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE)
+  const [boostOutputValue, setBoostOutputValue] = useState(DEFAULT_BOOST_UTXO_VALUE);
   const [sentTxId, setSentTxId] = useState(null);
   const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
   const [isSending, setIsSending] = useState(false);

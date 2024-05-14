@@ -77,13 +77,13 @@ const WalletArea = ({
 	const [selectedUtxos, setSelectedUtxos] = useState([]);
 	const sendBulkSupported = sendBulkSupportedWallets.includes(walletName);
 
-	const onSend = async (utxo, amount, address) => {};
+	const onSend = async (utxo, amount, address) => { };
 
 	const handleUtxoSelection = (utxo, isSelected) => {
 		if (isSelected) {
 			setSelectedUtxos([...selectedUtxos, utxo]);
 		} else {
-			setSelectedUtxos(selectedUtxos.filter((u) => u.txid !== utxo.txid));
+			setSelectedUtxos(selectedUtxos.filter((u) => u.key !== utxo.key));
 		}
 	};
 
@@ -174,7 +174,7 @@ const WalletArea = ({
 									</span>
 								</span>
 							)}
-							{sendBulkSupported &&selectedUtxos.length > 0 && (
+							{sendBulkSupported && selectedUtxos.length > 0 && (
 								<div className="mx-3">
 									<button
 										className="pd-react-area btn-transparent"
@@ -255,19 +255,19 @@ const WalletArea = ({
 										<div className="form-check mt-2">
 											<input
 												className="form-check-input"
-											type="checkbox"
-											id={`checkbox-${inscription.txid}`}
-											checked={selectedUtxos.some(
-												(selected) => selected.txid === inscription.txid,
-											)}
-											onChange={(e) =>
-												handleUtxoSelection(inscription, e.target.checked)
-											}
-										/>
-										<label
-											className="form-check-label"
-											htmlFor={`checkbox-${inscription.txid}`}
-										>
+												type="checkbox"
+												id={`checkbox-${inscription.key}`}
+												checked={selectedUtxos.some(
+													(selected) => (inscription.key && selected.key === inscription.key),
+												)}
+												onChange={(e) =>
+													handleUtxoSelection(inscription, e.target.checked)
+												}
+											/>
+											<label
+												className="form-check-label"
+												htmlFor={`checkbox-${inscription.key}`}
+											>
 												Select for sending
 											</label>
 										</div>

@@ -128,8 +128,13 @@ const SendBulkModal = ({
 
 			setSentTxId(txId || "");
 			toast.success(`Transaction sent: ${txId}, copied to clipboard`);
-			navigator.clipboard.writeText(txId);
 
+			try {
+				await navigator.clipboard.writeText(txId);
+			} catch (error) {
+				toast.error(error.message);
+			}
+			
 			// Display confirmation component
 			setIsMounted(!isMounted);
 		} catch (error) {

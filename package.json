@@ -18,6 +18,7 @@
 		"bitcoin-address-validation": "^2.2.1",
 		"bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib",
 		"clsx": "^2.0.0",
+		"d3": "^7.9.0",
 		"dayjs": "^1.11.9",
 		"ecpair": "^2.1.0",
 		"ethers": "^5.7.2",

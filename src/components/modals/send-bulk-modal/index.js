@@ -7,44 +7,42 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-	signAndBroadcastMultipleUtxos,
+	signMultipleUtxosForSend,
 	shortenStr,
-	outputValue,
 	fetchRecommendedFee,
 	TESTNET,
 	DEFAULT_FEE_RATE,
-	MIN_OUTPUT_VALUE,
-	BOOST_UTXO_VALUE,
+	broadcastPsbt
 } from "@services/nosft";
 
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { toast } from "react-toastify";
 import { TailSpin } from "react-loading-icons";
-import { InscriptionPreview } from "@components/inscription-preview";
 import TransactionSent from "@components/transaction-sent-confirmation";
 import { useDelayUnmount } from "@hooks";
 import clsx from "clsx";
 import { useWallet } from "@context/wallet-context";
+import { BtcTransactionTree } from "@components/btc-transaction-tree";
 
 bitcoin.initEccLib(ecc);
 
 const getTitle = (sendingInscriptions, sendingUtxos) => {
-    const inscriptionCount = sendingInscriptions.length;
-    const utxoCount = sendingUtxos.length;
-    const inscriptionText = `inscription${inscriptionCount !== 1 ? 's' : ''}`;
-    const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
+	const inscriptionCount = sendingInscriptions.length;
+	const utxoCount = sendingUtxos.length;
+	const inscriptionText = `inscription${inscriptionCount !== 1 ? 's' : ''}`;
+	const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
 
-    if (inscriptionCount && utxoCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}`;
-    }
-    if (inscriptionCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText}`;
-    }
-    if (utxoCount) {
-        return `You are about to send ${utxoCount} ${utxoText}`;
-    }
-    return '';
+	if (inscriptionCount && utxoCount) {
+		return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}`;
+	}
+	if (inscriptionCount) {
+		return `You are about to send ${inscriptionCount} ${inscriptionText}`;
+	}
+	if (utxoCount) {
+		return `You are about to send ${utxoCount} ${utxoText}`;
+	}
+	return '';
 };
 
 const SendBulkModal = ({
@@ -59,10 +57,13 @@ const SendBulkModal = ({
 	const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
 	const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
 	const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
-	const [boostOutputValue, setBoostOutputValue] = useState(BOOST_UTXO_VALUE);
 	const [sentTxId, setSentTxId] = useState(null);
 	const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
 	const [isSending, setIsSending] = useState(false);
+	const [txHex, setTxHex] = useState("");
+	const [txFee, setTxFee] = useState("");
+	const [txFeeRate, setTxFeeRate] = useState("");
+	const [finalPsbt, setFinalPsbt] = useState(null);
 
 	const [isMounted, setIsMounted] = useState(true);
 	const showDiv = useDelayUnmount(isMounted, 500);
@@ -96,26 +97,21 @@ const SendBulkModal = ({
 		setSendFeeRate(Number.parseInt(evt.target.value));
 	};
 
-	const boostOutputValueChange = (evt) => {
-		setBoostOutputValue(Number.parseInt(evt.target.value));
-	};
-
-	const boostRequired =
-		!!utxo &&
-		!!sendFeeRate &&
-		outputValue(utxo, sendFeeRate) < MIN_OUTPUT_VALUE;
-
 	const closeModal = () => {
 		onSend();
 		handleModal();
 	};
 
-	const submit = async () => {
+	const prepareTx = async () => {
 		setIsSending(true);
 
 		try {
-			debugger;
-			const {txId} = await signAndBroadcastMultipleUtxos({
+			const {
+				final_hex,
+				final_fee_rate,
+				final_fee,
+				final_signed_psbt
+			} = await signMultipleUtxosForSend({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
 				selectedUtxos,
@@ -124,23 +120,45 @@ const SendBulkModal = ({
 				sendFeeRate,
 			});
 
-			debugger;
-
-			setSentTxId(txId || "");
-			toast.success(`Transaction sent: ${txId}, copied to clipboard`);
+			setTxHex(final_hex);
+			setTxFee(final_fee);
+			setTxFeeRate(final_fee_rate);
+			setFinalPsbt(final_signed_psbt);
 
 			try {
-				await navigator.clipboard.writeText(txId);
+				await navigator.clipboard.writeText(final_hex);
+				toast.success(`Tx hex copied to clipboard`);
 			} catch (error) {
 				toast.error(error.message);
 			}
-			
+
 			// Display confirmation component
 			setIsMounted(!isMounted);
 		} catch (error) {
 			console.error(error);
 			toast.error(error.message);
 		} finally {
+			setIsSending(false);
+		}
+	};
+
+	const confirmTx = async () => {
+		setIsSending(true);
+		try {
+			const txId = await broadcastPsbt(finalPsbt);
+			setSentTxId(txId);
+			try {
+				await navigator.clipboard.writeText(txId);
+				toast.success(`Tx id copied to clipboard`);
+			} catch (error) {
+				toast.error(error.message);
+			}
+		}
+		catch (error) {
+			console.error(error);
+			toast.error(error.message);
+		}
+		finally {
 			setIsSending(false);
 		}
 	};
@@ -163,13 +181,13 @@ const SendBulkModal = ({
 				<p>
 					{getTitle(sendingInscriptions, sendingUtxos)}
 				</p>
-				{!isUninscribed && (
-					<div className="inscription-preview">
-						<InscriptionPreview utxo={utxo} />
-					</div>
-				)}
+				<p>
+					{`Tx fee: ${txFee} sats / ${txFeeRate} sat/vbyte`}
+				</p>
 
-				<div className="placebid-form-box">
+				<BtcTransactionTree txHex={txHex} fee={txFee} feeRate={txFeeRate} />
+
+				{!txHex ? <div className="placebid-form-box">
 					<div className="bid-content">
 						<div className="bid-content-top">
 							<div className="bid-content-left">
@@ -198,50 +216,20 @@ const SendBulkModal = ({
 										onChange={feeRateOnChange}
 									/>
 								</InputGroup>
-								{boostRequired ? (
-									<InputGroup className="mb-3">
-										<Form.Label>Select an output value</Form.Label>
-										<Form.Range
-											min="330"
-											max="10000"
-											value={boostOutputValue}
-											onChange={boostOutputValueChange}
-										/>
-									</InputGroup>
-								) : (
-									<></>
-								)}
 							</div>
 						</div>
 						<div className="bid-content-mid">
 							<div className="bid-content-left">
 								{!!destinationBtcAddress && <span>Destination</span>}
 								<span>Fee rate</span>
-								<span>Output Value</span>
 							</div>
 							<div className="bid-content-right">
 								{!!destinationBtcAddress && (
 									<span>{shortenStr(destinationBtcAddress)}</span>
 								)}
 								<span>{sendFeeRate} sat/vbyte</span>
-								<span>
-									{boostRequired
-										? boostOutputValue
-										: utxo &&
-											sendFeeRate &&
-											outputValue(utxo, sendFeeRate)}{" "}
-									sats
-								</span>
 							</div>
 						</div>
-						{boostRequired && (
-							<span>
-								Sending will require a small lightning payment to boost the utxo
-								value
-								<br />
-								<br />
-							</span>
-						)}
 					</div>
 
 					<div className="bit-continue-button">
@@ -250,12 +238,23 @@ const SendBulkModal = ({
 							fullwidth
 							disabled={!destinationBtcAddress}
 							className={isSending ? "btn-loading" : ""}
-							onClick={submit}
+							onClick={prepareTx}
 						>
 							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Send"}
 						</Button>
 					</div>
-				</div>
+				</div> : <>
+					<div className="bit-continue-button">
+						<Button
+							size="medium"
+							fullwidth
+							className={isSending ? "btn-loading" : ""}
+							onClick={prepareTx}
+						>
+							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Confirm"}
+						</Button>
+					</div>
+				</>}
 			</div>
 		);
 	};
@@ -265,7 +264,7 @@ const SendBulkModal = ({
 
 	return (
 		<Modal
-			className="rn-popup-modal placebid-modal-wrapper"
+			className={txHex ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
 			show={show}
 			onHide={handleModal}
 			centered

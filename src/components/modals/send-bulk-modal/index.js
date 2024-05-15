@@ -7,7 +7,7 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-	signMultipleUtxosForSend,
+	signMultipleUtxosPsbtForSend,
 	shortenStr,
 	fetchRecommendedFee,
 	TESTNET,
@@ -64,6 +64,7 @@ const SendBulkModal = ({
 	const [txFeeRate, setTxFeeRate] = useState("");
 	const [finalHexPsbt, setFinalHexPsbt] = useState(null);
 	const [metadata, setMetadata] = useState(null);
+	const [btcTreeReady, setBtcTreeReady] = useState(false);
 
 	const [isMounted, setIsMounted] = useState(true);
 	const showDiv = useDelayUnmount(isMounted, 500);
@@ -102,7 +103,11 @@ const SendBulkModal = ({
 		handleModal();
 	};
 
-	const prepareTx = async () => {
+	const onBtcTreeReady = () => {
+		setBtcTreeReady(true);
+	};
+
+	const preparePsbt = async () => {
 		setIsSending(true);
 
 		try {
@@ -111,7 +116,7 @@ const SendBulkModal = ({
 				final_fee,
 				final_signed_hex_psbt,
 				metadata: _metadata,
-			} = await signMultipleUtxosForSend({
+			} = await signMultipleUtxosPsbtForSend({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
 				selectedUtxos,
@@ -193,7 +198,7 @@ const SendBulkModal = ({
 					</p>
 				) : null}
 
-				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} /> : null}
+				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} onBtcTreeReady={onBtcTreeReady} /> : null}
 
 				{!finalHexPsbt ? <div className="placebid-form-box">
 					<div className="bid-content">
@@ -246,7 +251,7 @@ const SendBulkModal = ({
 							fullwidth
 							disabled={!destinationBtcAddress}
 							className={isSending ? "btn-loading" : ""}
-							onClick={prepareTx}
+							onClick={preparePsbt}
 						>
 							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Prepare Tx"}
 						</Button>
@@ -258,6 +263,7 @@ const SendBulkModal = ({
 							fullwidth
 							className={isSending ? "btn-loading" : ""}
 							onClick={confirmTx}
+							disabled={!txFee || isSending || txFee == 0 || !btcTreeReady}
 						>
 							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Confirm"}
 						</Button>

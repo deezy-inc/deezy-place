@@ -3,7 +3,7 @@ import { TailSpin } from "react-loading-icons";
 import * as d3 from 'd3';
 import { parseHexPsbt } from './psbt';
 
-const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
+const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
     const svgRef = useRef(null);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -178,7 +178,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
             .attr('y', d => d.y)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
-            .text(d => (d.value ? `${d.value} sats` : ''))
+            .text(d => (d.value ? `${d.value} sats ${d.type === 'Fee' ? '(Fee)' : ''}` : ''))
             .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`);
@@ -206,6 +206,8 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
         height = bounds.height + bounds.y + margin.bottom;
 
         svg.attr('viewBox', `${bounds.x - margin.left} ${bounds.y - margin.top} ${width} ${height}`);
+
+        onBtcTreeReady();
 
     }, [data]);
 

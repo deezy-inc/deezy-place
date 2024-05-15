@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TailSpin } from "react-loading-icons";
 import * as d3 from 'd3';
 import { parseHexPsbt } from './psbt';
 
@@ -210,7 +211,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
 
     return (
         <div style={{ width: '100%', height: '100%', overflowX: 'auto', overflowY: 'auto', position: 'relative' }}>
-            {loading && <div className="loader">Loading...</div>}
+            {loading && <TailSpin stroke="#fec823" speed={0.75} />}
             <svg ref={svgRef}></svg>
         </div>
     );

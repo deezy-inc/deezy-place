@@ -34,3 +34,9 @@
 .btc-text-white {
   fill: white;
 }
+
+.btc-fee-text {
+    span {
+        color: var(--color-primary);
+    }
+}

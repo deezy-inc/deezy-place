@@ -183,9 +183,15 @@ const SendBulkModal = ({
 				<p>
 					{getTitle(sendingInscriptions, sendingUtxos)}
 				</p>
-				{txFee ? <p>
-					{`Tx fee: ${txFee} sats / ${txFeeRate} sat/vbyte. Please double check the inputs and outputs.`}
-				</p> : null}
+				{txFee ? (
+					<p className="btc-fee-text">
+						{`Tx fee: `}
+						<span>
+							{`${txFee} sats (${txFeeRate} sat/vbyte)`}
+						</span>
+						{`. Please double check the inputs and outputs.`}
+					</p>
+				) : null}
 
 				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} /> : null}
 

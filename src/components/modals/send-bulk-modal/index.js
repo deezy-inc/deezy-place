@@ -78,6 +78,15 @@ const SendBulkModal = ({
 		fetchFee();
 	}, []);
 
+	const resetPsbt = () => {
+		setFinalHexPsbt(null);
+		setTxFee("");
+		setTxFeeRate("");
+		setMetadata(null);
+	};
+
+
+
 	const addressOnChange = (evt) => {
 		const newaddr = evt.target.value;
 
@@ -103,12 +112,13 @@ const SendBulkModal = ({
 		handleModal();
 	};
 
-	const onBtcTreeReady = () => {
-		setBtcTreeReady(true);
+	const toggleBtcTreeReady = (isReady) => {
+		setBtcTreeReady(isReady);
 	};
 
 	const preparePsbt = async () => {
 		setIsSending(true);
+		resetPsbt();
 
 		try {
 			const {
@@ -125,7 +135,6 @@ const SendBulkModal = ({
 				sendFeeRate,
 			});
 
-			setFinalHexPsbt(final_signed_hex_psbt);
 			setTxFee(final_fee);
 			setTxFeeRate(final_fee_rate);
 			setFinalHexPsbt(final_signed_hex_psbt);
@@ -198,9 +207,9 @@ const SendBulkModal = ({
 					</p>
 				) : null}
 
-				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} onBtcTreeReady={onBtcTreeReady} /> : null}
+				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} toggleBtcTreeReady={toggleBtcTreeReady} /> : null}
 
-				{!finalHexPsbt ? <div className="placebid-form-box">
+				{(!finalHexPsbt && isMounted) ? <div className="placebid-form-box">
 					<div className="bid-content">
 						<div className="bid-content-top">
 							<div className="bid-content-left">

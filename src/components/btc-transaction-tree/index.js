@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TailSpin } from "react-loading-icons";
 import * as d3 from 'd3';
+import { toast } from "react-toastify";
 import { parseHexPsbt } from './psbt';
 
-const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
+const BtcTransactionTree = ({ finalHexPsbt, metadata, toggleBtcTreeReady }) => {
     const svgRef = useRef(null);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
 
         const fetchData = async () => {
             setLoading(true);
+            toggleBtcTreeReady(false);
             const parsedData = await parseHexPsbt(finalHexPsbt, metadata);
             setData(parsedData);
             setLoading(false);
@@ -23,9 +25,6 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
 
     useEffect(() => {
         if (!data) return;
-
-        console.log("data:", data);
-        debugger;
 
         let width = 960;
         let height = 500;
@@ -99,6 +98,13 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
                 .style('top', (event.pageY - 28) + 'px');
         };
 
+        const onClick = (_, d) => {
+            navigator.clipboard.writeText(d.fullName).then(() => {
+                toast.success(`${d.fullName} copied to clipboard`);
+            });
+        };
+
+
         const hideTooltip = () => {
             tooltip.transition().duration(500).style('opacity', 0);
         };
@@ -121,7 +127,8 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
             .on('mouseout', function () {
                 d3.select(this).attr('r', 5);
                 hideTooltip();
-            });
+            })
+            .on('click', onClick);
 
         // Draw output nodes
         g.selectAll('.output-node')
@@ -166,7 +173,8 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
             .on('mouseover', function (event, d) {
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.fullName}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`);
             })
-            .on('mouseout', hideTooltip);
+            .on('mouseout', hideTooltip)
+            .on('click', onClick);
 
         // Add labels for output nodes
         g.selectAll('.output-label')
@@ -207,7 +215,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata, onBtcTreeReady }) => {
 
         svg.attr('viewBox', `${bounds.x - margin.left} ${bounds.y - margin.top} ${width} ${height}`);
 
-        onBtcTreeReady();
+        toggleBtcTreeReady(true);
 
     }, [data]);
 

@@ -73,13 +73,6 @@ const parseHexPsbt = async (txHex, metadata) => {
         address: '',
     });
 
-    // .push({
-    //     name: 'Fee',
-    //     value: tx.ins.reduce((acc, input) => acc + input.value, 0) - tx.outs.reduce((acc, output) => acc + output.value, 0),
-    //     type: 'Fee',
-    //     address: 'Fee',
-    // })
-
     const data = {
         name: 'Transaction',
         children: [

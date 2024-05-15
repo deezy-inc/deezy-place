@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { parseHexPsbt } from './psbt';
 
-const BtcTransactionTree = ({ finalHexPsbt }) => {
+const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
     const svgRef = useRef(null);
     const [data, setData] = useState(null);
 
@@ -10,7 +10,7 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
         if (!finalHexPsbt) return;
 
         const fetchData = async () => {
-            const parsedData = await parseHexPsbt(finalHexPsbt);
+            const parsedData = await parseHexPsbt(finalHexPsbt, metadata);
             setData(parsedData);
         };
 
@@ -80,10 +80,23 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
             .attr('class', 'tooltip')
             .style('opacity', 0)
             .style('position', 'absolute')
-            .style('background', '#fff')
-            .style('border', '1px solid #ccc')
-            .style('padding', '5px')
-            .style('pointer-events', 'none');
+            .style('background', 'rgba(0, 0, 0, 0.75)')
+            .style('color', '#fff')
+            .style('border-radius', '4px')
+            .style('padding', '8px')
+            .style('pointer-events', 'none')
+            .style('font-size', '12px');
+
+        const showTooltip = (event, d, content) => {
+            tooltip.transition().duration(200).style('opacity', .9);
+            tooltip.html(content)
+                .style('left', (event.pageX + 5) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        };
+
+        const hideTooltip = () => {
+            tooltip.transition().duration(500).style('opacity', 0);
+        };
 
         // Draw input nodes
         g.selectAll('.input-node')
@@ -97,14 +110,11 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
             .attr('fill', '#999')
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
-                tooltip.transition().duration(200).style('opacity', .9);
-                tooltip.html(`${d.name}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`)
-                    .style('left', (event.pageX + 5) + 'px')
-                    .style('top', (event.pageY - 28) + 'px');
+                showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.fullName}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`);
             })
             .on('mouseout', function () {
                 d3.select(this).attr('r', 5);
-                tooltip.transition().duration(500).style('opacity', 0);
+                hideTooltip();
             });
 
         // Draw output nodes
@@ -119,14 +129,11 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
             .attr('fill', '#999')
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
-                tooltip.transition().duration(200).style('opacity', .9);
-                tooltip.html(`${d.name}<br/>${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`)
-                    .style('left', (event.pageX + 5) + 'px')
-                    .style('top', (event.pageY - 28) + 'px');
+                showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`);
             })
             .on('mouseout', function () {
                 d3.select(this).attr('r', 5);
-                tooltip.transition().duration(500).style('opacity', 0);
+                hideTooltip();
             });
 
         // Draw center node
@@ -147,7 +154,11 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
             .attr('y', d => d.y)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'end')
-            .text(d => d.name + (d.inputValue ? `: ${d.inputValue} sats` : ''));
+            .text(d => d.name + (d.inputValue ? `: ${d.inputValue} sats` : ''))
+            .on('mouseover', function (event, d) {
+                showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.fullName}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`);
+            })
+            .on('mouseout', hideTooltip);
 
         // Add labels for output nodes
         g.selectAll('.output-label')
@@ -159,7 +170,11 @@ const BtcTransactionTree = ({ finalHexPsbt }) => {
             .attr('y', d => d.y)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
-            .text(d => (d.value ? `${d.value} sats` : ''));
+            .text(d => (d.value ? `${d.value} sats` : ''))
+            .on('mouseover', function (event, d) {
+                showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`);
+            })
+            .on('mouseout', hideTooltip);
 
         // Add label for center node
         g.append('text')

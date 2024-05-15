@@ -34,13 +34,13 @@ const getTitle = (sendingInscriptions, sendingUtxos) => {
 	const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
 
 	if (inscriptionCount && utxoCount) {
-		return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}`;
+		return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}.`;
 	}
 	if (inscriptionCount) {
-		return `You are about to send ${inscriptionCount} ${inscriptionText}`;
+		return `You are about to send ${inscriptionCount} ${inscriptionText}.`;
 	}
 	if (utxoCount) {
-		return `You are about to send ${utxoCount} ${utxoText}`;
+		return `You are about to send ${utxoCount} ${utxoText}.`;
 	}
 	return '';
 };
@@ -63,6 +63,7 @@ const SendBulkModal = ({
 	const [txFee, setTxFee] = useState("");
 	const [txFeeRate, setTxFeeRate] = useState("");
 	const [finalHexPsbt, setFinalHexPsbt] = useState(null);
+	const [metadata, setMetadata] = useState(null);
 
 	const [isMounted, setIsMounted] = useState(true);
 	const showDiv = useDelayUnmount(isMounted, 500);
@@ -108,7 +109,8 @@ const SendBulkModal = ({
 			const {
 				final_fee_rate,
 				final_fee,
-				final_signed_hex_psbt
+				final_signed_hex_psbt,
+				metadata: _metadata,
 			} = await signMultipleUtxosForSend({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
@@ -122,6 +124,7 @@ const SendBulkModal = ({
 			setTxFee(final_fee);
 			setTxFeeRate(final_fee_rate);
 			setFinalHexPsbt(final_signed_hex_psbt);
+			setMetadata(_metadata);
 
 			try {
 				await navigator.clipboard.writeText(final_signed_hex_psbt);
@@ -181,10 +184,10 @@ const SendBulkModal = ({
 					{getTitle(sendingInscriptions, sendingUtxos)}
 				</p>
 				{txFee ? <p>
-					{`Tx fee: ${txFee} sats / ${txFeeRate} sat/vbyte`}
+					{`Tx fee: ${txFee} sats / ${txFeeRate} sat/vbyte. Please double check the inputs and outputs.`}
 				</p> : null}
 
-				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} /> : null}
+				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} /> : null}
 
 				{!finalHexPsbt ? <div className="placebid-form-box">
 					<div className="bid-content">

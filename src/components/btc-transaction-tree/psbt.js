@@ -15,7 +15,7 @@ const fetchInputValue = async (txid, index) => {
     }
 };
 
-const parseHexPsbt = async (txHex) => {
+const parseHexPsbt = async (txHex, metadata) => {
     let tx;
     try {
         console.log('txHex:', txHex);
@@ -30,10 +30,12 @@ const parseHexPsbt = async (txHex) => {
         return;
     }
 
-    const inputValues = await Promise.all(tx.ins.map((input) => {
+    const inputValues = await Promise.all(tx.ins.map((input, index) => {
         const txid = Buffer.from(input.hash).reverse().toString('hex');
         return limit(() => fetchInputValue(txid, input.index).then(value => ({
             name: `${txid.slice(0, 4)}...:${input.index}`,
+            type: metadata.inputs[index]?.type === 'ordinal' ? 'Ordinal' : 'Cardinal',
+            fullName: `${txid}:${input.index}`,
             inputValue: value,
         })));
     }));
@@ -47,7 +49,7 @@ const parseHexPsbt = async (txHex) => {
             },
             {
                 name: 'Outputs',
-                children: tx.outs.map((output) => {
+                children: tx.outs.map((output, index) => {
                     let address;
                     try {
                         address = bitcoin.address.fromOutputScript(output.script, bitcoin.networks.bitcoin);
@@ -56,7 +58,8 @@ const parseHexPsbt = async (txHex) => {
                         address = 'Unknown';
                     }
                     return {
-                        name: output.script.toString('hex').slice(0, 4) + '...',
+                        name: '',
+                        type: metadata.inputs[index]?.type === 'ordinal' ? 'Ordinal' : '',
                         value: output.value,
                         address: address,
                     };

@@ -5,13 +5,16 @@ import { parseHexPsbt } from './psbt';
 const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
     const svgRef = useRef(null);
     const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!finalHexPsbt) return;
 
         const fetchData = async () => {
+            setLoading(true);
             const parsedData = await parseHexPsbt(finalHexPsbt, metadata);
             setData(parsedData);
+            setLoading(false);
         };
 
         fetchData();
@@ -29,6 +32,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
 
         const svg = d3.select(svgRef.current)
             .attr('preserveAspectRatio', 'xMidYMid meet')
+            .style('cursor', 'move');
 
         svg.selectAll('*').remove();
 
@@ -108,6 +112,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
             .attr('cy', d => d.y)
             .attr('r', 5)
             .attr('fill', '#999')
+            .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.fullName}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`);
@@ -127,6 +132,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
             .attr('cy', d => d.y)
             .attr('r', 5)
             .attr('fill', '#999')
+            .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`);
@@ -155,6 +161,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
             .attr('dy', '0.35em')
             .attr('text-anchor', 'end')
             .text(d => d.name + (d.inputValue ? `: ${d.inputValue} sats` : ''))
+            .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.fullName}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`);
             })
@@ -171,6 +178,7 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
             .attr('dy', '0.35em')
             .attr('text-anchor', 'start')
             .text(d => (d.value ? `${d.value} sats` : ''))
+            .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 showTooltip(event, d, `${d.type ? `${d.type}<br/>` : ''}${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`);
             })
@@ -201,7 +209,8 @@ const BtcTransactionTree = ({ finalHexPsbt, metadata }) => {
     }, [data]);
 
     return (
-        <div style={{ width: '100%', height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
+        <div style={{ width: '100%', height: '100%', overflowX: 'auto', overflowY: 'auto', position: 'relative' }}>
+            {loading && <div className="loader">Loading...</div>}
             <svg ref={svgRef}></svg>
         </div>
     );

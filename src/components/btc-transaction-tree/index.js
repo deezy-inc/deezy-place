@@ -1,13 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { parseHexPsbt } from './psbt';
 
-const BtcTransactionTree = ({ txHex }) => {
+const BtcTransactionTree = ({ finalHexPsbt }) => {
     const svgRef = useRef(null);
+    const [data, setData] = useState(null);
 
     useEffect(() => {
+        if (!finalHexPsbt) return;
 
-        const data = parseHexPsbt(txHex);
+        const fetchData = async () => {
+            const parsedData = await parseHexPsbt(finalHexPsbt);
+            setData(parsedData);
+        };
+
+        fetchData();
+    }, [finalHexPsbt]);
+
+    useEffect(() => {
+        if (!data) return;
+
+        console.log("data:", data);
+        debugger;
 
         let width = 960;
         let height = 500;
@@ -61,6 +75,16 @@ const BtcTransactionTree = ({ txHex }) => {
             .attr('fill', 'none')
             .attr('stroke', '#555');
 
+        // Tooltip
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0)
+            .style('position', 'absolute')
+            .style('background', '#fff')
+            .style('border', '1px solid #ccc')
+            .style('padding', '5px')
+            .style('pointer-events', 'none');
+
         // Draw input nodes
         g.selectAll('.input-node')
             .data(inputNodes)
@@ -74,7 +98,7 @@ const BtcTransactionTree = ({ txHex }) => {
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
                 tooltip.transition().duration(200).style('opacity', .9);
-                tooltip.html(`${d.name}<br/>${d.value ? `${d.value} sats` : ''}`)
+                tooltip.html(`${d.name}<br/>${d.inputValue ? `${d.inputValue} sats` : ''}`)
                     .style('left', (event.pageX + 5) + 'px')
                     .style('top', (event.pageY - 28) + 'px');
             })
@@ -96,7 +120,7 @@ const BtcTransactionTree = ({ txHex }) => {
             .on('mouseover', function (event, d) {
                 d3.select(this).attr('r', 7);
                 tooltip.transition().duration(200).style('opacity', .9);
-                tooltip.html(`${d.name}<br/>${d.value ? `${d.value} sats` : ''}`)
+                tooltip.html(`${d.name}<br/>${d.value ? `${d.value} sats` : ''}<br/>${d.address ? d.address : ''}`)
                     .style('left', (event.pageX + 5) + 'px')
                     .style('top', (event.pageY - 28) + 'px');
             })
@@ -123,7 +147,7 @@ const BtcTransactionTree = ({ txHex }) => {
             .attr('y', d => d.y)
             .attr('dy', '0.35em')
             .attr('text-anchor', 'end')
-            .text(d => d.name + (d.value ? `: ${d.value} sats` : ''));
+            .text(d => d.name + (d.inputValue ? `: ${d.inputValue} sats` : ''));
 
         // Add labels for output nodes
         g.selectAll('.output-label')
@@ -145,11 +169,6 @@ const BtcTransactionTree = ({ txHex }) => {
             .attr('text-anchor', 'middle')
             .text(centerNode.name);
 
-        // Tooltip
-        const tooltip = d3.select('body').append('div')
-            .attr('class', 'tooltip')
-            .style('opacity', 0);
-
         const zoomBehavior = d3.zoom()
             .scaleExtent([0.5, 2])  // Limit zooming out to 0.5x and zooming in to 2x
             .on('zoom', (event) => {
@@ -164,7 +183,7 @@ const BtcTransactionTree = ({ txHex }) => {
 
         svg.attr('viewBox', `${bounds.x - margin.left} ${bounds.y - margin.top} ${width} ${height}`);
 
-    }, [txHex]);
+    }, [data]);
 
     return (
         <div style={{ width: '100%', height: '100%', overflowX: 'auto', overflowY: 'auto' }}>
@@ -174,4 +193,3 @@ const BtcTransactionTree = ({ txHex }) => {
 };
 
 export { BtcTransactionTree };
-

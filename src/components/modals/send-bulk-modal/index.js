@@ -60,10 +60,9 @@ const SendBulkModal = ({
 	const [sentTxId, setSentTxId] = useState(null);
 	const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
 	const [isSending, setIsSending] = useState(false);
-	const [txHex, setTxHex] = useState("");
 	const [txFee, setTxFee] = useState("");
 	const [txFeeRate, setTxFeeRate] = useState("");
-	const [finalPsbt, setFinalPsbt] = useState(null);
+	const [finalHexPsbt, setFinalHexPsbt] = useState(null);
 
 	const [isMounted, setIsMounted] = useState(true);
 	const showDiv = useDelayUnmount(isMounted, 500);
@@ -107,10 +106,9 @@ const SendBulkModal = ({
 
 		try {
 			const {
-				final_hex,
 				final_fee_rate,
 				final_fee,
-				final_signed_psbt
+				final_signed_hex_psbt
 			} = await signMultipleUtxosForSend({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
@@ -120,20 +118,17 @@ const SendBulkModal = ({
 				sendFeeRate,
 			});
 
-			setTxHex(final_hex);
+			setFinalHexPsbt(final_signed_hex_psbt);
 			setTxFee(final_fee);
 			setTxFeeRate(final_fee_rate);
-			setFinalPsbt(final_signed_psbt);
+			setFinalHexPsbt(final_signed_hex_psbt);
 
 			try {
-				await navigator.clipboard.writeText(final_hex);
+				await navigator.clipboard.writeText(final_signed_hex_psbt);
 				toast.success(`Tx hex copied to clipboard`);
 			} catch (error) {
 				toast.error(error.message);
 			}
-
-			// Display confirmation component
-			setIsMounted(!isMounted);
 		} catch (error) {
 			console.error(error);
 			toast.error(error.message);
@@ -145,7 +140,8 @@ const SendBulkModal = ({
 	const confirmTx = async () => {
 		setIsSending(true);
 		try {
-			const txId = await broadcastPsbt(finalPsbt);
+			// const txId = await broadcastPsbt(finalHexPsbt);
+			const txId = "txId";
 			setSentTxId(txId);
 			try {
 				await navigator.clipboard.writeText(txId);
@@ -153,6 +149,9 @@ const SendBulkModal = ({
 			} catch (error) {
 				toast.error(error.message);
 			}
+			setFinalHexPsbt(null);
+			// Display confirmation component
+			setIsMounted(!isMounted);
 		}
 		catch (error) {
 			console.error(error);
@@ -181,13 +180,13 @@ const SendBulkModal = ({
 				<p>
 					{getTitle(sendingInscriptions, sendingUtxos)}
 				</p>
-				<p>
+				{txFee ? <p>
 					{`Tx fee: ${txFee} sats / ${txFeeRate} sat/vbyte`}
-				</p>
+				</p> : null}
 
-				<BtcTransactionTree txHex={txHex} fee={txFee} feeRate={txFeeRate} />
+				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} /> : null}
 
-				{!txHex ? <div className="placebid-form-box">
+				{!finalHexPsbt ? <div className="placebid-form-box">
 					<div className="bid-content">
 						<div className="bid-content-top">
 							<div className="bid-content-left">
@@ -240,7 +239,7 @@ const SendBulkModal = ({
 							className={isSending ? "btn-loading" : ""}
 							onClick={prepareTx}
 						>
-							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Send"}
+							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Prepare Tx"}
 						</Button>
 					</div>
 				</div> : <>
@@ -249,7 +248,7 @@ const SendBulkModal = ({
 							size="medium"
 							fullwidth
 							className={isSending ? "btn-loading" : ""}
-							onClick={prepareTx}
+							onClick={confirmTx}
 						>
 							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Confirm"}
 						</Button>
@@ -264,7 +263,7 @@ const SendBulkModal = ({
 
 	return (
 		<Modal
-			className={txHex ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
+			className={finalHexPsbt ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
 			show={show}
 			onHide={handleModal}
 			centered

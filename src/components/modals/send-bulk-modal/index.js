@@ -120,6 +120,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 				finalSignedPsbt,
 			} = await signPsbtForMultipleSend(hexPsbt, ordinalsPublicKey);
 			debugger
+			console.log({ finalFeeRate, finalFee, finalSignedHexPsbt, finalSignedPsbt })
 			setTxFee(finalFee);
 			setTxFeeRate(finalFeeRate);
 			setSignedPsbt(finalSignedPsbt);

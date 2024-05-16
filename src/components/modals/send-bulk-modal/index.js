@@ -100,11 +100,11 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			});
 			setHexPsbt(unsignedPsbtHex);
 			setMetadata(metadata);
-			copyToClipboard(unsignedPsbtHex, "Psbt copied to clipboard");
+			copyToClipboard(unsignedPsbtHex, "Psbt copied to clipboard.");
 			setStep(2);
 		} catch (error) {
 			console.error(error);
-			toast.error("Failed to prepare transaction.");
+			toast.error("Failed to prepare transaction. " + error.message);
 		} finally {
 			setIsSending(false);
 		}
@@ -124,9 +124,9 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			setTxFee(finalFee);
 			setTxFeeRate(finalFeeRate);
 			setSignedPsbt(finalSignedPsbt);
-			copyToClipboard(finalSignedHexPsbt, "Psbt signed and copied to clipboard");
+			copyToClipboard(finalSignedHexPsbt, "Psbt signed and copied to clipboard.");
 		} catch (error) {
-			toast.error("Failed to sign transaction.");
+			toast.error("Failed to sign transaction. " + error.message);
 		} finally {
 			setIsSending(false);
 		}
@@ -139,7 +139,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			// const txId = await broadcastPsbt(signed);
 			const txId = "txid";
 			setSentTxId(txId);
-			copyToClipboard(txId, "Transaction id copied to clipboard");
+			copyToClipboard(txId, "Transaction id copied to clipboard.");
 			setStep(3);
 		} catch (error) {
 			toast.error("Failed to send transaction.");

@@ -13,12 +13,11 @@ import {
 	satsToFormattedDollarString,
 	shortenStr,
 } from "@services/nosft";
-import OrdinalFilter from "@components/ordinal-filter";
 import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 import Slider, { SliderItem } from "@ui/slider";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
-import SendBulkModal from "@components/modals/send-bulk-modal";
+import { SendBulkModal } from "@components/modals/send-bulk-modal";
 
 const SliderOptions = {
 	infinite: true,

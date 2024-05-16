@@ -18,7 +18,6 @@ const fetchInputValue = async (txid, index) => {
 const parseHexPsbt = async (txHex, metadata) => {
     let psbt;
     try {
-        console.log('txHex:', txHex);
         psbt = bitcoin.Psbt.fromHex(txHex, { network: bitcoin.networks.bitcoin });
     } catch (error) {
         console.error('Failed to parse transaction hex:', error);
@@ -36,7 +35,6 @@ const parseHexPsbt = async (txHex, metadata) => {
     }));
 
     const outputNodes = psbt.txOutputs.map((output, index) => {
-        console.log('output:', output);
         let address;
         try {
             address = bitcoin.address.fromOutputScript(output.script, bitcoin.networks.bitcoin);
@@ -52,14 +50,8 @@ const parseHexPsbt = async (txHex, metadata) => {
         };
     });
 
-    console.log('outputNodes:', outputNodes);
-
     const inputAmount = inputValues.reduce((acc, input) => acc + input.inputValue, 0);
     const outputAmount = outputNodes.reduce((acc, output) => acc + output.value, 0);
-
-    console.log('inputAmount:', inputAmount);
-    console.log('outputAmount:', outputAmount);
-    console.log({ txIns: psbt.txInputs, txOuts: psbt.txOutputs });
 
     outputNodes.push({
         name: '',

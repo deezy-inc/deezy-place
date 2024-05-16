@@ -42,6 +42,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 
 	const resetPsbt = () => {
 		setHexPsbt(null);
+		setSignedPsbt(null);
 		setTxFee("");
 		setTxFeeRate("");
 		setMetadata(null);
@@ -109,11 +110,31 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 		}
 	};
 
-	const signAndSend = async () => {
+	const sign = async () => {
 		setIsSending(true);
 		try {
-			const signed = await signPsbtForMultipleSend(hexPsbt, ordinalsPublicKey);
-			setSignedPsbt(signed);
+			const {
+				finalFeeRate,
+				finalFee,
+				finalSignedHexPsbt,
+				finalSignedPsbt,
+			} = await signPsbtForMultipleSend(hexPsbt, ordinalsPublicKey);
+			debugger
+			setTxFee(finalFee);
+			setTxFeeRate(finalFeeRate);
+			setSignedPsbt(finalSignedPsbt);
+			copyToClipboard(finalSignedHexPsbt, "Psbt signed and copied to clipboard");
+		} catch (error) {
+			toast.error("Failed to sign transaction.");
+		} finally {
+			setIsSending(false);
+		}
+	};
+
+	const send = async () => {
+		setIsSending(true);
+		try {
+			// TODO: Uncomment this line when the broadcast service is ready
 			// const txId = await broadcastPsbt(signed);
 			const txId = "txid";
 			setSentTxId(txId);
@@ -149,7 +170,8 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 						hexPsbt={hexPsbt}
 						metadata={metadata}
 						toggleBtcTreeReady={toggleBtcTreeReady}
-						signAndSend={signAndSend}
+						sign={sign}
+						send={send}
 						isSending={isSending}
 						btcTreeReady={btcTreeReady}
 					/>
@@ -163,6 +185,21 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 				);
 			default:
 				return null;
+		}
+	};
+	const getTitle = (step, txFee, signedPsbt) => {
+		if (txFee && signedPsbt && step === 2) {
+			return "Send Transaction";
+		}
+		switch (step) {
+			case 1:
+				return "Send Bulk";
+			case 2:
+				return "Sign Transaction";
+			case 3:
+				return "Transaction Sent";
+			default:
+				return "";
 		}
 	};
 	return (
@@ -182,7 +219,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			</button>
 			<Modal.Header>
 				<h3 className="modal-title">
-					{step === 1 ? "Send Bulk" : step === 2 ? "Preview Transaction" : "Transaction Sent"}
+					{getTitle(step, txFee, signedPsbt)}
 				</h3>
 			</Modal.Header>
 			<Modal.Body>{renderStepContent()}</Modal.Body>

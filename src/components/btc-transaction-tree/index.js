@@ -4,24 +4,24 @@ import * as d3 from 'd3';
 import { toast } from "react-toastify";
 import { parseHexPsbt } from './psbt';
 
-const BtcTransactionTree = ({ finalHexPsbt, metadata, toggleBtcTreeReady }) => {
+const BtcTransactionTree = ({ hexPsbt, metadata, toggleBtcTreeReady }) => {
     const svgRef = useRef(null);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!finalHexPsbt) return;
+        if (!hexPsbt) return;
 
         const fetchData = async () => {
             setLoading(true);
             toggleBtcTreeReady(false);
-            const parsedData = await parseHexPsbt(finalHexPsbt, metadata);
+            const parsedData = await parseHexPsbt(hexPsbt, metadata);
             setData(parsedData);
             setLoading(false);
         };
 
         fetchData();
-    }, [finalHexPsbt]);
+    }, [hexPsbt]);
 
     useEffect(() => {
         if (!data) return;

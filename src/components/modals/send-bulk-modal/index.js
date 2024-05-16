@@ -7,7 +7,8 @@ import { validate, Network } from "bitcoin-address-validation";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import {
-	signMultipleUtxosPsbtForSend,
+	preparePsbtForMultipleSend,
+	signPsbtForMultipleSend,
 	shortenStr,
 	fetchRecommendedFee,
 	TESTNET,
@@ -48,9 +49,7 @@ const getTitle = (sendingInscriptions, sendingUtxos) => {
 const SendBulkModal = ({
 	show,
 	handleModal,
-	utxo,
 	onSend,
-	isUninscribed = false,
 	ownedUtxos,
 	selectedUtxos,
 }) => {
@@ -62,7 +61,8 @@ const SendBulkModal = ({
 	const [isSending, setIsSending] = useState(false);
 	const [txFee, setTxFee] = useState("");
 	const [txFeeRate, setTxFeeRate] = useState("");
-	const [finalHexPsbt, setFinalHexPsbt] = useState(null);
+	const [hexPsbt, setHexPsbt] = useState(null);
+	const [signedPsbt, setSignedPsbt] = useState(null);
 	const [metadata, setMetadata] = useState(null);
 	const [btcTreeReady, setBtcTreeReady] = useState(false);
 
@@ -79,7 +79,7 @@ const SendBulkModal = ({
 	}, []);
 
 	const resetPsbt = () => {
-		setFinalHexPsbt(null);
+		setHexPsbt(null);
 		setTxFee("");
 		setTxFeeRate("");
 		setMetadata(null);
@@ -122,11 +122,9 @@ const SendBulkModal = ({
 
 		try {
 			const {
-				final_fee_rate,
-				final_fee,
-				final_signed_hex_psbt,
+				unsignedPsbtHex: _unsignedPsbtHex,
 				metadata: _metadata,
-			} = await signMultipleUtxosPsbtForSend({
+			} = await preparePsbtForMultipleSend({
 				pubKey: ordinalsPublicKey,
 				address: nostrOrdinalsAddress,
 				selectedUtxos,
@@ -135,14 +133,12 @@ const SendBulkModal = ({
 				sendFeeRate,
 			});
 
-			setTxFee(final_fee);
-			setTxFeeRate(final_fee_rate);
-			setFinalHexPsbt(final_signed_hex_psbt);
+			setHexPsbt(_unsignedPsbtHex);
 			setMetadata(_metadata);
 
 			try {
-				await navigator.clipboard.writeText(final_signed_hex_psbt);
-				toast.success(`Tx hex copied to clipboard`);
+				await navigator.clipboard.writeText(_unsignedPsbtHex);
+				toast.success(`Psbt copied to clipboard`);
 			} catch (error) {
 				toast.error(error.message);
 			}
@@ -154,19 +150,26 @@ const SendBulkModal = ({
 		}
 	};
 
-	const confirmTx = async () => {
+	const signPsbt = async () => {
 		setIsSending(true);
 		try {
-			// const txId = await broadcastPsbt(finalHexPsbt);
-			const txId = "txId";
-			setSentTxId(txId);
+			const {
+				finalFeeRate,
+				finalFee,
+				finalSignedHexPsbt,
+				finalSignedPsbt,
+			} = await signPsbtForMultipleSend(hexPsbt);
+			setTxFee(finalFee);
+			setTxFeeRate(finalFeeRate);
+			setHexPsbt(finalSignedHexPsbt);
+			setSignedPsbt(finalSignedPsbt);
 			try {
-				await navigator.clipboard.writeText(txId);
-				toast.success(`Tx id copied to clipboard`);
+				await navigator.clipboard.writeText(finalSignedHexPsbt);
+				toast.success(`Signed psbt copied to clipboard`);
 			} catch (error) {
 				toast.error(error.message);
 			}
-			setFinalHexPsbt(null);
+			setHexPsbt(null);
 			// Display confirmation component
 			setIsMounted(!isMounted);
 		}
@@ -207,77 +210,79 @@ const SendBulkModal = ({
 					</p>
 				) : null}
 
-				{finalHexPsbt ? <BtcTransactionTree finalHexPsbt={finalHexPsbt} fee={txFee} feeRate={txFeeRate} metadata={metadata} toggleBtcTreeReady={toggleBtcTreeReady} /> : null}
+				{hexPsbt ? <BtcTransactionTree hexPsbt={hexPsbt} metadata={metadata} toggleBtcTreeReady={toggleBtcTreeReady} /> : null}
 
-				{(!finalHexPsbt && isMounted) ? <div className="placebid-form-box">
-					<div className="bid-content">
-						<div className="bid-content-top">
-							<div className="bid-content-left">
-								<InputGroup className="mb-lg-5">
-									<Form.Control
-										onChange={addressOnChange}
-										placeholder="Paste BTC address here"
-										aria-label="Paste BTC address heres"
-										aria-describedby="basic-addon2"
-										isInvalid={!isBtcInputAddressValid}
-										autoFocus
-									/>
+				{(!hexPsbt) ?
+					<div className="placebid-form-box">
+						<div className="bid-content">
+							<div className="bid-content-top">
+								<div className="bid-content-left">
+									<InputGroup className="mb-lg-5">
+										<Form.Control
+											onChange={addressOnChange}
+											placeholder="Paste BTC address here"
+											aria-label="Paste BTC address heres"
+											aria-describedby="basic-addon2"
+											isInvalid={!isBtcInputAddressValid}
+											autoFocus
+										/>
 
-									<Form.Control.Feedback type="invalid">
-										<br />
-										That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC
-										address
-									</Form.Control.Feedback>
-								</InputGroup>
-								<InputGroup className="mb-3">
-									<Form.Label>Select a fee rate</Form.Label>
-									<Form.Range
-										min="1"
-										max="1200"
-										defaultValue={sendFeeRate}
-										onChange={feeRateOnChange}
-									/>
-								</InputGroup>
+										<Form.Control.Feedback type="invalid">
+											<br />
+											That is not a valid {TESTNET ? "testnet" : "mainnet"} BTC
+											address
+										</Form.Control.Feedback>
+									</InputGroup>
+									<InputGroup className="mb-3">
+										<Form.Label>Select a fee rate</Form.Label>
+										<Form.Range
+											min="1"
+											max="1200"
+											defaultValue={sendFeeRate}
+											onChange={feeRateOnChange}
+										/>
+									</InputGroup>
+								</div>
+							</div>
+							<div className="bid-content-mid">
+								<div className="bid-content-left">
+									{!!destinationBtcAddress && <span>Destination</span>}
+									<span>Fee rate</span>
+								</div>
+								<div className="bid-content-right">
+									{!!destinationBtcAddress && (
+										<span>{shortenStr(destinationBtcAddress)}</span>
+									)}
+									<span>{sendFeeRate} sat/vbyte</span>
+								</div>
 							</div>
 						</div>
-						<div className="bid-content-mid">
-							<div className="bid-content-left">
-								{!!destinationBtcAddress && <span>Destination</span>}
-								<span>Fee rate</span>
-							</div>
-							<div className="bid-content-right">
-								{!!destinationBtcAddress && (
-									<span>{shortenStr(destinationBtcAddress)}</span>
-								)}
-								<span>{sendFeeRate} sat/vbyte</span>
-							</div>
-						</div>
-					</div>
 
-					<div className="bit-continue-button">
-						<Button
-							size="medium"
-							fullwidth
-							disabled={!destinationBtcAddress}
-							className={isSending ? "btn-loading" : ""}
-							onClick={preparePsbt}
-						>
-							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Prepare Tx"}
-						</Button>
-					</div>
-				</div> : <>
-					<div className="bit-continue-button">
-						<Button
-							size="medium"
-							fullwidth
-							className={isSending ? "btn-loading" : ""}
-							onClick={confirmTx}
-							disabled={!txFee || isSending || txFee == 0 || !btcTreeReady}
-						>
-							{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Confirm"}
-						</Button>
-					</div>
-				</>}
+						<div className="bit-continue-button">
+							<Button
+								size="medium"
+								fullwidth
+								disabled={!destinationBtcAddress}
+								className={isSending ? "btn-loading" : ""}
+								onClick={preparePsbt}
+							>
+								{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Prepare Tx"}
+							</Button>
+						</div>
+					</div> :
+					<>
+						<div className="bit-continue-button">
+							<Button
+								size="medium"
+								fullwidth
+								className={isSending ? "btn-loading" : ""}
+								onClick={signPsbt}
+								disabled={isSending || !btcTreeReady}
+							>
+								{isSending ? <TailSpin stroke="#fec823" speed={0.75} /> : "Confirm"}
+							</Button>
+						</div>
+					</>}
 			</div>
 		);
 	};
@@ -287,7 +292,7 @@ const SendBulkModal = ({
 
 	return (
 		<Modal
-			className={finalHexPsbt ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
+			className={hexPsbt ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
 			show={show}
 			onHide={handleModal}
 			centered
@@ -302,13 +307,6 @@ const SendBulkModal = ({
 					<i className="feather-x" />
 				</button>
 			)}
-			{showDiv && (
-				<Modal.Header>
-					<h3 className={clsx("modal-title", !isMounted && "hide-animated")}>
-						Send {shortenStr(utxo && `${utxo.txid}:${utxo.vout}`)}
-					</h3>
-				</Modal.Header>
-			)}
 			<Modal.Body>{renderBody()}</Modal.Body>
 		</Modal>
 	);
@@ -317,8 +315,6 @@ const SendBulkModal = ({
 SendBulkModal.propTypes = {
 	show: PropTypes.bool.isRequired,
 	handleModal: PropTypes.func.isRequired,
-	utxo: PropTypes.object,
-	isUninscribed: PropTypes.bool,
 	onSend: PropTypes.func.isRequired,
 	ownedUtxos: PropTypes.array,
 	selectedUtxos: PropTypes.array,

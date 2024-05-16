@@ -16,21 +16,16 @@ const fetchInputValue = async (txid, index) => {
 };
 
 const parseHexPsbt = async (txHex, metadata) => {
-    let tx;
+    let psbt;
     try {
         console.log('txHex:', txHex);
-        tx = bitcoin.Psbt.fromHex(txHex, { network: bitcoin.networks.bitcoin }).extractTransaction();
+        psbt = bitcoin.Psbt.fromHex(txHex, { network: bitcoin.networks.bitcoin });
     } catch (error) {
         console.error('Failed to parse transaction hex:', error);
         return;
     }
 
-    if (!tx.ins || !tx.outs) {
-        console.error('Transaction inputs or outputs are undefined');
-        return;
-    }
-
-    const inputValues = await Promise.all(tx.ins.map((input, index) => {
+    const inputValues = await Promise.all(psbt.txInputs.map((input, index) => {
         const txid = Buffer.from(input.hash).reverse().toString('hex');
         return limit(() => fetchInputValue(txid, input.index).then(value => ({
             name: `${txid.slice(0, 4)}...:${input.index}`,
@@ -40,7 +35,7 @@ const parseHexPsbt = async (txHex, metadata) => {
         })));
     }));
 
-    const outputNodes = tx.outs.map((output, index) => {
+    const outputNodes = psbt.txOutputs.map((output, index) => {
         console.log('output:', output);
         let address;
         try {
@@ -55,7 +50,7 @@ const parseHexPsbt = async (txHex, metadata) => {
             value: output.value,
             address: address,
         };
-    })
+    });
 
     console.log('outputNodes:', outputNodes);
 
@@ -64,7 +59,7 @@ const parseHexPsbt = async (txHex, metadata) => {
 
     console.log('inputAmount:', inputAmount);
     console.log('outputAmount:', outputAmount);
-    console.log({ txIns: tx.ins, txOuts: tx.outs });
+    console.log({ txIns: psbt.txInputs, txOuts: psbt.txOutputs });
 
     outputNodes.push({
         name: '',

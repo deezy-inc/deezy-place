@@ -1,19 +1,4 @@
 import * as bitcoin from 'bitcoinjs-lib';
-import axios from 'axios';
-import pLimit from 'p-limit';
-
-const limit = pLimit(5); // Limit to 5 concurrent requests
-
-const fetchInputValue = async (txid, index) => {
-    try {
-        const response = await axios.get(`https://blockstream.info/api/tx/${txid}`);
-        const output = response.data.vout[index];
-        return output.value;
-    } catch (error) {
-        console.error(`Failed to fetch input value for txid ${txid} index ${index}:`, error);
-        return null;
-    }
-};
 
 const parseHexPsbt = async (txHex, metadata) => {
     let psbt;
@@ -24,15 +9,15 @@ const parseHexPsbt = async (txHex, metadata) => {
         return;
     }
 
-    const inputValues = await Promise.all(psbt.txInputs.map((input, index) => {
+    const inputValues = psbt.txInputs.map((input, index) => {
         const txid = Buffer.from(input.hash).reverse().toString('hex');
-        return limit(() => fetchInputValue(txid, input.index).then(value => ({
+        return {
             name: `${txid.slice(0, 4)}...:${input.index}`,
             type: metadata.inputs[index]?.type || '',
             fullName: `${txid}:${input.index}`,
-            inputValue: value,
-        })));
-    }));
+            inputValue: metadata.inputs[index]?.value || 0,
+        };
+    });
 
     const outputNodes = psbt.txOutputs.map((output, index) => {
         let address;

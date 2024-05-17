@@ -5,6 +5,7 @@ import { BtcTransactionTree } from "@components/btc-transaction-tree";
 
 export const PreviewTransactionStep = ({ txFee, txFeeRate, hexPsbt, metadata, toggleBtcTreeReady, sign, send, isSending, btcTreeReady }) => (
     <div>
+        {hexPsbt ? <BtcTransactionTree hexPsbt={hexPsbt} metadata={metadata} toggleBtcTreeReady={toggleBtcTreeReady} /> : null}
         {txFee ? (
             <p className="btc-fee-text">
                 {`Tx fee: `}
@@ -13,9 +14,6 @@ export const PreviewTransactionStep = ({ txFee, txFeeRate, hexPsbt, metadata, to
                 </span>
             </p>
         ) : null}
-
-        {hexPsbt ? <BtcTransactionTree hexPsbt={hexPsbt} metadata={metadata} toggleBtcTreeReady={toggleBtcTreeReady} /> : null}
-
         <div className="bit-continue-button">
             <Button
                 size="medium"

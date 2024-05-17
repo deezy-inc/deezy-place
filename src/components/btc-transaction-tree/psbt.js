@@ -1,6 +1,7 @@
 import * as bitcoin from 'bitcoinjs-lib';
 
-const parseHexPsbt = async (txHex, metadata) => {
+const parseHexPsbt = (txHex, _metadata) => {
+    const metadata = _metadata ? { ..._metadata } : {};
     let psbt;
     try {
         psbt = bitcoin.Psbt.fromHex(txHex, { network: bitcoin.networks.bitcoin });
@@ -11,11 +12,12 @@ const parseHexPsbt = async (txHex, metadata) => {
 
     const inputValues = psbt.txInputs.map((input, index) => {
         const txid = Buffer.from(input.hash).reverse().toString('hex');
+        const inputMetadata = Array.isArray(metadata.inputs) ? metadata.inputs[index] : undefined;
         return {
             name: `${txid.slice(0, 4)}...:${input.index}`,
-            type: metadata.inputs[index]?.type || '',
+            type: inputMetadata ? inputMetadata.type : '',
             fullName: `${txid}:${input.index}`,
-            inputValue: metadata.inputs[index]?.value || 0,
+            inputValue: inputMetadata ? inputMetadata.value : 0,
         };
     });
 
@@ -27,9 +29,10 @@ const parseHexPsbt = async (txHex, metadata) => {
             console.error('Failed to decode address from output script:', e);
             address = 'Unknown';
         }
+        const outputMetadata = Array.isArray(metadata.outputs) ? metadata.outputs[index] : undefined;
         return {
             name: '',
-            type: metadata.outputs[index]?.type || '',
+            type: outputMetadata ? outputMetadata.type : '',
             value: output.value,
             address: address,
         };

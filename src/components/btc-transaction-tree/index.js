@@ -10,18 +10,19 @@ const BtcTransactionTree = ({ hexPsbt, metadata, toggleBtcTreeReady }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!hexPsbt) return;
+        if (!hexPsbt || !metadata) return;
 
-        const fetchData = async () => {
+        const fetchData = () => {
             setLoading(true);
             toggleBtcTreeReady(false);
-            const parsedData = await parseHexPsbt(hexPsbt, metadata);
+            debugger;
+            const parsedData = parseHexPsbt(hexPsbt, metadata);
             setData(parsedData);
             setLoading(false);
         };
 
         fetchData();
-    }, [hexPsbt]);
+    }, [hexPsbt, metadata]);
 
     useEffect(() => {
         if (!data) return;

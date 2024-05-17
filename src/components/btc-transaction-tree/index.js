@@ -15,7 +15,6 @@ const BtcTransactionTree = ({ hexPsbt, metadata, toggleBtcTreeReady }) => {
         const fetchData = () => {
             setLoading(true);
             toggleBtcTreeReady(false);
-            debugger;
             const parsedData = parseHexPsbt(hexPsbt, metadata);
             setData(parsedData);
             setLoading(false);

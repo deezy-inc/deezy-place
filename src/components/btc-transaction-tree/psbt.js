@@ -1,7 +1,7 @@
 import * as bitcoin from 'bitcoinjs-lib';
 
 const parseHexPsbt = (txHex, _metadata) => {
-    const metadata = _metadata ? { ..._metadata } : {};
+    const metadata = _metadata ? structuredClone(_metadata) : {};
     let psbt;
     try {
         psbt = bitcoin.Psbt.fromHex(txHex, { network: bitcoin.networks.bitcoin });
@@ -13,12 +13,13 @@ const parseHexPsbt = (txHex, _metadata) => {
     const inputValues = psbt.txInputs.map((input, index) => {
         const txid = Buffer.from(input.hash).reverse().toString('hex');
         const inputMetadata = Array.isArray(metadata.inputs) ? metadata.inputs[index] : undefined;
-        return {
+        const result = {
             name: `${txid.slice(0, 4)}...:${input.index}`,
             type: inputMetadata ? inputMetadata.type : '',
             fullName: `${txid}:${input.index}`,
             inputValue: inputMetadata ? inputMetadata.value : 0,
         };
+        return result;
     });
 
     const outputNodes = psbt.txOutputs.map((output, index) => {

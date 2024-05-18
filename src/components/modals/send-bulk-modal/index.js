@@ -133,9 +133,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 	const send = async () => {
 		setIsSending(true);
 		try {
-			// TODO: Uncomment this line when the broadcast service is ready
-			// const txId = await broadcastPsbt(signed);
-			const txId = "txid";
+			const txId = await broadcastPsbt(signed);
 			setSentTxId(txId);
 			copyToClipboard(txId, "Transaction id copied to clipboard.");
 			setStep(3);

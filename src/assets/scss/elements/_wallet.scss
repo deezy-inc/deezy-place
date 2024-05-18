@@ -10,3 +10,33 @@
         }
     }
 }
+
+.btc-transaction-tree svg {
+    width: 100%;
+    height: auto;
+}
+
+.btc-transaction-tree .tooltip {
+    position: absolute;
+    text-align: center;
+    width: auto;
+    height: auto;
+    padding: 8px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.btc-text-white {
+  fill: white;
+}
+
+.btc-fee-text {
+    span {
+        color: var(--color-primary);
+    }
+}

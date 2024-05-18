@@ -97,6 +97,58 @@ body.modal-open {
   }
 }
 
+.modal-50 {
+  .modal-content {
+    background-color: var(--background-color-2);
+    border: 0 none;
+    padding: 40px 20px;
+    border-radius: 10px;
+    @media #{$sm-layout} {
+      padding: 20px 15px;
+    }
+  }
+  @media (min-width: 576px) {
+     .modal-dialog {
+      max-width: 50% !important;
+    }
+  }
+  .btn-close {
+    margin: 0;
+    position: fixed;
+    z-index: 99;
+    right: 30px;
+    top: 30px;
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    opacity: 0;
+    transition: opacity 0.3s;
+    transition-delay: 0.3s;
+    svg,
+    i {
+      color: #fff;
+      width: 18px;
+      font-size: 18px;
+    }
+  }
+  .modal-header {
+    border: 0 none;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  &.show {
+    .btn-close {
+      opacity: 1;
+    }
+  }
+}
+
 /* Share Modal Popup  */
 .share-modal-wrapper {
   .modal-footer {

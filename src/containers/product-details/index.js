@@ -187,8 +187,8 @@ const ProductDetailsArea = memo(
       if (!nostrOrdinalsAddress || !inscription) return;
       setIsOwner(
         nostrOrdinalsAddress &&
-          product.owner &&
-          nostrOrdinalsAddress === product.owner,
+        product.owner &&
+        nostrOrdinalsAddress === product.owner,
       );
     }, [nostrOrdinalsAddress, product]);
 
@@ -247,10 +247,10 @@ const ProductDetailsArea = memo(
       },
     ];
 
-    const onSend = () => {};
-    const onBid = () => {};
-    const onAuction = () => {};
-    const onAcceptBid = () => {};
+    const onSend = () => { };
+    const onBid = () => { };
+    const onAuction = () => { };
+    const onAcceptBid = () => { };
 
     const { title: auctionTitle, nextPriceDrop: auctionNextPriceDrop } =
       useMemo(() => {
@@ -378,13 +378,13 @@ const ProductDetailsArea = memo(
 
                 {
                   collection ? (
-                  <div className="catagory-collection">
-                    <InscriptionCollection collection={collection} />
-                  </div>
-                ) :
-                  <div className="catagory-collection">
+                    <div className="catagory-collection">
+                      <InscriptionCollection collection={collection} />
+                    </div>
+                  ) :
+                    <div className="catagory-collection">
                       <b>This item is NOT part of a known collection</b>
-                  </div>
+                    </div>
                 }
 
                 {auctionTitle && nostr?.value && (
@@ -468,7 +468,7 @@ const ProductDetailsArea = memo(
                         </button>
                       )}
 
-                      {shouldShowSell && (
+                      {/* {shouldShowSell && (
                         <button
                           className="pd-react-area btn-transparent"
                           type="button"
@@ -479,7 +479,7 @@ const ProductDetailsArea = memo(
                             <span>Sell</span>
                           </div>
                         </button>
-                      )}
+                      )} */}
 
                       {shouldShowAuction && (
                         <button
@@ -507,7 +507,7 @@ const ProductDetailsArea = memo(
                         </button>
                       )}
 
-                      {shouldShowBuyWithBitcoin && (
+                      {/* {shouldShowBuyWithBitcoin && (
                         <button
                           className="pd-react-area btn-transparent"
                           type="button"
@@ -518,9 +518,9 @@ const ProductDetailsArea = memo(
                             <span>Buy with bitcoin</span>
                           </div>
                         </button>
-                      )}
+                      )} */}
 
-                      {shouldShowBuyWithLightning && (
+                      {/* {shouldShowBuyWithLightning && (
                         <button
                           className="pd-react-area btn-transparent"
                           type="button"
@@ -531,9 +531,9 @@ const ProductDetailsArea = memo(
                             <span>Buy with lightning</span>
                           </div>
                         </button>
-                      )}
+                      )} */}
 
-                      {shouldShowCreateBid && (
+                      {/* {shouldShowCreateBid && (
                         <button
                           className="pd-react-area btn-transparent"
                           type="button"
@@ -544,7 +544,7 @@ const ProductDetailsArea = memo(
                             <span>Bid</span>
                           </div>
                         </button>
-                      )}
+                      )} */}
 
                       {
                         <>

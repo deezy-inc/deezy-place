@@ -46,9 +46,9 @@ const App = () => {
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           {!userLoggedIn && <HeroArea data={content["hero-section"]} />}
           <>
-            <MainCollections />
+            {/* <MainCollections />
             <NostrLive type="bidding" openOffers={auctions} loading={loading} />
-            <NostrLive openOffers={sales} loading={loading} />
+            <NostrLive openOffers={sales} loading={loading} /> */}
             {userLoggedIn && <OrdinalsArea />}
           </>
         </main>

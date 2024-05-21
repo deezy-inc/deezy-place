@@ -88,7 +88,7 @@ const OrdinalCard = ({ overlay, inscription, auction, onClick }) => {
               utxo={inscription}
               confirmed
               date={date}
-              type={type}
+              type="view"
               onSale={onSale}
               nextDrop={auction?.nextPriceDrop?.scheduledTime}
               onClick={onClick}

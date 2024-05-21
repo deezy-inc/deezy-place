@@ -247,7 +247,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             </div>
           </div>
 
-          <div className="bit-continue-button notDummy">
+          {/* <div className="bit-continue-button notDummy">
             <Button
               size="medium"
               fullwidth
@@ -258,7 +258,7 @@ const BuyLightningModal = ({ show, handleModal, utxo, onSale, nostr }) => {
             >
               {isOnBuy ? <TailSpin stroke="#fec823" speed={0.75} /> : "Buy"}
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
     );

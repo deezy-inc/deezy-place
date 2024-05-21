@@ -21,6 +21,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
   }
 
   function renderMainAction(actionType) {
+    if (actionType === "buy" || actionType === "sell") return null;
     let label = "View";
     switch (actionType) {
       case "buy":

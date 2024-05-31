@@ -1,6 +1,7 @@
 const LocalStorageKeys = {
     INSCRIPTIONS_OUTPOINT: "INSCRIPTION_OUTPOINT",
     COLLECTION_INFO: "COLLECTION_INFO",
+    ONEKEY_WALLET: "onekey_wallet_info_local_key",
 };
 
 const LocalStorage = {
@@ -37,7 +38,11 @@ const LocalStorage = {
             return undefined;
         }
 
-        return window.localStorage.clear();
+        return Object.keys(window.localStorage).forEach(key => {
+            if (key !== "onekey_wallet_info_local_key") {
+              window.localStorage.removeItem(key);
+            }
+        });
     },
 };
 

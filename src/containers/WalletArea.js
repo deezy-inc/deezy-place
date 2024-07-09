@@ -72,11 +72,11 @@ const WalletArea = ({
 	const [filteredOwnedUtxos, setFilteredOwnedUtxos] = useState([]);
 	const [refreshHack, setRefreshHack] = useState(false);
 	const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
-	const [showSendModal, setShowSendModal] = useState(false);
+	const [showSendBulkModal, setShowSendBulkModal] = useState(false);
 	const [selectedUtxos, setSelectedUtxos] = useState([]);
 	const sendBulkSupported = sendBulkSupportedWallets.includes(walletName);
 
-	const onSend = async (utxo, amount, address) => { };
+	const onSend = async (utxo, amount, address) => {};
 
 	const handleUtxoSelection = (utxo, isSelected) => {
 		if (isSelected) {
@@ -90,8 +90,8 @@ const WalletArea = ({
 		setRefreshHack(!refreshHack);
 	};
 
-	const handleSendModal = () => {
-		setShowSendModal((prev) => !prev);
+	const handleSendBulkModal = () => {
+		setShowSendBulkModal((prev) => !prev);
 	};
 
 	const onCopyAddress = () => {
@@ -178,7 +178,7 @@ const WalletArea = ({
 									<button
 										className="pd-react-area btn-transparent"
 										type="button"
-										onClick={handleSendModal}
+										onClick={handleSendBulkModal}
 									>
 										<div className="action">
 											<i className="feather-send" />
@@ -208,12 +208,15 @@ const WalletArea = ({
 								{shortenStr(nostrOrdinalsAddress)}
 							</button>
 
-							<div className="form-check mt-2">
+							{sendBulkSupported && <div className="form-check mt-2">
 								<input
 									className="form-check-input"
 									type="checkbox"
 									id={"checkbox-select-all"}
-									checked={selectedUtxos.length === filteredOwnedUtxos.length && selectedUtxos.length > 0}
+									checked={
+										selectedUtxos.length === filteredOwnedUtxos.length &&
+										selectedUtxos.length > 0
+									}
 									onChange={(e) =>
 										setSelectedUtxos(e.target.checked ? filteredOwnedUtxos : [])
 									}
@@ -224,7 +227,7 @@ const WalletArea = ({
 								>
 									Select for sending
 								</label>
-							</div>
+							</div>}
 						</span>
 					</div>
 				</div>
@@ -257,7 +260,8 @@ const WalletArea = ({
 												type="checkbox"
 												id={`checkbox-${inscription.key}`}
 												checked={selectedUtxos.some(
-													(selected) => (inscription.key && selected.key === inscription.key),
+													(selected) =>
+														inscription.key && selected.key === inscription.key,
 												)}
 												onChange={(e) =>
 													handleUtxoSelection(inscription, e.target.checked)
@@ -301,12 +305,12 @@ const WalletArea = ({
 					)}
 				</div>
 			</div>
-			{showSendModal && (
+			{showSendBulkModal && (
 				<SendBulkModal
 					ownedUtxos={ownedUtxos}
 					selectedUtxos={selectedUtxos}
-					show={showSendModal}
-					handleModal={handleSendModal}
+					show={showSendBulkModal}
+					handleModal={handleSendBulkModal}
 					utxo={""}
 					isUninscribed={false}
 					onSend={onSend}

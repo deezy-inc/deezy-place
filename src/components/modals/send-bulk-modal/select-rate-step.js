@@ -13,14 +13,16 @@ const getTitle = (sendingInscriptions, sendingUtxos) => {
     const inscriptionText = `inscription${inscriptionCount !== 1 ? 's' : ''}`;
     const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
 
+    const skipRunesText = "We are going to skip runes if there are inscriptions and runes selected";
+
     if (inscriptionCount && utxoCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}.`;
+        return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}. ${skipRunesText}.`;
     }
     if (inscriptionCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText}.`;
+        return `You are about to send ${inscriptionCount} ${inscriptionText}. ${skipRunesText}.`;
     }
     if (utxoCount) {
-        return `You are about to send ${utxoCount} ${utxoText}.`;
+        return `You are about to send ${utxoCount} ${utxoText}. ${skipRunesText}.`;
     }
     return '';
 };

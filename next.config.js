@@ -40,26 +40,4 @@ const t = {
   },
 };
 
-// Injected content via Sentry wizard below
-const { withSentryConfig } = require("@sentry/nextjs");
-const nextConfig = {
-  sentry: {
-    disableServerWebpackPlugin: true,
-    disableClientWebpackPlugin: true,
-  },
-};
-const sentryWebpackPluginOptions = {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  // Suppresses source map uploading logs during build
-  silent: true,
-
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: "deezy-io",
-  project: "deezy-place",
-};
-
-console.log("sentryWebpackPluginOptions.", sentryWebpackPluginOptions);
-
-module.exports = withSentryConfig(t, sentryWebpackPluginOptions);
+module.exports = t

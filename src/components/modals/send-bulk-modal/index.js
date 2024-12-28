@@ -133,11 +133,13 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 	const send = async () => {
 		setIsSending(true);
 		try {
-			const txId = await broadcastPsbt(signed);
+      console.log(signedPsbt.toBase64())
+			const txId = await broadcastPsbt(signedPsbt);
 			setSentTxId(txId);
 			copyToClipboard(txId, "Transaction id copied to clipboard.");
 			setStep(3);
 		} catch (error) {
+      console.error(error)
 			toast.error("Failed to send transaction.");
 		} finally {
 			setIsSending(false);

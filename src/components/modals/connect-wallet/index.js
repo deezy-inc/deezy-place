@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 
 // Gets the callback function from the parent component to notify when the wallet get's connecteds
 const ConnectWallet = ({ callback }) => {
@@ -13,14 +14,22 @@ const ConnectWallet = ({ callback }) => {
     onHideConnectModal,
   } = useWallet();
 
+  let uniSatName = "UniSat";
+  let uniSatLogo = "/images/logo/unisat.png";
+  const oneKeyWalletExists = LocalStorage.get(LocalStorageKeys.ONEKEY_WALLET);
+
+  if (oneKeyWalletExists) {
+    uniSatName = "OneKey";
+    uniSatLogo = "/images/logo/onekey.png";
+  }
+
   const wallets = [
     {
-      name: "MetaMask",
-      image: "/images/logo/metamask.png",
-      ethereum: true,
-
+      name: uniSatName,
+      image: uniSatLogo,
+      provider: "unisat",
       onClick: () => {
-        onConnect("nosft.xyz", callback);
+        onConnect("unisat.io", callback);
       },
     },
     {
@@ -42,14 +51,6 @@ const ConnectWallet = ({ callback }) => {
       },
     },
     {
-      name: "UniSat",
-      image: "/images/logo/unisat.png",
-      provider: "unisat",
-      onClick: () => {
-        onConnect("unisat.io", callback);
-      },
-    },
-    {
       name: "Alby",
       image: "/images/logo/alby.svg",
 
@@ -66,6 +67,17 @@ const ConnectWallet = ({ callback }) => {
       },
     },
   ];
+
+  if (!oneKeyWalletExists) {
+    wallets.unshift({
+      name: "MetaMask",
+      image: "/images/logo/metamask.png",
+      ethereum: true,
+      onClick: () => {
+        onConnect("nosft.xyz", callback);
+      },
+    });
+  }
 
   const getWallets = () => {
     const activeWallets = [];

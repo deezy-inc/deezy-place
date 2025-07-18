@@ -16,7 +16,12 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
       ? `/inscription/${utxo?.inscriptionId}`
       : `/output/${utxo?.txid}:${utxo?.vout}`;
 
-    window.location.href = path;
+    // Check if command/ctrl key is pressed for new tab
+    if (e.metaKey || e.ctrlKey) {
+      window.open(path, '_blank');
+    } else {
+      window.location.href = path;
+    }
     return;
   }
 

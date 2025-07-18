@@ -9,7 +9,6 @@ import ProductTitle from "@components/product-details/title";
 import RuneDisplay from "@components/rune-display";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
-import AuctionModal from "@components/modals/auction-modal";
 import BuyModal from "@components/modals/buy-modal";
 import BuyLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
@@ -19,7 +18,6 @@ import dynamic from "next/dynamic";
 import {
   satsToFormattedDollarString,
   shortenStr,
-  cancelAuction,
 } from "@services/nosft";
 import AnimatedText from "@components/animated-text";
 import { useAsyncFn } from "react-use";
@@ -98,7 +96,6 @@ const ProductDetailsArea = memo(
     uninscribedSats,
     collection,
     nostr,
-    auction,
     bids,
     onAction,
     isSpent: isUtxoSpent,
@@ -106,7 +103,6 @@ const ProductDetailsArea = memo(
     bidsDisabled = false,
     sellDisabled = false,
     buyDisabled = false,
-    auctionDisabled = false,
   }) => {
     const product = useMemo(() => {
       if (!inscription && !uninscribedSats) return {};
@@ -139,16 +135,11 @@ const ProductDetailsArea = memo(
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
-    const [showAuctionModal, setShowAuctionModal] = useState(false);
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showBidModal, setShowBidModal] = useState(false);
     const [showBidsModal, setShowBidsModal] = useState(false);
     const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
-    const [auctionCanceled, setAuctionCanceled] = useState(false);
     const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
-
-    const [{ loading: isCanceling, error: auctionError }, doCancelAction] =
-      useAsyncFn(cancelAuction, []);
 
     const handleSendModal = () => {
       setShowSendModal((prev) => !prev);
@@ -158,23 +149,12 @@ const ProductDetailsArea = memo(
       setShowSellModal((prev) => !prev);
     };
 
-    const handleAuctionModal = () => {
-      onAction(showAuctionModal);
-      setShowAuctionModal((prev) => !prev);
-    };
-
     const handleBidModal = async () => {
       setShowBidModal((prev) => !prev);
     };
 
     const handleBidsModal = async () => {
       setShowBidsModal((prev) => !prev);
-    };
-
-    const handleCancelAuction = async () => {
-      doCancelAction(auction.id);
-      setAuctionCanceled(true);
-      toast.info("Auction has been cancelled.");
     };
 
     const handleBuyModal = () => {
@@ -241,76 +221,21 @@ const ProductDetailsArea = memo(
       },
       {
         id: 6,
-        type: "Number",
-        value: product.num,
-      },
-      {
-        id: 3,
-        type: "Created",
+        type: "Minted",
         value: product.minted,
       },
     ];
 
-    const onSend = () => { };
-    const onBid = () => { };
-    const onAuction = () => { };
-    const onAcceptBid = () => { };
-
-    const { title: auctionTitle, nextPriceDrop: auctionNextPriceDrop } =
-      useMemo(() => {
-        let title = "";
-        let nextPriceDrop = null;
-        if (!auction) return { title, nextPriceDrop };
-
-        switch (auction.status) {
-          case "PENDING": {
-            title = "Dutch Auction Start Soon";
-            nextPriceDrop = auction.metadata.find((m) => !m.nostrEventId);
-            break;
-          }
-          case "RUNNING": {
-            title = "Dutch Auction";
-            nextPriceDrop = auction.metadata.find(
-              (m) => !m.nostrEventId && m.price !== auction.currentPrice,
-            );
-            break;
-          }
-          case "SPENT": {
-            title = "Dutch Auction Ended";
-            break;
-          }
-          default: {
-            return { title, nextPriceDrop };
-          }
-        }
-        return { title, nextPriceDrop };
-      }, [auction]);
-
     const isWalletConnected = ordinalsPublicKey && nostrOrdinalsAddress;
 
-    const shouldShowCancelAuction =
-      isOwner &&
-      !isUtxoSpent &&
-      auctionNextPriceDrop &&
-      !isCanceling &&
-      !auctionError &&
-      !auctionCanceled &&
-      isWalletConnected;
-
-    const shouldShowNextTime =
-      auctionNextPriceDrop &&
-      auctionNextPriceDrop.scheduledTime > new Date().getTime();
+    const onSend = () => { };
+    const onBid = () => { };
+    const onAcceptBid = () => { };
 
     const hasNostrEvent = nostr && nostr.value > 0;
     const shouldShowSend = isOwner && isWalletConnected;
     const shouldShowSell =
       !sellDisabled && isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowAuction =
-      !auctionDisabled &&
-      isOwner &&
-      !isUtxoSpent &&
-      !auctionNextPriceDrop &&
-      isWalletConnected;
     const shouldShowBuyWithLightning =
       !buyDisabled &&
       !isOwner &&
@@ -327,7 +252,6 @@ const ProductDetailsArea = memo(
     const shouldShowActions =
       shouldShowSend ||
       shouldShowSell ||
-      shouldShowAuction ||
       shouldShowBuyWithLightning ||
       shouldShowBuyWithBitcoin ||
       shouldShowCreateBid ||
@@ -340,9 +264,6 @@ const ProductDetailsArea = memo(
             <div className="product-details">
               <div className="rn-pd-thumbnail">
                 <InscriptionPreview utxo={inscription} />
-                {auctionNextPriceDrop && (
-                  <CountdownTimer time={auctionNextPriceDrop.scheduledTime} />
-                )}
               </div>
             </div>
 
@@ -350,7 +271,7 @@ const ProductDetailsArea = memo(
               <div className="rn-pd-content-area">
                 <ProductTitle title={product.title} likeCount={30} />
 
-                {hasNostrEvent && !auction && (
+                {hasNostrEvent && (
                   <div className="bid mb--10">
                     {isUtxoSpent ? "Bought" : "Listed"} for {toBTC(nostr.value)}{" "}
                     BTC{" "}
@@ -388,78 +309,12 @@ const ProductDetailsArea = memo(
                 )}
 
                 {
-                  collection ? (
+                  collection && (
                     <div className="catagory-collection">
                       <InscriptionCollection collection={collection} />
                     </div>
-                  ) :
-                    <div className="catagory-collection">
-                      <b>This item is NOT part of a known collection</b>
-                    </div>
+                  )
                 }
-
-                {auctionTitle && nostr?.value && (
-                  <div className="dutchAuction">
-                    <h6 className="title-name live-title">{auctionTitle}</h6>
-
-                    <div className="auction-prices">
-                      {auction.status !== "PENDING" && (
-                        <div className="animated-price-box">
-                          <p className="title">Current price</p>
-                          <p className="price">
-                            <AnimatedText
-                              className="sats"
-                              text={String(toBTC(nostr.value))}
-                            />{" "}
-                            BTC{" "}
-                            <AnimatedText
-                              className="dollars"
-                              text={`$${satsToFormattedDollarString(
-                                nostr.value,
-                                bitcoinPrice,
-                              )}`}
-                            />
-                          </p>
-                        </div>
-                      )}
-
-                      {auctionNextPriceDrop && (
-                        <div className="animated-price-box">
-                          <p className="title">
-                            {auction.status === "PENDING"
-                              ? "Starting Price"
-                              : "Next Price"}
-                          </p>
-                          <p>
-                            <AnimatedText
-                              className="sats"
-                              text={String(toBTC(auctionNextPriceDrop.price))}
-                            />{" "}
-                            BTC{" "}
-                            <AnimatedText
-                              className="dollars"
-                              text={`$${satsToFormattedDollarString(
-                                auctionNextPriceDrop.price,
-                                bitcoinPrice,
-                              )}`}
-                            />
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {shouldShowNextTime && (
-                      <div className="bid mt--10 mb--20">
-                        {auction.status === "PENDING" ? "Starts" : "Next Price"}{" "}
-                        in{" "}
-                        <span className="price">
-                          <CountdownTimerText
-                            time={auctionNextPriceDrop.scheduledTime}
-                          />
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {shouldShowActions && (
                   <div className="rn-pd-sm-property-wrapper">
@@ -491,32 +346,6 @@ const ProductDetailsArea = memo(
                           </div>
                         </button>
                       )} */}
-
-                      {shouldShowAuction && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleAuctionModal}
-                        >
-                          <div className="action">
-                            <i className="feather-book-open" />
-                            <span>Auction</span>
-                          </div>
-                        </button>
-                      )}
-
-                      {shouldShowCancelAuction && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleCancelAuction}
-                        >
-                          <div className="action">
-                            <i className="feather-book-open" />
-                            <span>Cancel Auction</span>
-                          </div>
-                        </button>
-                      )}
 
                       {/* {shouldShowBuyWithBitcoin && (
                         <button
@@ -622,15 +451,6 @@ const ProductDetailsArea = memo(
             onSale={onSend}
           />
         )}
-        {!auctionDisabled && showAuctionModal && (
-          <AuctionModal
-            show={showAuctionModal}
-            handleModal={handleAuctionModal}
-            utxo={{ ...inscription, value: nostr?.value || inscription.value }}
-            isSpent={isUtxoSpent}
-            onSale={onAuction}
-          />
-        )}
         {!buyDisabled && showBuyModal && (
           <BuyModal
             show={showBuyModal}
@@ -681,7 +501,6 @@ ProductDetailsArea.propTypes = {
   uninscribedSats: PropTypes.any,
   collection: PropTypes.any,
   nostr: NostrEvenType,
-  auction: PropTypes.any,
   bids: PropTypes.any,
   isBidsLoading: PropTypes.bool,
   isSpent: PropTypes.bool,
@@ -689,7 +508,6 @@ ProductDetailsArea.propTypes = {
   bidsDisabled: PropTypes.bool,
   sellDisabled: PropTypes.bool,
   buyDisabled: PropTypes.bool,
-  auctionDisabled: PropTypes.bool,
 };
 
 ProductDetailsArea.defaultProps = {

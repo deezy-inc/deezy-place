@@ -45,11 +45,6 @@ const OrdinalCard = ({
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
           <div className="card-thumbnail">
             <InscriptionPreview utxo={utxo} />
-            {utxo?.auction && (
-              <div className="card-tag">
-                <p>Live Auction</p>
-              </div>
-            )}
           </div>
           <div className="inscription-details-area">
             {utxo && (

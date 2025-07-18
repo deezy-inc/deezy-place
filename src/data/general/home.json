@@ -12,7 +12,7 @@
             "texts": [
                 {
                     "id": 1,
-                    "content": "The Deezy Marketplace is fully open source with a decentralized PSBT based order book."
+                    "content": "Deprecation Notice: Please remove your UTXOs from this website when you can."
                 }
             ],
             "buttons": [

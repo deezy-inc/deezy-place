@@ -100,7 +100,6 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			});
 			setHexPsbt(unsignedPsbtHex);
 			setMetadata(metadata);
-			copyToClipboard(unsignedPsbtHex, "Psbt copied to clipboard.");
 			setStep(2);
 		} catch (error) {
 			console.error(error);
@@ -173,6 +172,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 						send={send}
 						isSending={isSending}
 						btcTreeReady={btcTreeReady}
+						selectedUtxos={selectedUtxos}
 					/>
 				);
 			case 3:
@@ -194,7 +194,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 			case 1:
 				return "Send Bulk";
 			case 2:
-				return "Sign Transaction";
+				return "Review and Sign Transaction";
 			case 3:
 				return "Transaction Sent";
 			default:
@@ -203,10 +203,11 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 	};
 	return (
 		<Modal
-			className={hexPsbt ? `modal-50 placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
+			className={step === 2 ? `modal-xl placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
 			show={show}
 			onHide={handleModal}
 			centered
+			size={step === 2 ? "xl" : undefined}
 		>
 			<button
 				type="button"

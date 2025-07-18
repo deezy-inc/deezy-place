@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Button from "@ui/button";
 import { satToBtc } from "@services/nosft";
 
-const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
+const ProductBid = ({ price, utxo, confirmed, date, type, onClick, alwaysNewTabOnView }) => {
   function onActionClicked(e) {
     e.preventDefault();
 
@@ -17,7 +17,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
       : `/output/${utxo?.txid}:${utxo?.vout}`;
 
     // Check if command/ctrl key is pressed for new tab
-    if (e.metaKey || e.ctrlKey) {
+    if (e.metaKey || e.ctrlKey || alwaysNewTabOnView) {
       window.open(path, '_blank');
     } else {
       window.location.href = path;
@@ -44,15 +44,18 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick }) => {
     }
 
     return (
-      <Button color="none" size="small" onClick={onActionClicked}>
+      <Button color="primary-alta" size="small" onClick={onActionClicked}>
         {label}
       </Button>
     );
   }
-
-  const minted = !confirmed
+  let minted = "";
+  if (date) {
+    minted = !confirmed
     ? "Unconfirmed"
     : new Date(date * 1000).toLocaleString();
+  }
+
   const priceAmount = price?.amount?.replace(/,/g, "") || 0;
   const btcValue = satToBtc(Number(priceAmount));
   const textPrice = type === "buy" ? `Listed for: ${btcValue}` : btcValue;

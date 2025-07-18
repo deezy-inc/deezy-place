@@ -216,18 +216,18 @@ const WalletArea = ({
 									type="checkbox"
 									id={"checkbox-select-all"}
 									checked={
-										selectedUtxos.length === filteredOwnedUtxos.length &&
+										selectedUtxos.length === filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length).length &&
 										selectedUtxos.length > 0
 									}
 									onChange={(e) =>
-										setSelectedUtxos(e.target.checked ? filteredOwnedUtxos : [])
+										setSelectedUtxos(e.target.checked ? filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length) : [])
 									}
 								/>
 								<label
 									className="form-check-label"
 									htmlFor={"checkbox-select-all"}
 								>
-									Select for sending
+									Select all for sending (excluding runes)
 								</label>
 							</div>}
 						</span>
@@ -266,15 +266,16 @@ const WalletArea = ({
 													(selected) =>
 														inscription.key && selected.key === inscription.key,
 												)}
+												disabled={getRunesForUtxo(inscription)?.length > 0}
 												onChange={(e) =>
 													handleUtxoSelection(inscription, e.target.checked)
 												}
 											/>
 											<label
-												className="form-check-label"
+												className={`form-check-label ${getRunesForUtxo(inscription)?.length > 0 ? 'text-muted' : ''}`}
 												htmlFor={`checkbox-${inscription.key}`}
 											>
-												Select for sending
+												{getRunesForUtxo(inscription)?.length > 0 ? 'Select for sending (disabled - contains runes)' : 'Select for sending'}
 											</label>
 										</div>
 									)}

@@ -28,6 +28,7 @@ const OrdinalCard = ({
   onSale,
   onClick,
   runes,
+  alwaysNewTabOnView,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
@@ -36,12 +37,20 @@ const OrdinalCard = ({
     : `/output/${utxo?.txid}:${utxo?.vout}`;
 
   const num = utxo?.num ? `#${utxo?.num}` : "";
+  if (utxo) {
+    if (runes) {
+      utxo.runes = runes;
+    }
+    if (date) {
+      utxo.date = date;
+    }
+  }
 
   console.log("[utxo]", utxo);
 
   return (
     <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
-      <Anchor className="logo-dark" path={utxo?.content ? path : null}>
+      <Anchor className="logo-dark" path={utxo?.content ? path : ""}>
         <div className={clsx("product-style-one", !overlay && "no-overlay")}>
           <div className="card-thumbnail">
             <InscriptionPreview utxo={utxo} />
@@ -100,6 +109,7 @@ const OrdinalCard = ({
               date={date}
               type={type}
               onClick={onClick}
+              alwaysNewTabOnView={alwaysNewTabOnView}
             />
           )}
           {!utxo && (

@@ -327,3 +327,67 @@ body.modal-open {
   animation: fadeIn 500ms ease-in;
   animation-fill-mode: forwards;
 }
+
+/*--------------------------------
+    Lightning Payment Modal
+---------------------------------*/
+.lightning-payment-content {
+  .qr-code-container {
+    .qr-code-wrapper {
+      display: inline-block;
+      padding: 20px;
+      background: var(--background-color-1);
+      border-radius: 10px;
+      border: 2px solid var(--color-border);
+      
+      .qr-code {
+        display: block;
+        margin: 0 auto;
+      }
+    }
+  }
+
+  .payment-options {
+    .btn {
+      margin-bottom: 10px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .invoice-display {
+    .form-group {
+      .form-label {
+        color: var(--color-body);
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+      
+      .form-control {
+        background: var(--background-color-1);
+        border: 2px solid var(--color-border);
+        border-radius: 5px;
+        color: var(--color-white);
+        font-size: 12px;
+        font-family: monospace;
+        padding: 10px;
+        
+        &:focus {
+          border-color: var(--color-primary);
+          box-shadow: none;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

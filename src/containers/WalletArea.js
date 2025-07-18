@@ -17,6 +17,7 @@ import { collectionAuthor, applyFilters } from "@containers/helpers";
 import { useWallet } from "@context/wallet-context";
 import Slider, { SliderItem } from "@ui/slider";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
+import { useRunes } from "@hooks";
 import { SendBulkModal } from "@components/modals/send-bulk-modal";
 
 const SliderOptions = {
@@ -75,6 +76,7 @@ const WalletArea = ({
 	const [showSendBulkModal, setShowSendBulkModal] = useState(false);
 	const [selectedUtxos, setSelectedUtxos] = useState([]);
 	const sendBulkSupported = sendBulkSupportedWallets.includes(walletName);
+	const { getRunesForUtxo } = useRunes(ownedUtxos);
 
 	const onSend = async (utxo, amount, address) => {};
 
@@ -251,6 +253,7 @@ const WalletArea = ({
 										date={inscription.status.block_time}
 										authors={collectionAuthor}
 										utxo={inscription}
+										runes={getRunesForUtxo(inscription)}
 										onSale={handleRefreshHack}
 									/>
 									{sendBulkSupported && (

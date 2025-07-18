@@ -1,6 +1,5 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop, no-continue */
-
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import { useRouter } from "next/router";
 import Wrapper from "@layout/wrapper";
 import Header from "@layout/header";
 import Footer from "@layout/footer";
@@ -9,7 +8,6 @@ import HeroArea from "@containers/HeroArea";
 import OrdinalsArea from "@containers/OrdinalsArea";
 import { normalizedData } from "@utils/methods";
 import homepageData from "@data/general/home.json";
-
 import NostrLive from "@containers/NostrLive";
 import MainCollections from "@containers/MainCollections";
 import { useWalletState, useHeaderHeight, useHome } from "@hooks";
@@ -25,34 +23,34 @@ const App = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
   const { sourse, sales, auctions, loading } = useHome({ realtime: true });
+  const router = useRouter();
 
-  console.log({
-    sourse,
-    sales: sales.length,
-    auctions: auctions.length,
-    loading,
-  });
+  useEffect(() => {
+    if (ordinalsPublicKey && nostrOrdinalsAddress) {
+      router.replace("/wallet");
+    }
+  }, [ordinalsPublicKey, nostrOrdinalsAddress, router]);
 
   const content = normalizedData(homepageData?.content || []);
 
   const userLoggedIn = ordinalsPublicKey && nostrOrdinalsAddress;
 
+  if (userLoggedIn) {
+    // Optionally, render nothing while redirecting
+    return null;
+  }
+
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
         <SEO pageTitle="Deezy" />
-
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
-          {!userLoggedIn && <HeroArea data={content["hero-section"]} />}
-          <>
-            {/* <MainCollections />
-            <NostrLive type="bidding" openOffers={auctions} loading={loading} />
-            <NostrLive openOffers={sales} loading={loading} /> */}
-            {userLoggedIn && <OrdinalsArea />}
-          </>
+          <HeroArea data={content["hero-section"]} />
+          {/* <MainCollections />
+          <NostrLive type="bidding" openOffers={auctions} loading={loading} />
+          <NostrLive openOffers={sales} loading={loading} /> */}
         </main>
-
         <Footer />
       </Wrapper>
     </WalletContext.Provider>

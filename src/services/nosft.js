@@ -85,6 +85,27 @@ const {
   calculateRequiredFeeForBuy,
 } = nosft.openOrdex;
 
+// Add rune fetching function
+const getRuneData = async (outpoint) => {
+  try {
+    const response = await fetch(`https://ordinals-api-lb.deezy.io/output/${outpoint}`, {
+      headers: {
+        'accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching rune data:', error);
+    return null;
+  }
+};
+
 const {
   shortenStr,
   satsToFormattedDollarString,
@@ -143,6 +164,9 @@ export {
   // Wallet
   connectWallet,
   onAccountChange,
+
+  // Runes
+  getRuneData,
 
   // Crypto
   shortenStr,

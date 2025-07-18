@@ -28,7 +28,31 @@ const App = () => {
           {ordinalsPublicKey && nostrOrdinalsAddress ? (
             <WalletArea />
           ) : (
-            <>Please connect your wallet.</>
+            <div style={{
+              minHeight: '60vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              color: '#fff',
+            }}>
+              <div style={{
+                fontSize: '2rem',
+                fontWeight: 600,
+                marginBottom: '1rem',
+                letterSpacing: '0.01em',
+              }}>
+                Please connect your wallet
+              </div>
+              <div style={{
+                fontSize: '1.1rem',
+                opacity: 0.7,
+                maxWidth: 400,
+              }}>
+                To access your ordinals, inscriptions, and runes, connect a supported wallet using the button in the top right.
+              </div>
+            </div>
           )}
         </main>
         <Footer />

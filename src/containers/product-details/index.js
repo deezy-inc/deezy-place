@@ -6,6 +6,7 @@ import Table from "react-bootstrap/Table";
 import Badge from "react-bootstrap/Badge";
 import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
+import RuneDisplay from "@components/rune-display";
 import SendModal from "@components/modals/send-modal";
 import SellModal from "@components/modals/sell-modal";
 import AuctionModal from "@components/modals/auction-modal";
@@ -43,6 +44,8 @@ const CountdownTimerText = dynamic(
 
 const SatsRangeTable = ({ product }) => {
   const satRanges = product?.sat_ranges;
+  console.log("[SatsRangeTable] product:", product);
+  console.log("[SatsRangeTable] satRanges:", satRanges);
 
   return (
     <div className="container my-5 uninscribed-sats">
@@ -130,6 +133,7 @@ const ProductDetailsArea = memo(
         btcValue: uninscribedSats ? `${toBTC(uninscribedSats.value)} BTC` : "",
         output: uninscribedSats ? shortenStr(uninscribedSats.output) : "",
         sat_ranges: uninscribedSats ? uninscribedSats.sat_ranges : "",
+        runes: uninscribedSats ? uninscribedSats.runes : [],
       };
     }, [inscription, uninscribedSats]);
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
@@ -375,6 +379,13 @@ const ProductDetailsArea = memo(
                 )}
 
                 {product.sat_ranges && <SatsRangeTable product={product} />}
+
+                {product.runes && product.runes.length > 0 && (
+                  <div className="container my-5">
+                    <h6 className="pd-property-title mb-3">Runes</h6>
+                    <RuneDisplay runes={product.runes} />
+                  </div>
+                )}
 
                 {
                   collection ? (

@@ -10,6 +10,7 @@ import { useWallet } from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, MEMPOOL_API_URL } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
+import RuneDisplay from "@components/rune-display";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
@@ -26,6 +27,7 @@ const OrdinalCard = ({
   date,
   onSale,
   onClick,
+  runes,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
 
@@ -56,6 +58,11 @@ const OrdinalCard = ({
               </div>
             )}
             {!utxo && <Skeleton width={50} />}
+            {runes && runes.length > 0 && (
+              <div className="rune-display-container mt-2">
+                <RuneDisplay runes={runes} />
+              </div>
+            )}
           </div>
           <div className="product-share-wrapper">
             <div className="profile-share">
@@ -132,6 +139,7 @@ OrdinalCard.propTypes = {
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]),
   onSale: PropTypes.func,
   onClick: PropTypes.func,
+  runes: PropTypes.array,
 };
 
 OrdinalCard.defaultProps = {

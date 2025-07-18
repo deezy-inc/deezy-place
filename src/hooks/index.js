@@ -11,3 +11,4 @@ export { default as useMarketplace } from "./use-marketplace";
 export { default as useOfferFilters } from "./use-offer-filters";
 export { default as useHome } from "./use-home";
 export { default as useAuctions } from "./use-auctions";
+export { default as useRunes } from "./use-runes";

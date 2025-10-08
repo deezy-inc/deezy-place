@@ -34,7 +34,7 @@ import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 
 bitcoin.initEccLib(ecc);
 
-const DEFAULT_BOOST_UTXO_VALUE = 600;
+const DEFAULT_BOOST_UTXO_VALUE = 1000;
 const SendModal = ({
   show,
   handleModal,

@@ -36,7 +36,7 @@ const t = {
     return config;
   },
   env: {
-    IS_TESTNET: process.env.IS_TESTNET || false,
+    IS_TESTNET: process.env.IS_TESTNET || "",
   },
 };
 

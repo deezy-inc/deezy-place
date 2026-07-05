@@ -1,7 +1,7 @@
-const { useEffectOnce } = require("react-use");
+import { useEffect } from "react";
 
 export const useSimpleScrollTop = () => {
-  useEffectOnce(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  });
+  }, []);
 };

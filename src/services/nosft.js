@@ -1,4 +1,4 @@
-import { Nosft } from "nosft-core";
+import { Nosft } from "@lib/nosft-core";
 import * as constants from "@lib/constants.config";
 
 // Create an object with the exported module constants

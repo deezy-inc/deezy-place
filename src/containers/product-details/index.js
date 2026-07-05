@@ -10,6 +10,7 @@ import RuneDisplay from "@components/rune-display";
 import SendModal from "@components/modals/send-modal";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
+import { useRouter } from "next/router";
 import { shortenStr } from "@services/nosft";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
@@ -93,6 +94,7 @@ const ProductDetailsArea = memo(
       };
     }, [inscription, uninscribedSats]);
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
+    const router = useRouter();
     const [showSendModal, setShowSendModal] = useState(false);
 
     const handleSendModal = () => {
@@ -162,7 +164,10 @@ const ProductDetailsArea = memo(
 
     const isWalletConnected = ordinalsPublicKey && nostrOrdinalsAddress;
 
-    const onSend = () => { };
+    // After a completed send, return to the wallet page
+    const onSend = () => {
+      router.push("/wallet");
+    };
 
     const shouldShowSend = isOwner && isWalletConnected;
 

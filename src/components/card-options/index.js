@@ -4,7 +4,7 @@ import { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import SendModal from "@components/modals/send-modal";
 
-const CardOptions = ({ utxo, onSale }) => {
+const CardOptions = ({ utxo, onSend }) => {
   const [showSendModal, setShowSendModal] = useState(false);
   const handleSendModal = () => {
     setShowSendModal((prev) => !prev);

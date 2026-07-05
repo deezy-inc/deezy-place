@@ -93,6 +93,10 @@ const SendModal = ({
 
   const handleTransactionSentClose = () => {
     setShowTransactionSent(false);
+    if (onSend) {
+      onSend(sentTxId);
+    }
+    handleModal();
   };
 
   const submit = async () => {

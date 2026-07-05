@@ -192,7 +192,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 		}
 		switch (step) {
 			case 1:
-				return "Send Bulk";
+				return "Send";
 			case 2:
 				return "Review and Sign Transaction";
 			case 3:

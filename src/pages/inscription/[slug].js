@@ -10,10 +10,8 @@ import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 import "react-loading-skeleton/dist/skeleton.css";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import useAuction from "src/hooks/use-auction";
 import useInscription from "src/hooks/use-inscription";
 import useIsSpent from "src/hooks/use-is-spent";
-import useBid from "src/hooks/use-bid";
 import { useSimpleScrollTop } from "src/hooks/use-simple-scroll-top";
 
 const Inscription = () => {
@@ -25,23 +23,10 @@ const Inscription = () => {
   const headerHeight = useHeaderHeight(elementRef);
   useSimpleScrollTop();
 
-  const {
-    inscription,
-    collection,
-    nostrData,
-    bids,
-    isLoading,
-    auction: auctions,
-    setIsPooling: setIsPoolingInscription,
-  } = useInscription(slug);
+  const { inscription, collection } = useInscription(slug);
 
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
-
-  const onAction = async (startPooling) => {
-    setIsPoolingInscription(startPooling);
-    setIsPoolingIsSpent(startPooling);
-  };
 
   useEffect(() => {
     if (isInscriptionSpent) {
@@ -62,13 +47,7 @@ const Inscription = () => {
           {inscription && (
             <ProductDetailsArea
               inscription={inscription}
-              isSpent={isInscriptionSpent}
               collection={collection}
-              nostr={nostrData}
-              auction={auctions}
-              bids={bids}
-              isBidsLoading={isLoading}
-              onAction={onAction}
             />
           )}
 

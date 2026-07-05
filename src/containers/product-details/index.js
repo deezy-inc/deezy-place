@@ -8,37 +8,11 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import RuneDisplay from "@components/rune-display";
 import SendModal from "@components/modals/send-modal";
-import SellModal from "@components/modals/sell-modal";
-import BuyModal from "@components/modals/buy-modal";
-import BuyLightningModal from "@components/modals/buy-with-lightning";
 import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
-import { NostrEvenType } from "@utils/types";
-import dynamic from "next/dynamic";
-import {
-  satsToFormattedDollarString,
-  shortenStr,
-} from "@services/nosft";
-import AnimatedText from "@components/animated-text";
-import { useAsyncFn } from "react-use";
-import { toast } from "react-toastify";
-import useBitcoinPrice from "src/hooks/use-bitcoin-price";
-import BidModal from "@components/modals/bid-modal";
-import BidsModal from "@components/modals/bids-modal";
-import BidsLoadingButton from "./loading-button";
+import { shortenStr } from "@services/nosft";
 
 export const toBTC = (sats) => parseFloat((sats / 100000000).toFixed(8));
-
-const CountdownTimer = dynamic(() => import("@components/countdown-timer"), {
-  ssr: false,
-});
-
-const CountdownTimerText = dynamic(
-  () => import("@components/countdown-timer/countdown-timer-text"),
-  {
-    ssr: false,
-  },
-);
 
 const SatsRangeTable = ({ product }) => {
   const satRanges = product?.sat_ranges;
@@ -89,21 +63,7 @@ const SatsRangeTable = ({ product }) => {
 };
 
 const ProductDetailsArea = memo(
-  ({
-    space,
-    className,
-    inscription = {},
-    uninscribedSats,
-    collection,
-    nostr,
-    bids,
-    onAction,
-    isSpent: isUtxoSpent,
-    isBidsLoading,
-    bidsDisabled = false,
-    sellDisabled = false,
-    buyDisabled = false,
-  }) => {
+  ({ space, className, inscription = {}, uninscribedSats, collection }) => {
     const product = useMemo(() => {
       if (!inscription && !uninscribedSats) return {};
       return {
@@ -134,35 +94,9 @@ const ProductDetailsArea = memo(
     }, [inscription, uninscribedSats]);
     const { nostrOrdinalsAddress, ordinalsPublicKey } = useWallet();
     const [showSendModal, setShowSendModal] = useState(false);
-    const [showSellModal, setShowSellModal] = useState(false);
-    const [showBuyModal, setShowBuyModal] = useState(false);
-    const [showBidModal, setShowBidModal] = useState(false);
-    const [showBidsModal, setShowBidsModal] = useState(false);
-    const [showBuyLightningModal, setShowBuyLightningModal] = useState(false);
-    const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 
     const handleSendModal = () => {
       setShowSendModal((prev) => !prev);
-    };
-
-    const handleSellModal = () => {
-      setShowSellModal((prev) => !prev);
-    };
-
-    const handleBidModal = async () => {
-      setShowBidModal((prev) => !prev);
-    };
-
-    const handleBidsModal = async () => {
-      setShowBidsModal((prev) => !prev);
-    };
-
-    const handleBuyModal = () => {
-      setShowBuyModal((prev) => !prev);
-    };
-
-    const handleBuyLightningModal = () => {
-      setShowBuyLightningModal((prev) => !prev);
     };
 
     const [isOwner, setIsOwner] = useState(false);
@@ -229,33 +163,8 @@ const ProductDetailsArea = memo(
     const isWalletConnected = ordinalsPublicKey && nostrOrdinalsAddress;
 
     const onSend = () => { };
-    const onBid = () => { };
-    const onAcceptBid = () => { };
 
-    const hasNostrEvent = nostr && nostr.value > 0;
     const shouldShowSend = isOwner && isWalletConnected;
-    const shouldShowSell =
-      !sellDisabled && isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowBuyWithLightning =
-      !buyDisabled &&
-      !isOwner &&
-      hasNostrEvent &&
-      !isUtxoSpent &&
-      isWalletConnected;
-    const shouldShowBuyWithBitcoin =
-      !buyDisabled && hasNostrEvent && !isUtxoSpent && isWalletConnected;
-    const shouldShowCreateBid =
-      !bidsDisabled && !isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowTakeBid =
-      !bidsDisabled && isOwner && !isUtxoSpent && isWalletConnected;
-    const shouldShowAvailableBids = !bidsDisabled && bids?.length > 0;
-    const shouldShowActions =
-      shouldShowSend ||
-      shouldShowSell ||
-      shouldShowBuyWithLightning ||
-      shouldShowBuyWithBitcoin ||
-      shouldShowCreateBid ||
-      shouldShowAvailableBids;
 
     return (
       <div className={clsx("", space === 1 && "rn-section-gapTop", className)}>
@@ -270,34 +179,6 @@ const ProductDetailsArea = memo(
             <div className=" mt_md--50 mt_sm--60">
               <div className="rn-pd-content-area">
                 <ProductTitle title={product.title} likeCount={30} />
-
-                {hasNostrEvent && (
-                  <div className="bid mb--10">
-                    {isUtxoSpent ? "Bought" : "Listed"} for {toBTC(nostr.value)}{" "}
-                    BTC{" "}
-                    {nostr.value && bitcoinPrice && (
-                      <span className="price">
-                        $
-                        {satsToFormattedDollarString(nostr.value, bitcoinPrice)}
-                      </span>
-                    )}
-                    <br />
-                  </div>
-                )}
-                {shouldShowAvailableBids && !isUtxoSpent && (
-                  <div className="bid mb--10">
-                    Top Bid for {toBTC(bids[0]?.price)} BTC{" "}
-                    {bitcoinPrice && (
-                      <span className="price">
-                        $
-                        {satsToFormattedDollarString(
-                          bids[0]?.price,
-                          bitcoinPrice,
-                        )}
-                      </span>
-                    )}
-                  </div>
-                )}
 
                 {product.sat_ranges && <SatsRangeTable product={product} />}
 
@@ -316,94 +197,21 @@ const ProductDetailsArea = memo(
                   )
                 }
 
-                {shouldShowActions && (
+                {shouldShowSend && (
                   <div className="rn-pd-sm-property-wrapper">
                     <h6 className="pd-property-title">Actions</h6>
 
                     <div className="inscription-actions">
-                      {shouldShowSend && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleSendModal}
-                        >
-                          <div className="action">
-                            <i className="feather-send" />
-                            <span>Send</span>
-                          </div>
-                        </button>
-                      )}
-
-                      {/* {shouldShowSell && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleSellModal}
-                        >
-                          <div className="action">
-                            <i className="feather-tag" />
-                            <span>Sell</span>
-                          </div>
-                        </button>
-                      )} */}
-
-                      {/* {shouldShowBuyWithBitcoin && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleBuyModal}
-                        >
-                          <div className="action">
-                            <i className="feather-shopping-cart" />
-                            <span>Buy with bitcoin</span>
-                          </div>
-                        </button>
-                      )} */}
-
-                      {/* {shouldShowBuyWithLightning && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleBuyLightningModal}
-                        >
-                          <div className="action">
-                            <i className="feather-zap" />
-                            <span>Buy with lightning</span>
-                          </div>
-                        </button>
-                      )} */}
-
-                      {/* {shouldShowCreateBid && (
-                        <button
-                          className="pd-react-area btn-transparent"
-                          type="button"
-                          onClick={handleBidModal}
-                        >
-                          <div className="action">
-                            <i className="feather-plus-circle" />
-                            <span>Bid</span>
-                          </div>
-                        </button>
-                      )} */}
-
-                      {
-                        <>
-                          {shouldShowAvailableBids && !isBidsLoading ? (
-                            <button
-                              className="pd-react-area btn-transparent"
-                              type="button"
-                              onClick={handleBidsModal}
-                            >
-                              <div className="action">
-                                <i className="feather-list" />
-                                <span>View all Bids</span>
-                              </div>
-                            </button>
-                          ) : (
-                            isBidsLoading && <BidsLoadingButton />
-                          )}
-                        </>
-                      }
+                      <button
+                        className="pd-react-area btn-transparent"
+                        type="button"
+                        onClick={handleSendModal}
+                      >
+                        <div className="action">
+                          <i className="feather-send" />
+                          <span>Send</span>
+                        </div>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -443,52 +251,6 @@ const ProductDetailsArea = memo(
             onSend={onSend}
           />
         )}
-        {!sellDisabled && showSellModal && (
-          <SellModal
-            show={showSellModal}
-            handleModal={handleSellModal}
-            utxo={inscription}
-            onSale={onSend}
-          />
-        )}
-        {!buyDisabled && showBuyModal && (
-          <BuyModal
-            show={showBuyModal}
-            handleModal={handleBuyModal}
-            utxo={inscription}
-            onSale={onSend}
-            nostr={nostr}
-          />
-        )}
-        {!buyDisabled && showBuyLightningModal && (
-          <BuyLightningModal
-            show={showBuyLightningModal}
-            handleModal={handleBuyLightningModal}
-            utxo={inscription}
-            onSale={onSend}
-            nostr={nostr}
-          />
-        )}
-        {!bidsDisabled && showBidModal && (
-          <BidModal
-            show={showBidModal}
-            handleModal={handleBidModal}
-            utxo={inscription}
-            onBid={onBid}
-            suggestedPrice={nostr?.value}
-          />
-        )}
-        {!bidsDisabled && showBidsModal && (
-          <BidsModal
-            show={showBidsModal}
-            handleModal={handleBidsModal}
-            utxo={inscription}
-            onAcceptBid={onAcceptBid}
-            nostr={nostr}
-            bids={bids}
-            shouldShowTakeBid={shouldShowTakeBid}
-          />
-        )}
       </div>
     );
   },
@@ -500,14 +262,6 @@ ProductDetailsArea.propTypes = {
   inscription: PropTypes.any,
   uninscribedSats: PropTypes.any,
   collection: PropTypes.any,
-  nostr: NostrEvenType,
-  bids: PropTypes.any,
-  isBidsLoading: PropTypes.bool,
-  isSpent: PropTypes.bool,
-  onAction: PropTypes.func,
-  bidsDisabled: PropTypes.bool,
-  sellDisabled: PropTypes.bool,
-  buyDisabled: PropTypes.bool,
 };
 
 ProductDetailsArea.defaultProps = {

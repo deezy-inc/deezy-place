@@ -5,12 +5,9 @@ import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import HeroArea from "@containers/HeroArea";
-import OrdinalsArea from "@containers/OrdinalsArea";
 import { normalizedData } from "@utils/methods";
 import homepageData from "@data/general/home.json";
-import NostrLive from "@containers/NostrLive";
-import MainCollections from "@containers/MainCollections";
-import { useWalletState, useHeaderHeight, useHome } from "@hooks";
+import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 
 export async function getStaticProps() {
@@ -22,7 +19,6 @@ const App = () => {
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
-  const { sourse, sales, auctions, loading } = useHome({ realtime: true });
   const router = useRouter();
 
   useEffect(() => {
@@ -47,9 +43,6 @@ const App = () => {
         <Header ref={elementRef} />
         <main id="main-content" style={{ paddingTop: headerHeight }}>
           <HeroArea data={content["hero-section"]} />
-          {/* <MainCollections />
-          <NostrLive type="bidding" openOffers={auctions} loading={loading} />
-          <NostrLive openOffers={sales} loading={loading} /> */}
         </main>
         <Footer />
       </Wrapper>

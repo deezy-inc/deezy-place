@@ -5,7 +5,6 @@ import Header from "@layout/header";
 import Footer from "@layout/footer";
 import SEO from "@components/seo";
 import Collection from "@containers/Collection";
-import CollectionLive from "@containers/CollectionLive";
 import CollectionInfo from "@components/collection-info";
 import { useRouter } from "next/router";
 import { WalletContext } from "@context/wallet-context";
@@ -66,7 +65,6 @@ const Inscription = () => {
 
   const [collection, setCollection] = useState({});
   const [collectionInfo, setCollectionInfo] = useState();
-  const [isDutchLoaded, setIsDutchLoaded] = useState(false);
   const [isCollectionLoading, setIsCollectionLoading] = useState(false);
 
   useEffect(() => {
@@ -122,12 +120,6 @@ const Inscription = () => {
     fetchCollection();
   }, [slug]);
 
-  const onDutchLoaded = () => {
-    setTimeout(() => {
-      setIsDutchLoaded(true);
-    }, 800);
-  };
-
   return (
     <WalletContext.Provider value={walletState}>
       <Wrapper>
@@ -144,15 +136,10 @@ const Inscription = () => {
           )}
           {collection && (
             <>
-              {/* <CollectionAuction collection={collection} /> */}
-              <CollectionLive
-                collection={collection}
-                onDutchLoaded={onDutchLoaded}
-              />
-              {isDutchLoaded && <Collection collection={collection} />}
+              <Collection collection={collection} />
             </>
           )}
-          {!isDutchLoaded && collectionInfo && (
+          {!collection && collectionInfo && (
             <SkeletonTheme baseColor="#13131d" highlightColor="#242435">
               <div
                 id="your-collection"

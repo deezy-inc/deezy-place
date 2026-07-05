@@ -76,6 +76,7 @@
 		"@babel/core": "^7.22.9",
 		"@babel/eslint-parser": "^7.22.9",
 		"@babel/preset-react": "^7.22.5",
+		"@netlify/plugin-nextjs": "^5.15.12",
 		"@next/eslint-plugin-next": "^13.4.12",
 		"@types/node-fetch": "^2.6.4",
 		"eslint": "8.45.0",

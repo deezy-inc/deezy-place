@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
+import ProgressBar from "react-bootstrap/ProgressBar";
+import Button from "@ui/button";
 import { toast } from "react-toastify";
 import { useWallet } from "@context/wallet-context";
 import { preparePsbtForMultipleSend, signPsbtForMultipleSend, fetchRecommendedFee, DEFAULT_FEE_RATE, broadcastPsbt } from "@services/nosft";
@@ -13,7 +15,7 @@ import { TransactionSentStep } from "./transaction-sent-step";
 
 bitcoin.initEccLib(ecc);
 
-const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos }) => {
+const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selectedUtxos }) => {
 	const [isBtcInputAddressValid, setIsBtcInputAddressValid] = useState(true);
 	const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
 	const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
@@ -27,6 +29,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 	const [metadata, setMetadata] = useState(null);
 	const [btcTreeReady, setBtcTreeReady] = useState(false);
 	const [step, setStep] = useState(1);
+	const [signProgress, setSignProgress] = useState(null);
 
 	const sendingInscriptions = selectedUtxos.filter((utxo) => utxo.inscriptionId);
 	const sendingUtxos = selectedUtxos.filter((utxo) => !Boolean(utxo.inscriptionId));
@@ -68,15 +71,6 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 		setSendFeeRate(Number.parseInt(evt.target.value));
 	};
 
-	const copyToClipboard = async (text, message) => {
-		try {
-			await navigator.clipboard.writeText(text);
-			toast.success(message);
-		} catch (error) {
-			toast.error(error.message);
-		}
-	};
-
 	const closeModal = () => {
 		onSend();
 		handleModal();
@@ -109,6 +103,13 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 		}
 	};
 
+	// Show the "Begin Signing" overlay first; the extension prompts don't
+	// start until the user confirms
+	const requestSign = () => {
+		const total = metadata?.inputs?.length || 0;
+		setSignProgress({ done: 0, total, pending: true });
+	};
+
 	const sign = async () => {
 		setIsSending(true);
 		try {
@@ -117,13 +118,22 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 				finalFee,
 				finalSignedHexPsbt,
 				finalSignedPsbt,
-			} = await signPsbtForMultipleSend(hexPsbt, ordinalsPublicKey);
+			} = await signPsbtForMultipleSend(hexPsbt, (done, total) =>
+				setSignProgress({ done, total }),
+			);
 			setTxFee(finalFee);
 			setTxFeeRate(finalFeeRate);
 			setSignedPsbt(finalSignedPsbt);
-			copyToClipboard(finalSignedHexPsbt, "Psbt signed and copied to clipboard.");
+			console.log("Fully signed PSBT (hex):", finalSignedHexPsbt);
+			console.log("Fully signed PSBT (base64):", finalSignedPsbt.toBase64());
+			setSignProgress((prev) => ({
+				done: prev?.total ?? 0,
+				total: prev?.total ?? 0,
+				ready: true,
+			}));
 		} catch (error) {
 			toast.error("Failed to sign transaction. " + error.message);
+			setSignProgress(null);
 		} finally {
 			setIsSending(false);
 		}
@@ -132,11 +142,22 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 	const send = async () => {
 		setIsSending(true);
 		try {
-      console.log(signedPsbt.toBase64())
 			const txId = await broadcastPsbt(signedPsbt);
 			setSentTxId(txId);
-			copyToClipboard(txId, "Transaction id copied to clipboard.");
+			setSignProgress(null);
 			setStep(3);
+			if (onSent) {
+				// Report every spent outpoint from the actual transaction, which
+				// also covers funding utxos added beyond the user's selection
+				const spentOutpoints = signedPsbt.txInputs.map((input) => {
+					const txidHex = [...input.hash]
+						.reverse()
+						.map((b) => b.toString(16).padStart(2, "0"))
+						.join("");
+					return `${txidHex}:${input.index}`;
+				});
+				onSent({ spentOutpoints, txId });
+			}
 		} catch (error) {
       console.error(error)
 			toast.error("Failed to send transaction.");
@@ -168,7 +189,7 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 						hexPsbt={hexPsbt}
 						metadata={metadata}
 						toggleBtcTreeReady={toggleBtcTreeReady}
-						sign={sign}
+						sign={requestSign}
 						send={send}
 						isSending={isSending}
 						btcTreeReady={btcTreeReady}
@@ -201,13 +222,14 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 				return "";
 		}
 	};
+	const isCompact = step !== 2 || Boolean(signProgress);
 	return (
 		<Modal
-			className={step === 2 ? `modal-xl placebid-modal-wrapper` : `rn-popup-modal placebid-modal-wrapper`}
+			className={isCompact ? `rn-popup-modal placebid-modal-wrapper` : `modal-xl placebid-modal-wrapper`}
 			show={show}
 			onHide={handleModal}
 			centered
-			size={step === 2 ? "xl" : undefined}
+			size={isCompact ? undefined : "xl"}
 		>
 			<button
 				type="button"
@@ -222,7 +244,115 @@ const SendBulkModal = ({ show, handleModal, onSend, ownedUtxos, selectedUtxos })
 					{getTitle(step, txFee, signedPsbt)}
 				</h3>
 			</Modal.Header>
-			<Modal.Body>{renderStepContent()}</Modal.Body>
+			<Modal.Body>
+				{/* keep the review step mounted (hidden) so its state survives */}
+				<div style={{ display: signProgress ? "none" : undefined }}>
+					{renderStepContent()}
+				</div>
+				{signProgress && (
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							justifyContent: "center",
+							padding: "40px 24px",
+							textAlign: "center",
+						}}
+					>
+						{signProgress.ready && (
+							<>
+								<h5 className="mb-2">
+									Signing completed, ready to broadcast
+								</h5>
+								<p
+									className="mb-4"
+									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
+								>
+									{signProgress.total} of {signProgress.total} signatures
+									completed
+								</p>
+								<Button
+									color="primary"
+									size="medium"
+									className={isSending ? "btn-loading" : ""}
+									onClick={send}
+								>
+									Broadcast Transaction
+								</Button>
+								<button
+									type="button"
+									className="btn-transparent"
+									style={{
+										fontSize: "0.9em",
+										color: "#a0a0b8",
+										marginTop: "40px",
+									}}
+									onClick={handleModal}
+								>
+									Cancel
+								</button>
+							</>
+						)}
+						{!signProgress.ready && (signProgress.pending ? (
+							<>
+								<h5 className="mb-2">
+									{signProgress.total} signature
+									{signProgress.total === 1 ? "" : "s"} required, 0 of{" "}
+									{signProgress.total} completed
+								</h5>
+								<p
+									className="mb-4"
+									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
+								>
+									Your wallet extension will ask you to approve each
+									signature
+								</p>
+								<Button
+									color="primary"
+									size="medium"
+									className={isSending ? "btn-loading" : ""}
+									onClick={sign}
+								>
+									Begin Signing
+								</Button>
+								<button
+									type="button"
+									className="btn-transparent mt-4"
+									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
+									onClick={() => setSignProgress(null)}
+								>
+									Cancel
+								</button>
+							</>
+						) : (
+							<>
+								<h5 className="mb-4">
+									{signProgress.done} of {signProgress.total} signatures
+									completed
+								</h5>
+								<div style={{ width: "80%", maxWidth: "400px" }}>
+									<ProgressBar
+										variant="warning"
+										now={
+											signProgress.total > 0
+												? (signProgress.done / signProgress.total) * 100
+												: 0
+										}
+										style={{ height: "10px" }}
+									/>
+								</div>
+								<p
+									className="mt-4 mb-0"
+									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
+								>
+									Approve each signature in your wallet extension
+								</p>
+							</>
+						))}
+					</div>
+				)}
+			</Modal.Body>
 		</Modal>
 	);
 };
@@ -231,6 +361,7 @@ SendBulkModal.propTypes = {
 	show: PropTypes.bool.isRequired,
 	handleModal: PropTypes.func.isRequired,
 	onSend: PropTypes.func.isRequired,
+	onSent: PropTypes.func,
 	ownedUtxos: PropTypes.array.isRequired,
 	selectedUtxos: PropTypes.array.isRequired,
 };

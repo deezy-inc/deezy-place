@@ -18,16 +18,21 @@ const useRunes = (utxos) => {
       // Only fetch for uninscribed UTXOs (those without inscriptionId)
       const uninscribedUtxos = utxos.filter(utxo => !utxo.inscriptionId);
 
-      for (const utxo of uninscribedUtxos) {
-        const outpoint = `${utxo.txid}:${utxo.vout}`;
-        try {
-          const data = await getRuneData(outpoint);
-          if (data && data.runes && data.runes.length > 0) {
-            newRuneData[outpoint] = data.runes;
+      // Fetch in small parallel batches so large wallets resolve quickly
+      const batchSize = 10;
+      for (let i = 0; i < uninscribedUtxos.length; i += batchSize) {
+        const batch = uninscribedUtxos.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (utxo) => {
+          const outpoint = `${utxo.txid}:${utxo.vout}`;
+          try {
+            const data = await getRuneData(outpoint);
+            if (data && data.runes && data.runes.length > 0) {
+              newRuneData[outpoint] = data.runes;
+            }
+          } catch (error) {
+            console.error(`Error fetching rune data for ${outpoint}:`, error);
           }
-        } catch (error) {
-          console.error(`Error fetching rune data for ${outpoint}:`, error);
-        }
+        }));
       }
 
       setRuneData(newRuneData);

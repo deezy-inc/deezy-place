@@ -38,32 +38,39 @@ const Psbt = function (config) {
     const addressModule = Address(config);
     const cryptoModule = Crypto(config);
     const utxoModule = Utxo(config);
-    const hasRunes = async (utxo) => {
+    // Returns the output data only if the ordinals backend positively vouches
+    // for it (request succeeded and the output is indexed); null otherwise
+    const getVerifiedOutput = async (utxo) => {
         try {
             const output = await utxoModule.getOutput(`${utxo.txid}:${utxo.vout}`);
-            return output.runes && output.runes.length > 0;
+            if (!output || output.indexed !== true) {
+                return null;
+            }
+            return output;
         }
         catch (e) {
             console.log(`Error fetching output for ${utxo.txid}:${utxo.vout}`, e);
-            return true;
+            return null;
         }
     };
-    const checkForRunes = async (utxos) => {
-        for (const utxo of utxos) {
-            if (await hasRunes(utxo)) {
-                return true;
-            }
+    // runes is an object keyed by rune name ({ "RUNE•NAME": {...} });
+    // handle an entries array too in case the API schema changes
+    const runeNamesFromOutput = (output) => {
+        const runes = output.runes;
+        if (Array.isArray(runes)) {
+            return runes.map(entry => (Array.isArray(entry) ? entry[0] : entry));
         }
-        return false;
+        return Object.keys(runes || {});
     };
-    const removeRunes = async (utxos) => {
-        const utxosWithoutRunes = [];
-        for (const utxo of utxos) {
-            if (await hasRunes(utxo))
-                continue;
-            utxosWithoutRunes.push(utxo);
+    // A utxo is only safe to spend as fees/consolidation if the backend
+    // confirms it carries no inscriptions and no runes
+    const isVerifiedCardinal = async (utxo) => {
+        const output = await getVerifiedOutput(utxo);
+        if (!output) {
+            return false;
         }
-        return utxosWithoutRunes;
+        const hasInscriptions = Array.isArray(output.inscriptions) && output.inscriptions.length > 0;
+        return !hasInscriptions && runeNamesFromOutput(output).length === 0;
     };
     const psbtModule = {
         getPsbt,
@@ -299,34 +306,72 @@ const Psbt = function (config) {
         // 3. A check is run to ensure that enough cardinal funds are available to perform the transfer. If step 2 does not contain enough cardinal funds, cardinal funds will be appended to the PSBT, and another change output will be created
         preparePsbtForMultipleSend: async ({ address, pubKey, selectedUtxos, ownedUtxos, destinationBtcAddress, sendFeeRate }) => {
             const utxosWithInscription = selectedUtxos.filter(utxo => utxo.inscriptionId);
-            let utxosWithoutInscription = selectedUtxos.filter(utxo => !utxo.inscriptionId);
-            if (utxosWithInscription.length > 0) {
-                utxosWithoutInscription = await removeRunes(utxosWithoutInscription);
+            // Runes utxos are sent value-preserved (fees come from separate
+            // cardinal funding), never consolidated with cardinals or spent as fees
+            const utxosWithRunes = [];
+            const runeNamesByUtxo = [];
+            const utxosWithoutInscription = [];
+            for (const utxo of selectedUtxos.filter(u => !u.inscriptionId)) {
+                const outpoint = `${utxo.txid}:${utxo.vout}`;
+                // Require positive backend verification before classifying: a
+                // utxo with no inscriptionId annotation may simply have been
+                // fetched while the ordinals backend was degraded
+                const output = await getVerifiedOutput(utxo);
+                if (!output) {
+                    throw new Error(`Unable to verify utxo ${outpoint} with the ordinals service. Please try again later.`);
+                }
+                if (Array.isArray(output.inscriptions) && output.inscriptions.length > 0) {
+                    throw new Error(`Utxo ${outpoint} contains an inscription the wallet had not detected. Please refresh the page and try again.`);
+                }
+                const runeNames = runeNamesFromOutput(output);
+                if (runeNames.length > 0) {
+                    utxosWithRunes.push(utxo);
+                    runeNamesByUtxo.push(runeNames);
+                }
+                else {
+                    utxosWithoutInscription.push(utxo);
+                }
             }
-            if (utxosWithInscription.length === 0 && utxosWithoutInscription.length === 0) {
+            if (utxosWithInscription.length === 0 && utxosWithRunes.length === 0 && utxosWithoutInscription.length === 0) {
                 throw new Error('At least one ordinal or utxo is required.');
+            }
+            // Runes always transfer to the first output no matter which input
+            // carries them (unlike inscriptions, which map FIFO across
+            // inputs/outputs), so runes sends must not mix with anything else
+            if (utxosWithRunes.length > 0 && (utxosWithInscription.length > 0 || utxosWithoutInscription.length > 0)) {
+                throw new Error('Runes must be sent separately from inscriptions and other utxos.');
+            }
+            // Multiple runes utxos are allowed only when they all hold the same
+            // rune, since they all get consolidated into a single output
+            if (utxosWithRunes.length > 1) {
+                const firstNames = runeNamesByUtxo[0];
+                const sameRune = runeNamesByUtxo.every(names => names.length === 1 && names[0] === firstNames[0]);
+                if (!sameRune) {
+                    throw new Error('Only utxos holding the same rune can be sent together. Please send different runes separately.');
+                }
             }
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
             if (provider !== 'alby') {
                 throw new Error('Signing not supported.');
             }
             // only used if selectedCardinalAmount is not large enough to cover fees
-            let cardinalUtxos = ownedUtxos.filter(utxo => !selectedUtxos.some(ownedUtxo => ownedUtxo.txid === utxo.txid))
+            const cardinalUtxos = ownedUtxos.filter(utxo => !selectedUtxos.some(selected => selected.txid === utxo.txid && selected.vout === utxo.vout))
                 .filter((x) => x.status.confirmed)
-                .filter((x) => x.value > 10000)
                 .filter(utxo => !utxo.inscriptionId)
                 .sort((a, b) => b.value - a.value);
-            cardinalUtxos = await removeRunes(cardinalUtxos);
-            const hasTxRunes = await checkForRunes(utxosWithoutInscription);
             const selectedCardinalAmount = utxosWithoutInscription.reduce((acc, utxo) => acc + utxo.value, 0);
-            const inputs = [...utxosWithInscription, ...utxosWithoutInscription];
+            // Value-preserved utxos: inscriptions each become a distinct
+            // same-value output; runes all consolidate into one output
+            const preservedUtxos = [...utxosWithInscription, ...utxosWithRunes];
+            const preservedOutputCount = utxosWithRunes.length > 0 ? 1 : utxosWithInscription.length;
+            const inputs = [...preservedUtxos, ...utxosWithoutInscription];
             let totalCardinalAmount = selectedCardinalAmount;
             let calculatedFee = 0;
             let isCardinalAdded = false;
             while (cardinalUtxos.length > 0 || calculatedFee === 0) {
                 calculatedFee = cryptoModule.calculateFee({
                     vins: inputs.length,
-                    vouts: utxosWithInscription.length + (selectedCardinalAmount > 0 ? 1 : 0) + (isCardinalAdded ? 1 : 0),
+                    vouts: preservedOutputCount + (selectedCardinalAmount > 0 ? 1 : 0) + (isCardinalAdded ? 1 : 0),
                     recommendedFeeRate: sendFeeRate,
                     includeChangeOutput: 0,
                 });
@@ -335,6 +380,13 @@ const Psbt = function (config) {
                 const utxo = cardinalUtxos.shift();
                 if (!utxo) {
                     throw new Error(`Please add more cardinal funds to your wallet.`);
+                }
+                // Never fund with a utxo the ordinals backend can't positively
+                // verify as inscription- and runes-free: the wallet's own
+                // inscription annotations could be missing if the backend was
+                // degraded when they were fetched
+                if (!(await isVerifiedCardinal(utxo))) {
+                    continue;
                 }
                 inputs.push(utxo);
                 totalCardinalAmount += utxo.value;
@@ -349,23 +401,40 @@ const Psbt = function (config) {
                 const inputParams = psbtModule.getInputParams({ utxo, inputAddressInfo });
                 psbt.addInput(inputParams);
             }
-            const ordinals = inputs.filter(utxo => utxo.inscriptionId);
+            const utxoType = (utxo) => {
+                if (utxo.inscriptionId) return 'Ordinal';
+                if (utxosWithRunes.includes(utxo)) return 'Runes';
+                return 'Cardinal';
+            };
             const metadata = {
                 inputs: inputs.map((utxo, index) => ({
                     index,
-                    type: utxo.inscriptionId ? 'Ordinal' : 'Cardinal',
+                    type: utxoType(utxo),
                     value: utxo.value,
                 })),
                 outputs: [],
             };
-            // Add ordinal outputs
-            ordinals.forEach(utxo => {
+            // Add value-preserved outputs
+            if (utxosWithRunes.length > 0) {
+                // Runes always land on the first output regardless of which
+                // input carries them, so one consolidated output receives all
+                // (same-rune) runes along with the combined utxo value
+                const runesAmount = utxosWithRunes.reduce((acc, utxo) => acc + utxo.value, 0);
                 psbt.addOutput({
                     address: destinationBtcAddress,
-                    value: utxo.value,
+                    value: runesAmount,
                 });
-                metadata.outputs.push({ type: 'Ordinal' });
-            });
+                metadata.outputs.push({ type: 'Runes' });
+            }
+            else {
+                utxosWithInscription.forEach(utxo => {
+                    psbt.addOutput({
+                        address: destinationBtcAddress,
+                        value: utxo.value,
+                    });
+                    metadata.outputs.push({ type: 'Ordinal' });
+                });
+            }
             let changeAmount = 0;
             // Add change output if we added cardinal funds
             if (isCardinalAdded) {
@@ -390,15 +459,14 @@ const Psbt = function (config) {
                 });
                 metadata.outputs.push({ type: 'Cardinal' });
             }
-            if (metadata.outputs[0] && hasTxRunes) {
-                metadata.outputs[0].type = metadata.outputs[0].type + `${hasTxRunes ? ' - Runes' : ''}`;
-            }
             return {
                 unsignedPsbtHex: psbt.toHex(),
                 metadata
             };
         },
-        signPsbtForMultipleSend: async (unsignedPsbtHex) => {
+        // onProgress(signedCount, totalCount) is called before the first
+        // signature and after each completed one
+        signPsbtForMultipleSend: async (unsignedPsbtHex, onProgress) => {
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
             if (provider !== 'alby') {
                 throw new Error('Signing not supported.');
@@ -434,13 +502,22 @@ const Psbt = function (config) {
                     sigHash: sigHash.toString('hex')
                 };
             });
-            await Promise.all(psbtOutputs.map(async (output) => {
+            // Sign sequentially: the extension prompts for each input, and
+            // signing one at a time lets the UI report progress accurately
+            if (onProgress) {
+                onProgress(0, psbtOutputs.length);
+            }
+            for (let i = 0; i < psbtOutputs.length; i += 1) {
+                const output = psbtOutputs[i];
+                // eslint-disable-next-line no-await-in-loop
                 const signature = await window.nostr.signSchnorr(output.sigHash);
                 psbt.updateInput(output.index, {
                     tapKeySig: serializeTaprootSignature(Buffer.from(signature, 'hex')),
                 });
-                return signature;
-            }));
+                if (onProgress) {
+                    onProgress(i + 1, psbtOutputs.length);
+                }
+            }
             const finalSignedPsbt = psbt.finalizeAllInputs();
             const finalFee = finalSignedPsbt.getFee();
             const finalTx = finalSignedPsbt.extractTransaction();

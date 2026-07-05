@@ -22,9 +22,12 @@ const {
 } = nosft.psbt;
 
 // Add rune fetching function
+// The API returns runes as an object keyed by rune name
+// ({ "RUNE•NAME": { amount, divisibility, symbol } }); normalize to an array of
+// [name, data] entries, which is what RuneDisplay and the runes checks consume.
 const getRuneData = async (outpoint) => {
   try {
-    const response = await fetch(`https://ordinals-api-lb.deezy.io/output/${outpoint}`, {
+    const response = await fetch(`${ORDINALS_EXPLORER_URL}/output/${outpoint}`, {
       headers: {
         'accept': 'application/json'
       }
@@ -35,7 +38,10 @@ const getRuneData = async (outpoint) => {
     }
 
     const data = await response.json();
-    return data;
+    const runes = Array.isArray(data.runes)
+      ? data.runes
+      : Object.entries(data.runes || {});
+    return { ...data, runes };
   } catch (error) {
     console.error('Error fetching rune data:', error);
     return null;

@@ -16,6 +16,9 @@ export const useWalletState = () => {
   const [nostrPaymentAddress, setNostrPaymentAddress] = useState("");
   const [ethProvider, setEthProvider] = useState();
   const [showConnectModal, setShowConnectModal] = useState(false);
+  // Set by WalletArea when utxos are selected but its inline Send button is
+  // scrolled out of view; the header renders it as { label, onSend }
+  const [headerSendAction, setHeaderSendAction] = useState(null);
 
   const onHideConnectModal = () => {
     setShowConnectModal(false);
@@ -77,6 +80,8 @@ export const useWalletState = () => {
       onDisconnectHandler,
       onHideConnectModal,
       onShowConnectModal,
+      headerSendAction,
+      setHeaderSendAction,
     }),
     [
       walletName,
@@ -88,6 +93,7 @@ export const useWalletState = () => {
       showConnectModal,
       onConnectHandler,
       onDisconnectHandler,
+      headerSendAction,
     ],
   );
 

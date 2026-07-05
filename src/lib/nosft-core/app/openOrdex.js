@@ -29,27 +29,28 @@ const OpenOrdex = function (config) {
             return order.tags.find((x) => x?.[0] === 'i')[1];
         },
         getInscriptionDataById: async (inscriptionId, verifyIsInscriptionNumber) => {
-            const html = await fetch(`${config.ORDINALS_EXPLORER_URL}/inscription/${inscriptionId}`).then((response) => response.text());
-            // Refactor the map to not reassign x[2]
-            const data = [...html.matchAll(/<dt>(.*?)<\/dt>\s*<dd.*?>(.*?)<\/dd>/gm)]
-                .map((x) => {
-                // eslint-disable-next-line no-param-reassign
-                x[2] = x[2].replace(/<.*?>/gm, '');
-                return x;
-            })
-                .reduce((a, b) => ({ ...a, [b[1]]: b[2] }), {});
             const error = `Inscription ${verifyIsInscriptionNumber || inscriptionId} not found (maybe you're on signet and looking for a mainnet inscription or vice versa)`;
+            const response = await fetch(`${config.ORDINALS_EXPLORER_URL}/inscription/${inscriptionId}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) {
+                throw new Error(error);
+            }
+            let data;
             try {
-                // use array destructuring to get the first match of html.match(/<h1>Inscription (\d*)<\/h1>/)
-                // @ts-ignore
-                const [_, number] = html.match(/<h1>Inscription (\d*)<\/h1>/);
-                // @ts-ignore
-                data.number = number;
+                data = await response.json();
             }
             catch {
                 throw new Error(error);
             }
-            // @ts-ignore
+            if (data?.number === undefined || data?.number === null) {
+                throw new Error(error);
+            }
+            // the JSON API reports the current location as satpoint (txid:vout:offset)
+            if (data.satpoint) {
+                const [txid, vout] = data.satpoint.split(':');
+                data.output = `${txid}:${vout}`;
+            }
             if (verifyIsInscriptionNumber && String(data.number) !== String(verifyIsInscriptionNumber)) {
                 throw new Error(error);
             }

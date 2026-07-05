@@ -81,8 +81,14 @@ const Utxo = function (config) {
             if (outpoint) {
                 return true;
             }
-            const html = await fetch(`${config.ORDINALS_EXPLORER_URL}/output/${utxo.txid}:${utxo.vout}`).then((response) => response.text());
-            return html.match(/class=thumbnails/) !== null;
+            const response = await fetch(`${config.ORDINALS_EXPLORER_URL}/output/${utxo.txid}:${utxo.vout}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) {
+                return false;
+            }
+            const data = await response.json();
+            return Boolean(data.inscriptions && data.inscriptions.length > 0);
         },
         isSpent: async (utxo) => {
             const [xTxid, vout] = utxo.output.split(':');

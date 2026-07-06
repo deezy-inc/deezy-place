@@ -49,16 +49,12 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick, alwaysNewTabO
       </Button>
     );
   }
-  let minted = "";
-  if (date) {
-    minted = !confirmed
-    ? "Unconfirmed"
-    : new Date(date * 1000).toLocaleString();
-  }
-
   const priceAmount = price?.amount?.replace(/,/g, "") || 0;
   const btcValue = satToBtc(Number(priceAmount));
   const textPrice = type === "buy" ? `Listed for: ${btcValue}` : btcValue;
+
+  // price.amount is the utxo value in sats, already comma-formatted
+  const satsLabel = price?.amount ? `${price.amount} sats` : "";
 
   const renderLabelInfo = () => {
     if (type === "buy") {
@@ -74,7 +70,7 @@ const ProductBid = ({ price, utxo, confirmed, date, type, onClick, alwaysNewTabO
       );
     }
 
-    return <span className="without-price">{minted}</span>;
+    return <span className="without-price">{satsLabel}</span>;
   };
 
   return (

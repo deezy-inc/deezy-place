@@ -256,6 +256,67 @@ const WalletArea = ({
 		loadUtxos();
 	}, [refreshHack, nostrOrdinalsAddress]);
 
+	// Partition the wallet into the three display sections. While runes are
+	// still loading a rune utxo is treated as cardinal, then moves once known.
+	const inscriptionUtxos = filteredOwnedUtxos.filter((u) => !!u.inscriptionId);
+	const runeUtxos = filteredOwnedUtxos.filter(
+		(u) => !u.inscriptionId && runeNamesForUtxo(u).length > 0,
+	);
+	const cardinalUtxos = filteredOwnedUtxos.filter(
+		(u) => !u.inscriptionId && runeNamesForUtxo(u).length === 0,
+	);
+
+	const renderUtxoCard = (inscription) => (
+		<div
+			key={inscription.key}
+			className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
+		>
+			<OrdinalCard
+				overlay
+				price={{
+					amount: inscription.value.toLocaleString("en-US"),
+					currency: "Sats",
+				}}
+				type="send"
+				confirmed={inscription.status.confirmed}
+				date={inscription.status.block_time}
+				authors={collectionAuthor}
+				utxo={inscription}
+				runes={getRunesForUtxo(inscription)}
+				onSale={handleRefreshHack}
+			/>
+			{sendBulkSupported && (
+				<div className="form-check mt-2" style={{ minHeight: "3em" }}>
+					<input
+						className="form-check-input"
+						type="checkbox"
+						id={`checkbox-${inscription.key}`}
+						checked={selectedUtxos.some(
+							(selected) =>
+								inscription.key && selected.key === inscription.key,
+						)}
+						disabled={getCheckboxState(inscription).disabled}
+						onChange={(e) =>
+							handleUtxoSelection(inscription, e.target.checked)
+						}
+					/>
+					<label
+						className={`form-check-label ${getCheckboxState(inscription).disabled ? 'text-muted' : ''}`}
+						htmlFor={`checkbox-${inscription.key}`}
+					>
+						{getCheckboxState(inscription).label}
+					</label>
+				</div>
+			)}
+		</div>
+	);
+
+	const sections = [
+		{ title: "Inscriptions", utxos: inscriptionUtxos },
+		{ title: "Runes", utxos: runeUtxos },
+		{ title: "Cardinal UTXOs", utxos: cardinalUtxos },
+	];
+
 	return (
 		<div
 			id="your-collection"
@@ -373,71 +434,35 @@ const WalletArea = ({
 					</div>
 				</div>
 
-				<div className="row g-5">
-					{utxosReady && ownedUtxos.length > 0 && (
-						<>
-							{filteredOwnedUtxos.map((inscription) => (
-								<div
-									key={inscription.key}
-									className="col-5 col-lg-4 col-md-6 col-sm-6 col-12"
-								>
-									<OrdinalCard
-										overlay
-										price={{
-											amount: inscription.value.toLocaleString("en-US"),
-											currency: "Sats",
-										}}
-										type="send"
-										confirmed={inscription.status.confirmed}
-										date={inscription.status.block_time}
-										authors={collectionAuthor}
-										utxo={inscription}
-										runes={getRunesForUtxo(inscription)}
-										onSale={handleRefreshHack}
+				{utxosReady && ownedUtxos.length > 0 && (
+					<>
+						{sections
+							.filter((section) => section.utxos.length > 0)
+							.map((section) => (
+								<div key={section.title} className="mb--40">
+									<SectionTitle
+										className="mb--20"
+										{...{ title: section.title }}
 									/>
-									{sendBulkSupported && (
-										<div className="form-check mt-2" style={{ minHeight: "3em" }}>
-											<input
-												className="form-check-input"
-												type="checkbox"
-												id={`checkbox-${inscription.key}`}
-												checked={selectedUtxos.some(
-													(selected) =>
-														inscription.key && selected.key === inscription.key,
-												)}
-												disabled={getCheckboxState(inscription).disabled}
-												onChange={(e) =>
-													handleUtxoSelection(inscription, e.target.checked)
-												}
-											/>
-											<label
-												className={`form-check-label ${getCheckboxState(inscription).disabled ? 'text-muted' : ''}`}
-												htmlFor={`checkbox-${inscription.key}`}
-											>
-												{getCheckboxState(inscription).label}
-											</label>
-										</div>
-									)}
-								</div>
-							))}
-							{filteredOwnedUtxos.length === 0 && (
-								<div className="col-12">
-									<div className="text-center">
-										<h3>No results found</h3>
+									<div className="row g-5">
+										{section.utxos.map((inscription) =>
+											renderUtxoCard(inscription),
+										)}
 									</div>
 								</div>
-							)}
-						</>
-					)}
+							))}
+					</>
+				)}
 
-					{utxosReady && ownedUtxos.length === 0 && (
-						<div>
-							This address does not own anything yet..
-							<br />
-						</div>
-					)}
+				{utxosReady && ownedUtxos.length === 0 && (
+					<div>
+						This address does not own anything yet..
+						<br />
+					</div>
+				)}
 
-					{!utxosReady && (
+				{!utxosReady && (
+					<div className="row g-5">
 						<Slider options={SliderOptions} className="slick-gutter-15">
 							{[...Array(5)].map((_, index) => (
 								<SliderItem key={index} className="ordinal-slide">
@@ -445,8 +470,8 @@ const WalletArea = ({
 								</SliderItem>
 							))}
 						</Slider>
-					)}
-				</div>
+					</div>
+				)}
 			</div>
 			{showSendBulkModal && (
 				<SendBulkModal

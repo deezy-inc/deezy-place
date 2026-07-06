@@ -297,3 +297,13 @@ button {
 .sort-button.active {
     color: var(--color-primary);
 }
+
+.btn.header-send-btn {
+    i {
+        color: var(--color-dark) !important;
+    }
+
+    &:hover i {
+        color: var(--color-primary) !important;
+    }
+}

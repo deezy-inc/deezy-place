@@ -1,9 +1,12 @@
 import PropTypes from "prop-types";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
 import Button from "@ui/button";
 import { shortenStr, MEMPOOL_API_URL } from "@services/nosft";
 import { toast } from "react-toastify";
 import checkAnimation from "./check.json";
+
+// lottie-web touches `document` at import time, so it can only load in the browser
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 const TransactionSent = ({ txId, onClose, title = "Transaction Sent" }) => {
     const submit = () => {

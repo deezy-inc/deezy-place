@@ -1,0 +1,53 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "deezy-place",
+	"main": "cf-worker.mjs",
+	"compatibility_date": "2026-06-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"env": {
+		"staging": {
+			"name": "deezy-place-staging",
+			"assets": {
+				"directory": ".open-next/assets",
+				"binding": "ASSETS"
+			},
+			"observability": {
+				"enabled": true
+			},
+			"routes": [
+				{
+					"pattern": "staging.deezy.place",
+					"custom_domain": true
+				}
+			]
+		},
+		"production": {
+			"name": "deezy-place",
+			"assets": {
+				"directory": ".open-next/assets",
+				"binding": "ASSETS",
+				"run_worker_first": true
+			},
+			"observability": {
+				"enabled": true
+			},
+			"routes": [
+				{
+					"pattern": "deezy.place",
+					"custom_domain": true
+				},
+				{
+					"pattern": "www.deezy.place",
+					"custom_domain": true
+				}
+			]
+		}
+	}
+}

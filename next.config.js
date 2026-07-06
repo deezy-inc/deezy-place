@@ -4,7 +4,6 @@ const path = require("path");
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
-// import { Wasm as WasmIntegration } from "@sentry/wasm";
 
 const t = {
   reactStrictMode: false,
@@ -36,7 +35,7 @@ const t = {
     return config;
   },
   env: {
-    IS_TESTNET: process.env.IS_TESTNET || false,
+    IS_TESTNET: process.env.IS_TESTNET || "",
   },
 };
 

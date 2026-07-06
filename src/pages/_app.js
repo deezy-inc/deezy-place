@@ -20,7 +20,7 @@ const MyApp = ({ Component, pageProps }) => {
     sal();
   }, []);
   useEffect(() => {
-    document.body.className = `${pageProps.className}`;
+    document.body.className = pageProps.className || "template-color-1";
   });
   return (
     <ThemeProvider defaultTheme="dark">

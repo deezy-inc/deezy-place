@@ -41,8 +41,10 @@ yarn-error.log*
 
 labs/
 
-# Sentry Auth Token
-.sentryclirc
 
 *.bk.js
 
+
+# cloudflare
+.open-next
+.wrangler

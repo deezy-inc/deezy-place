@@ -1,0 +1,38 @@
+import { TESTNET, DEFAULT_FEE_RATE, ASSUMED_TX_BYTES, ORDINALS_EXPLORER_URL, BITCOIN_PRICE_API_URL, TURBO_API, MEMPOOL_API_URL, NETWORK, DEFAULT_DERIV_PATH, MIN_OUTPUT_VALUE, BOOST_UTXO_VALUE, FEE_LEVEL, INSCRIBOR_URL, BITCOIN_BLOCK_AVG_API_URL, } from './constants';
+class Config {
+    TESTNET = TESTNET;
+    DEFAULT_FEE_RATE = DEFAULT_FEE_RATE;
+    ASSUMED_TX_BYTES = ASSUMED_TX_BYTES;
+    ORDINALS_EXPLORER_URL = ORDINALS_EXPLORER_URL;
+    BITCOIN_PRICE_API_URL = BITCOIN_PRICE_API_URL;
+    TURBO_API = TURBO_API;
+    MEMPOOL_API_URL = MEMPOOL_API_URL;
+    NETWORK = NETWORK;
+    DEFAULT_DERIV_PATH = DEFAULT_DERIV_PATH;
+    MIN_OUTPUT_VALUE = MIN_OUTPUT_VALUE;
+    BOOST_UTXO_VALUE = BOOST_UTXO_VALUE;
+    FEE_LEVEL = FEE_LEVEL;
+    INSCRIBOR_URL = INSCRIBOR_URL;
+    BITCOIN_BLOCK_AVG_API_URL = BITCOIN_BLOCK_AVG_API_URL;
+    TAPROOT_MESSAGE = (domain) => `Sign this message to generate your Bitcoin Taproot key. This key will be used for your ${domain} transactions.`;
+    constructor(configOverrides) {
+        this.TESTNET = typeof configOverrides?.TESTNET === 'boolean' ? configOverrides?.TESTNET : TESTNET;
+        this.DEFAULT_FEE_RATE = configOverrides?.DEFAULT_FEE_RATE || DEFAULT_FEE_RATE;
+        this.ASSUMED_TX_BYTES = configOverrides?.ASSUMED_TX_BYTES || ASSUMED_TX_BYTES;
+        this.ORDINALS_EXPLORER_URL = configOverrides?.ORDINALS_EXPLORER_URL || ORDINALS_EXPLORER_URL;
+        this.BITCOIN_PRICE_API_URL = configOverrides?.BITCOIN_PRICE_API_URL || BITCOIN_PRICE_API_URL;
+        this.TURBO_API = configOverrides?.TURBO_API || TURBO_API;
+        this.MEMPOOL_API_URL = configOverrides?.MEMPOOL_API_URL || MEMPOOL_API_URL;
+        this.NETWORK = configOverrides?.NETWORK || NETWORK;
+        this.DEFAULT_DERIV_PATH = configOverrides?.DEFAULT_DERIV_PATH || DEFAULT_DERIV_PATH;
+        this.MIN_OUTPUT_VALUE = configOverrides?.MIN_OUTPUT_VALUE || MIN_OUTPUT_VALUE;
+        this.BOOST_UTXO_VALUE = configOverrides?.BOOST_UTXO_VALUE || BOOST_UTXO_VALUE;
+        this.FEE_LEVEL = configOverrides?.FEE_LEVEL || FEE_LEVEL;
+        this.INSCRIBOR_URL = configOverrides?.INSCRIBOR_URL || INSCRIBOR_URL;
+        this.BITCOIN_BLOCK_AVG_API_URL = configOverrides?.BITCOIN_BLOCK_AVG_API_URL || BITCOIN_BLOCK_AVG_API_URL;
+        if (configOverrides?.TAPROOT_MESSAGE) {
+            this.TAPROOT_MESSAGE = configOverrides?.TAPROOT_MESSAGE;
+        }
+    }
+}
+export { Config };

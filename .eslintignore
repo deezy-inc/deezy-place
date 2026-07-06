@@ -34,3 +34,6 @@ yarn-error.log\*
 
 # vercel
 .vercel
+
+# vendored library (formerly the nosft-core npm package)
+/src/lib/nosft-core

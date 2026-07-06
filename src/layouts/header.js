@@ -18,8 +18,12 @@ import menuData from "../data/general/menu";
 import headerData from "../data/general/header.json";
 
 const Header = React.forwardRef(({ className }, ref) => {
-    const { ordinalsPublicKey, nostrOrdinalsAddress, onShowConnectModal } =
-        useWallet();
+    const {
+        ordinalsPublicKey,
+        nostrOrdinalsAddress,
+        onShowConnectModal,
+        headerSendAction,
+    } = useWallet();
 
     const { offcanvas, offcanvasHandler } = useOffcanvas();
 
@@ -49,6 +53,28 @@ const Header = React.forwardRef(({ className }, ref) => {
                                     <MainMenu menu={menuData(INSCRIBOR_URL)} />
                                 </nav>
                             </div>
+                            {headerSendAction && (
+                                <div className="setting-option header-btn mx-3 d-none d-xl-flex align-items-center" style={{ gap: "12px" }}>
+                                    <Button
+                                        color="primary"
+                                        size="medium"
+                                        className="header-send-btn"
+                                        onClick={headerSendAction.onSend}
+                                    >
+                                        <i className="feather-send me-2" />
+                                        {headerSendAction.label}
+                                    </Button>
+                                    {headerSendAction.onDeselect && (
+                                        <Button
+                                            color="primary-alta"
+                                            size="medium"
+                                            onClick={headerSendAction.onDeselect}
+                                        >
+                                            Deselect All
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="header-right">
                             {!Boolean(ordinalsPublicKey) && (

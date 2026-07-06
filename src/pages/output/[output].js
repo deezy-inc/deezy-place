@@ -20,7 +20,6 @@ const OutputPage = () => {
   const elementRef = useRef(null);
   const headerHeight = useHeaderHeight(elementRef);
   const { value: uninscribedSats, loading } = useOutput(output);
-  const onAction = async () => {};
 
   return (
     <WalletContext.Provider value={walletState}>
@@ -33,16 +32,7 @@ const OutputPage = () => {
           className="d-flex align-items-center justify-content-center"
         >
           {uninscribedSats && (
-            <ProductDetailsArea
-              uninscribedSats={uninscribedSats}
-              bids={[]}
-              isBidsLoading={false}
-              bidsDisabled
-              sellDisabled
-              buyDisabled
-              auctionDisabled
-              onAction={onAction}
-            />
+            <ProductDetailsArea uninscribedSats={uninscribedSats} />
           )}
 
           {(loading || !uninscribedSats) && (

@@ -46,3 +46,7 @@ labs/
 
 *.bk.js
 
+
+# cloudflare
+.open-next
+.wrangler

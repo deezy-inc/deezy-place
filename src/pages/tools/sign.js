@@ -9,10 +9,6 @@ import Sign from "@containers/Sign";
 import { WalletContext } from "@context/wallet-context";
 import { useWalletState, useHeaderHeight } from "@hooks";
 
-export async function getStaticProps() {
-    return { props: { className: "template-color-1" } };
-}
-
 const App = () => {
     const walletState = useWalletState();
     const elementRef = useRef(null);

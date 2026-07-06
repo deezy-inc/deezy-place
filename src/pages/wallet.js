@@ -10,10 +10,6 @@ import { useWalletState, useHeaderHeight } from "@hooks";
 import { WalletContext } from "@context/wallet-context";
 import WalletArea from "@containers/WalletArea";
 
-export async function getStaticProps() {
-  return { props: { className: "template-color-1" } };
-}
-
 const App = () => {
   const walletState = useWalletState();
   const { ordinalsPublicKey, nostrOrdinalsAddress } = walletState;

@@ -32,7 +32,8 @@
 			"name": "deezy-place",
 			"assets": {
 				"directory": ".open-next/assets",
-				"binding": "ASSETS"
+				"binding": "ASSETS",
+				"run_worker_first": true
 			},
 			"observability": {
 				"enabled": true
@@ -40,6 +41,10 @@
 			"routes": [
 				{
 					"pattern": "deezy.place",
+					"custom_domain": true
+				},
+				{
+					"pattern": "www.deezy.place",
 					"custom_domain": true
 				}
 			]

@@ -10,6 +10,11 @@ const SHELL_ROUTES = ["inscription", "output", "collection"];
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // Canonical host: redirect www to the apex domain
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+      return Response.redirect(url.toString(), 301);
+    }
     const [, first, second] = url.pathname.split("/");
     if (request.method === "GET" && second && SHELL_ROUTES.includes(first)) {
       const shellUrl = new URL(`/_shells/${first}.html`, url.origin);
@@ -19,6 +24,14 @@ export default {
           status: 200,
           headers: { "content-type": "text/html; charset=utf-8" },
         });
+      }
+    }
+    // Serve static assets (all page HTML and _next files) directly; needed
+    // when run_worker_first routes every request through this worker
+    if (request.method === "GET" || request.method === "HEAD") {
+      const assetResponse = await env.ASSETS.fetch(request);
+      if (assetResponse.status !== 404) {
+        return assetResponse;
       }
     }
     const response = await openNextWorker.fetch(request, env, ctx);

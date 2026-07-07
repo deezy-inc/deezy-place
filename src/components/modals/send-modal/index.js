@@ -12,6 +12,7 @@ import {
   outputValue,
   fetchRecommendedFee,
   getInscriptions,
+  getOutputData,
   TESTNET,
   DEFAULT_FEE_RATE,
   MIN_OUTPUT_VALUE,
@@ -70,6 +71,23 @@ const SendModal = ({
     };
     fetchOwnedUtxos();
   }, [lowValueSend, nostrOrdinalsAddress, ownedUtxos]);
+
+  // The bulk flow labels rare-sat utxos distinctly, so classify this utxo
+  // before handing it over
+  const [utxoRareSats, setUtxoRareSats] = useState(null);
+  useEffect(() => {
+    if (!lowValueSend || !utxo || utxoRareSats !== null) return;
+    const fetchRareSats = async () => {
+      try {
+        const data = await getOutputData(`${utxo.txid}:${utxo.vout}`);
+        setUtxoRareSats(data?.rareSats || []);
+      } catch (error) {
+        console.error(error);
+        setUtxoRareSats([]);
+      }
+    };
+    fetchRareSats();
+  }, [lowValueSend, utxo, utxoRareSats]);
 
   const addressOnChange = (evt) => {
     const newaddr = evt.target.value;
@@ -135,7 +153,7 @@ const SendModal = ({
         handleModal={handleModal}
         onSend={onSend}
         ownedUtxos={ownedUtxos || []}
-        selectedUtxos={[utxo]}
+        selectedUtxos={[{ ...utxo, rareSats: utxoRareSats || [] }]}
       />
     );
   }

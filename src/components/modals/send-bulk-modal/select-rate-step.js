@@ -7,28 +7,30 @@ import {
     shortenStr,
 } from "@services/nosft";
 
-const getTitle = (sendingInscriptions, sendingUtxos) => {
-    const inscriptionCount = sendingInscriptions.length;
-    const utxoCount = sendingUtxos.length;
-    const inscriptionText = `inscription${inscriptionCount !== 1 ? 's' : ''}`;
-    const utxoText = `UTXO${utxoCount !== 1 ? 's' : ''}`;
-
-    if (inscriptionCount && utxoCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText} and ${utxoCount} ${utxoText}.`;
+const getTitle = (sendingInscriptions, sendingRareSats, sendingUtxos) => {
+    const parts = [];
+    if (sendingInscriptions.length > 0) {
+        parts.push(`${sendingInscriptions.length} inscription${sendingInscriptions.length !== 1 ? 's' : ''}`);
     }
-    if (inscriptionCount) {
-        return `You are about to send ${inscriptionCount} ${inscriptionText}.`;
+    if (sendingRareSats.length > 0) {
+        parts.push(`${sendingRareSats.length} rare sat${sendingRareSats.length !== 1 ? 's' : ''}`);
     }
-    if (utxoCount) {
-        return `You are about to send ${utxoCount} ${utxoText}.`;
+    if (sendingUtxos.length > 0) {
+        parts.push(`${sendingUtxos.length} cardinal UTXO${sendingUtxos.length !== 1 ? 's' : ''}`);
     }
-    return '';
+    if (parts.length === 0) {
+        return '';
+    }
+    const joined = parts.length > 2
+        ? `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`
+        : parts.join(' and ');
+    return `You are about to send ${joined}.`;
 };
 
-export const SelectRateStep = ({ destinationBtcAddress, isBtcInputAddressValid, sendFeeRate, addressOnChange, feeRateOnChange, preparePsbt, isSending, sendingInscriptions, sendingUtxos }) => (
+export const SelectRateStep = ({ destinationBtcAddress, isBtcInputAddressValid, sendFeeRate, addressOnChange, feeRateOnChange, preparePsbt, isSending, sendingInscriptions, sendingRareSats, sendingUtxos }) => (
     <div>
         <p>
-            {getTitle(sendingInscriptions, sendingUtxos)}
+            {getTitle(sendingInscriptions, sendingRareSats, sendingUtxos)}
         </p>
         <div className="placebid-form-box">
             <div className="bid-content">

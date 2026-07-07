@@ -108,12 +108,13 @@ export const PreviewTransactionStep = ({
                         <div key={input.outpoint} className="input-item">
                             <div className="input-card">
                                 <div className="input-thumbnail">
-                                    <OrdinalCard 
+                                    <OrdinalCard
                                         utxo={input.utxo}
                                         type="view"
                                         overlay={false}
                                         confirmed={input.utxo?.status?.confirmed ?? false}
                                         runes={input.utxo?.runes ?? []}
+                                        rareSats={input.utxo?.rareSats ?? []}
                                         date={input.utxo?.date ?? null}
                                         alwaysNewTabOnView={true}
                                     />

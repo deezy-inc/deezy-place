@@ -20,6 +20,7 @@ import Button from "@ui/button";
 import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import { useRunes } from "@hooks";
 import { SendBulkModal } from "@components/modals/send-bulk-modal";
+import { TailSpin } from "react-loading-icons";
 
 const SliderOptions = {
 	infinite: true,
@@ -59,7 +60,7 @@ const SliderOptions = {
 	],
 };
 
-const sendBulkSupportedWallets = ["alby"];
+const sendBulkSupportedWallets = ["alby", "nostr"];
 
 const WalletArea = ({
 	className,
@@ -77,7 +78,7 @@ const WalletArea = ({
 	const [showSendBulkModal, setShowSendBulkModal] = useState(false);
 	const [selectedUtxos, setSelectedUtxos] = useState([]);
 	const sendBulkSupported = sendBulkSupportedWallets.includes(walletName);
-	const { getRunesForUtxo, loading: runesLoading } = useRunes(ownedUtxos);
+	const { getRunesForUtxo, getRareSatsForUtxo, outputData, loading: runesLoading } = useRunes(ownedUtxos);
 
 	const runeNamesForUtxo = (utxo) =>
 		(getRunesForUtxo(utxo) || []).map(([name]) => name);
@@ -109,7 +110,7 @@ const WalletArea = ({
 			return { disabled: false, label: "Selected for sending" };
 		}
 		if (runesLoading) {
-			return { disabled: true, label: "Checking for runes..." };
+			return { disabled: true, label: "Checking for runes and rare sats..." };
 		}
 		const runeNames = runeNamesForUtxo(utxo);
 		if (runeNames.length === 0) {
@@ -142,13 +143,27 @@ const WalletArea = ({
 	const sendLabel = (() => {
 		const inscriptionCount = selectedUtxos.filter((u) => u.inscriptionId).length;
 		const runeCount = selectedRuneUtxos.length;
-		const utxoCount = selectedUtxos.length - inscriptionCount - runeCount;
+		const rareSatCount = selectedUtxos.filter(
+			(u) =>
+				!u.inscriptionId &&
+				runeNamesForUtxo(u).length === 0 &&
+				getRareSatsForUtxo(u).length > 0,
+		).length;
+		const utxoCount =
+			selectedUtxos.length - inscriptionCount - runeCount - rareSatCount;
 		const parts = [];
 		if (inscriptionCount > 0)
 			parts.push(`${inscriptionCount} inscription${inscriptionCount === 1 ? "" : "s"}`);
 		if (runeCount > 0) parts.push(`${runeCount} rune${runeCount === 1 ? "" : "s"}`);
-		if (utxoCount > 0) parts.push(`${utxoCount} utxo${utxoCount === 1 ? "" : "s"}`);
-		return `Send ${parts.join(" and ")}`;
+		if (rareSatCount > 0)
+			parts.push(`${rareSatCount} rare sat${rareSatCount === 1 ? "" : "s"}`);
+		if (utxoCount > 0)
+			parts.push(`${utxoCount} cardinal utxo${utxoCount === 1 ? "" : "s"}`);
+		const joined =
+			parts.length > 2
+				? `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]}`
+				: parts.join(" and ");
+		return `Send ${joined}`;
 	})();
 
 	useEffect(() => {
@@ -203,6 +218,32 @@ const WalletArea = ({
 		setShowSendBulkModal((prev) => !prev);
 	};
 
+	// The bulk-send modal groups and labels rare-sat utxos, so hand it
+	// selection objects annotated with their rarities
+	const selectedUtxosWithRareSats = useMemo(
+		() =>
+			selectedUtxos.map((u) => ({
+				...u,
+				rareSats: getRareSatsForUtxo(u),
+			})),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[selectedUtxos, outputData],
+	);
+
+	// Owned utxos get the same tags so the fee-funding search can skip
+	// candidates already known to hold runes or rare sats without having to
+	// re-verify them one by one
+	const ownedUtxosWithTags = useMemo(
+		() =>
+			ownedUtxos.map((u) => ({
+				...u,
+				runes: getRunesForUtxo(u),
+				rareSats: getRareSatsForUtxo(u),
+			})),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ownedUtxos, outputData],
+	);
+
 	const onCopyAddress = () => {
 		navigator.clipboard.writeText(nostrOrdinalsAddress);
 		toast("Receive Address copied to clipboard!");
@@ -256,15 +297,35 @@ const WalletArea = ({
 		loadUtxos();
 	}, [refreshHack, nostrOrdinalsAddress]);
 
-	// Partition the wallet into the three display sections. While runes are
-	// still loading a rune utxo is treated as cardinal, then moves once known.
+	// Partition the wallet into the display sections. Inscriptions are known
+	// as soon as the wallet loads; runes and rare sats need per-output
+	// classification, so until that resolves the uninscribed utxos are shown
+	// NOWHERE — never temporarily as cardinal, which would invite spending
+	// something special. A utxo holding both an inscription (or runes) and
+	// rare sats stays in its first matching section; the only hard rule is
+	// that anything special never lands in Cardinal UTXOs.
 	const inscriptionUtxos = filteredOwnedUtxos.filter((u) => !!u.inscriptionId);
-	const runeUtxos = filteredOwnedUtxos.filter(
-		(u) => !u.inscriptionId && runeNamesForUtxo(u).length > 0,
-	);
-	const cardinalUtxos = filteredOwnedUtxos.filter(
-		(u) => !u.inscriptionId && runeNamesForUtxo(u).length === 0,
-	);
+	const runeUtxos = runesLoading
+		? []
+		: filteredOwnedUtxos.filter(
+				(u) => !u.inscriptionId && runeNamesForUtxo(u).length > 0,
+			);
+	const rareSatUtxos = runesLoading
+		? []
+		: filteredOwnedUtxos.filter(
+				(u) =>
+					!u.inscriptionId &&
+					runeNamesForUtxo(u).length === 0 &&
+					getRareSatsForUtxo(u).length > 0,
+			);
+	const cardinalUtxos = runesLoading
+		? []
+		: filteredOwnedUtxos.filter(
+				(u) =>
+					!u.inscriptionId &&
+					runeNamesForUtxo(u).length === 0 &&
+					getRareSatsForUtxo(u).length === 0,
+			);
 
 	const renderUtxoCard = (inscription) => (
 		<div
@@ -283,6 +344,7 @@ const WalletArea = ({
 				authors={collectionAuthor}
 				utxo={inscription}
 				runes={getRunesForUtxo(inscription)}
+				rareSats={getRareSatsForUtxo(inscription)}
 				onSale={handleRefreshHack}
 			/>
 			{sendBulkSupported && (
@@ -311,10 +373,32 @@ const WalletArea = ({
 		</div>
 	);
 
+	// Runes/rare sats/cardinals need per-output classification, so their
+	// sections stay visible with a loading state until it resolves (except in
+	// inscriptions-only mode, where those utxos aren't shown at all)
 	const sections = [
 		{ title: "Inscriptions", utxos: inscriptionUtxos },
-		{ title: "Runes", utxos: runeUtxos },
-		{ title: "Cardinal UTXOs", utxos: cardinalUtxos },
+		{
+			title: "Runes",
+			utxos: runeUtxos,
+			classified: !runesLoading,
+			emptyLabel: "No runes detected",
+			alwaysShow: !displayOnlyInscriptions,
+		},
+		{
+			title: "Rare Sats",
+			utxos: rareSatUtxos,
+			classified: !runesLoading,
+			emptyLabel: "No rare sats detected",
+			alwaysShow: !displayOnlyInscriptions,
+		},
+		{
+			title: "Cardinal UTXOs",
+			utxos: cardinalUtxos,
+			classified: !runesLoading,
+			emptyLabel: "No cardinal utxos detected",
+			alwaysShow: !displayOnlyInscriptions,
+		},
 	];
 
 	return (
@@ -437,18 +521,32 @@ const WalletArea = ({
 				{utxosReady && ownedUtxos.length > 0 && (
 					<>
 						{sections
-							.filter((section) => section.utxos.length > 0)
+							.filter(
+								(section) => section.utxos.length > 0 || section.alwaysShow,
+							)
 							.map((section) => (
 								<div key={section.title} className="mb--40">
 									<SectionTitle
 										className="mb--20"
 										{...{ title: section.title }}
 									/>
-									<div className="row g-5">
-										{section.utxos.map((inscription) =>
-											renderUtxoCard(inscription),
-										)}
-									</div>
+									{section.utxos.length > 0 && (
+										<div className="row g-5">
+											{section.utxos.map((inscription) =>
+												renderUtxoCard(inscription),
+											)}
+										</div>
+									)}
+									{section.utxos.length === 0 && !section.classified && (
+										<div className="text-center py-4">
+											<TailSpin stroke="#fec823" speed={0.75} width={64} height={64} />
+										</div>
+									)}
+									{section.utxos.length === 0 && section.classified && (
+										<p className="text-muted" style={{ fontSize: "14px" }}>
+											{section.emptyLabel}
+										</p>
+									)}
 								</div>
 							))}
 					</>
@@ -475,8 +573,8 @@ const WalletArea = ({
 			</div>
 			{showSendBulkModal && (
 				<SendBulkModal
-					ownedUtxos={ownedUtxos}
-					selectedUtxos={selectedUtxos}
+					ownedUtxos={ownedUtxosWithTags}
+					selectedUtxos={selectedUtxosWithRareSats}
 					show={showSendBulkModal}
 					handleModal={handleSendBulkModal}
 					utxo={""}

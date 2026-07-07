@@ -1,27 +1,16 @@
 import axios from 'axios';
-import LocalStorage, { LocalStorageKeys } from '../services/local-storage';
 import { Crypto } from './crypto';
 import { Utxo } from './utxo';
 const Inscriptions = function (config) {
     const utxoModule = Utxo(config);
     const cryptoModule = Crypto(config);
     const inscriptionsModule = {
-        invalidateOutputsCache: () => {
-            LocalStorage.removePattern(`${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:`);
-        },
-        // TODO: Implement also some type of server side caching.
-        getOutpointFromCache: async (inscriptionId) => {
+        // Always fetched fresh: outpoints change every time an inscription
+        // moves, and caching them (as done previously) served stale locations
+        // that made moved inscriptions' UTXOs look like spendable cardinals
+        getOutpoint: async (inscriptionId) => {
             try {
-                const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${inscriptionId}`;
-                const cachedOutpoint = await LocalStorage.get(key);
-                if (cachedOutpoint) {
-                    return cachedOutpoint;
-                }
                 const result = await axios.get(`${config.TURBO_API}/inscription/${inscriptionId}/outpoint`);
-                const [txid, vout] = cryptoModule.parseOutpoint(result.data.inscription.outpoint);
-                const utxoKey = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${txid}:${vout}`;
-                await LocalStorage.set(key, result.data);
-                await LocalStorage.set(utxoKey, result.data);
                 return result.data;
             }
             catch (error) {
@@ -41,7 +30,7 @@ const Inscriptions = function (config) {
                 let rawOutpoint = ins?.outpoint?.outpoint;
                 if (!rawOutpoint) {
                     // Defensive fallback only when the inline outpoint is missing.
-                    const outpointData = await inscriptionsModule.getOutpointFromCache(ins.id);
+                    const outpointData = await inscriptionsModule.getOutpoint(ins.id);
                     rawOutpoint = outpointData?.inscription?.outpoint;
                 }
                 if (!rawOutpoint) {
@@ -84,14 +73,6 @@ const Inscriptions = function (config) {
             const inscriptions = await inscriptionsModule.getInscriptionsForAddress(address);
             const inscriptionsByUtxoKey = await inscriptionsModule.getInscriptionsByUtxoKey(inscriptions);
             const addressInscriptions = await inscriptionsModule.addInscriptionDataToUtxos(utxos, inscriptionsByUtxoKey);
-            // Once a new inscription is added, invalidate the cache so that it shows up right away
-            // without having to wait for the cache to expire.
-            const key = `${LocalStorageKeys.INSCRIPTIONS}:${address}`;
-            const localAddressInscriptions = await LocalStorage.get(key);
-            if (localAddressInscriptions && localAddressInscriptions.length !== addressInscriptions.length) {
-                inscriptionsModule.invalidateOutputsCache();
-                await LocalStorage.set(key, addressInscriptions);
-            }
             return addressInscriptions;
         },
         getTxidVout: async (inscriptionData) => {
@@ -100,7 +81,7 @@ const Inscriptions = function (config) {
                 const vout = Number(_vout);
                 return { txid, vout, owner: inscriptionData.owner };
             }
-            const outpointResult = await inscriptionsModule.getOutpointFromCache(inscriptionData.id);
+            const outpointResult = await inscriptionsModule.getOutpoint(inscriptionData.id);
             const { inscription: { outpoint }, owner, } = outpointResult;
             const [txid, _vout] = cryptoModule.parseOutpoint(outpoint);
             const vout = Number(_vout);

@@ -92,6 +92,8 @@ const Crypto = function (config) {
             });
         },
         /* eslint-enable */
+        // Outpoints are reversed-txid followed by a 4-byte LITTLE-endian vout
+        // (e.g. vout 160 is encoded "a0000000"); both parts need byte-reversal
         parseOutpoint: (outpoint) => {
             const rawVout = outpoint.slice(-8);
             const txid = outpoint
@@ -99,7 +101,7 @@ const Crypto = function (config) {
                 .match(/[a-fA-F0-9]{2}/g)
                 .reverse()
                 .join('');
-            const vout = parseInt(rawVout, 16);
+            const vout = parseInt(rawVout.match(/[a-fA-F0-9]{2}/g).reverse().join(''), 16);
             return [txid, vout];
         },
         sortUtxos: (utxos) => {

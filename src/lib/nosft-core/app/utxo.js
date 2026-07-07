@@ -1,5 +1,4 @@
 import axios from 'axios';
-import LocalStorage, { LocalStorageKeys } from '../services/local-storage';
 const Utxo = function (config) {
     const utxoModule = {
         // TODO: Move me away
@@ -75,12 +74,6 @@ const Utxo = function (config) {
             }
         },
         doesUtxoContainInscription: async (utxo) => {
-            const key = `${LocalStorageKeys.INSCRIPTIONS_OUTPOINT}:${utxo.txid}:${utxo.vout}`;
-            const cachedOutpoint = await LocalStorage.get(key);
-            const outpoint = Boolean(cachedOutpoint);
-            if (outpoint) {
-                return true;
-            }
             const response = await fetch(`${config.ORDINALS_EXPLORER_URL}/output/${utxo.txid}:${utxo.vout}`, {
                 headers: { Accept: 'application/json' },
             });

@@ -7,6 +7,7 @@ import * as bitcoin from 'bitcoinjs-lib';
 // @ts-ignore
 import * as ecc from 'tiny-secp256k1';
 import SessionStorage, { SessionsStorageKeys } from '../services/session-storage';
+import NostrKey, { NOSTR_PROVIDER } from '../services/nostr-key';
 import axios from 'axios';
 import { Crypto } from './crypto';
 import { Address } from './address';
@@ -62,15 +63,25 @@ const Psbt = function (config) {
         }
         return Object.keys(runes || {});
     };
+    // Non-common sat rarities ("rare sats", e.g. uncommon) carried by an
+    // output; only turbo-style sat_ranges objects have rarity info
+    const rareSatRaritiesFromOutput = (output) => {
+        const satRanges = Array.isArray(output.sat_ranges) ? output.sat_ranges : [];
+        return [...new Set(satRanges
+                .map(range => (range && typeof range === 'object' ? range.rarity : undefined))
+                .filter(rarity => rarity && rarity !== 'common'))];
+    };
     // A utxo is only safe to spend as fees/consolidation if the backend
-    // confirms it carries no inscriptions and no runes
+    // confirms it carries no inscriptions, no runes, and no rare sats
     const isVerifiedCardinal = async (utxo) => {
         const output = await getVerifiedOutput(utxo);
         if (!output) {
             return false;
         }
         const hasInscriptions = Array.isArray(output.inscriptions) && output.inscriptions.length > 0;
-        return !hasInscriptions && runeNamesFromOutput(output).length === 0;
+        return (!hasInscriptions &&
+            runeNamesFromOutput(output).length === 0 &&
+            rareSatRaritiesFromOutput(output).length === 0);
     };
     const psbtModule = {
         getPsbt,
@@ -100,9 +111,19 @@ const Psbt = function (config) {
             // @ts-ignore
             return tweakedSigner.signSchnorr(sigHash);
         },
-        signNostr: (sigHash) => {
+        // Schnorr-signs a sighash with whichever nostr key source is
+        // connected: a pasted raw key held in memory, or the extension
+        signSchnorrHex: (sigHashHex) => {
+            const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
+            console.log('[psbt] signSchnorrHex via provider:', provider);
+            if (provider === NOSTR_PROVIDER) {
+                return NostrKey.signSchnorr(sigHashHex);
+            }
             // @ts-ignore
-            return window.nostr.signSchnorr(sigHash.toString('hex'));
+            return window.nostr.signSchnorr(sigHashHex);
+        },
+        signNostr: (sigHash) => {
+            return psbtModule.signSchnorrHex(sigHash.toString('hex'));
         },
         signSigHash: ({ sigHash }) => {
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
@@ -306,17 +327,32 @@ const Psbt = function (config) {
         // 3. A check is run to ensure that enough cardinal funds are available to perform the transfer. If step 2 does not contain enough cardinal funds, cardinal funds will be appended to the PSBT, and another change output will be created
         preparePsbtForMultipleSend: async ({ address, pubKey, selectedUtxos, ownedUtxos, destinationBtcAddress, sendFeeRate }) => {
             const utxosWithInscription = selectedUtxos.filter(utxo => utxo.inscriptionId);
-            // Runes utxos are sent value-preserved (fees come from separate
-            // cardinal funding), never consolidated with cardinals or spent as fees
+            // Runes and rare-sat utxos are sent value-preserved (fees come
+            // from separate cardinal funding), never consolidated with
+            // cardinals or spent as fees
             const utxosWithRunes = [];
             const runeNamesByUtxo = [];
+            const utxosWithRareSats = [];
             const utxosWithoutInscription = [];
-            for (const utxo of selectedUtxos.filter(u => !u.inscriptionId)) {
+            // Verify against the backend in parallel batches — one awaited
+            // request per utxo made preparing large sends take tens of
+            // seconds — then classify in the original selection order so the
+            // FIFO input/output mapping stays deterministic
+            const uninscribedSelected = selectedUtxos.filter(u => !u.inscriptionId);
+            const verifiedOutputs = [];
+            const verifyBatchSize = 10;
+            for (let i = 0; i < uninscribedSelected.length; i += verifyBatchSize) {
+                const batch = uninscribedSelected.slice(i, i + verifyBatchSize);
+                // eslint-disable-next-line no-await-in-loop
+                const results = await Promise.all(batch.map(u => getVerifiedOutput(u)));
+                verifiedOutputs.push(...results);
+            }
+            for (const [index, utxo] of uninscribedSelected.entries()) {
                 const outpoint = `${utxo.txid}:${utxo.vout}`;
                 // Require positive backend verification before classifying: a
                 // utxo with no inscriptionId annotation may simply have been
                 // fetched while the ordinals backend was degraded
-                const output = await getVerifiedOutput(utxo);
+                const output = verifiedOutputs[index];
                 if (!output) {
                     throw new Error(`Unable to verify utxo ${outpoint} with the ordinals service. Please try again later.`);
                 }
@@ -325,20 +361,30 @@ const Psbt = function (config) {
                 }
                 const runeNames = runeNamesFromOutput(output);
                 if (runeNames.length > 0) {
+                    // A rune utxo carrying rare sats stays in the runes bucket;
+                    // runes rules are stricter and the value (with its sats) is
+                    // preserved either way
                     utxosWithRunes.push(utxo);
                     runeNamesByUtxo.push(runeNames);
+                }
+                else if (rareSatRaritiesFromOutput(output).length > 0) {
+                    utxosWithRareSats.push(utxo);
                 }
                 else {
                     utxosWithoutInscription.push(utxo);
                 }
             }
-            if (utxosWithInscription.length === 0 && utxosWithRunes.length === 0 && utxosWithoutInscription.length === 0) {
+            if (utxosWithInscription.length === 0 &&
+                utxosWithRunes.length === 0 &&
+                utxosWithRareSats.length === 0 &&
+                utxosWithoutInscription.length === 0) {
                 throw new Error('At least one ordinal or utxo is required.');
             }
             // Runes always transfer to the first output no matter which input
             // carries them (unlike inscriptions, which map FIFO across
             // inputs/outputs), so runes sends must not mix with anything else
-            if (utxosWithRunes.length > 0 && (utxosWithInscription.length > 0 || utxosWithoutInscription.length > 0)) {
+            if (utxosWithRunes.length > 0 &&
+                (utxosWithInscription.length > 0 || utxosWithRareSats.length > 0 || utxosWithoutInscription.length > 0)) {
                 throw new Error('Runes must be sent separately from inscriptions and other utxos.');
             }
             // Multiple runes utxos are allowed only when they all hold the same
@@ -351,24 +397,51 @@ const Psbt = function (config) {
                 }
             }
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-            if (provider !== 'alby') {
+            if (provider !== 'alby' && provider !== NOSTR_PROVIDER) {
                 throw new Error('Signing not supported.');
             }
-            // only used if selectedCardinalAmount is not large enough to cover fees
+            // only used if selectedCardinalAmount is not large enough to cover fees.
+            // A positive runes/rare-sats tag from the wallet's classification is
+            // enough to exclude a candidate outright; the absence of a tag is NOT
+            // enough to admit one (the annotation fetch could have been degraded),
+            // so the survivors still get positively verified below
             const cardinalUtxos = ownedUtxos.filter(utxo => !selectedUtxos.some(selected => selected.txid === utxo.txid && selected.vout === utxo.vout))
                 .filter((x) => x.status.confirmed)
                 .filter(utxo => !utxo.inscriptionId)
+                .filter(utxo => !(utxo.runes?.length > 0) && !(utxo.rareSats?.length > 0))
                 .sort((a, b) => b.value - a.value);
             const selectedCardinalAmount = utxosWithoutInscription.reduce((acc, utxo) => acc + utxo.value, 0);
-            // Value-preserved utxos: inscriptions each become a distinct
-            // same-value output; runes all consolidate into one output
-            const preservedUtxos = [...utxosWithInscription, ...utxosWithRunes];
-            const preservedOutputCount = utxosWithRunes.length > 0 ? 1 : utxosWithInscription.length;
+            // Value-preserved utxos: inscriptions and rare-sat utxos each
+            // become a distinct same-value output (FIFO input→output mapping
+            // keeps their sats intact); runes all consolidate into one output
+            const preservedUtxos = [...utxosWithInscription, ...utxosWithRareSats, ...utxosWithRunes];
+            const preservedOutputCount = utxosWithRunes.length > 0
+                ? 1
+                : utxosWithInscription.length + utxosWithRareSats.length;
             const inputs = [...preservedUtxos, ...utxosWithoutInscription];
+            // Never fund with a utxo the ordinals backend can't positively
+            // verify as free of inscriptions, runes, and rare sats: the
+            // wallet's own annotations could be missing if the backend was
+            // degraded when they were fetched. Candidates are verified in
+            // parallel batches (still consumed largest-first) — checking one
+            // per awaited round trip made preparing sends crawl in wallets
+            // where the top candidates keep getting rejected as rare sats
+            const verifiedFundingUtxos = [];
+            let nextCandidateIndex = 0;
+            const ensureVerifiedFundingUtxo = async () => {
+                while (verifiedFundingUtxos.length === 0 && nextCandidateIndex < cardinalUtxos.length) {
+                    const batch = cardinalUtxos.slice(nextCandidateIndex, nextCandidateIndex + 10);
+                    nextCandidateIndex += batch.length;
+                    // eslint-disable-next-line no-await-in-loop
+                    const results = await Promise.all(batch.map(async (utxo) => ((await isVerifiedCardinal(utxo)) ? utxo : null)));
+                    verifiedFundingUtxos.push(...results.filter(Boolean));
+                }
+                return verifiedFundingUtxos.shift();
+            };
             let totalCardinalAmount = selectedCardinalAmount;
             let calculatedFee = 0;
             let isCardinalAdded = false;
-            while (cardinalUtxos.length > 0 || calculatedFee === 0) {
+            while (true) {
                 calculatedFee = cryptoModule.calculateFee({
                     vins: inputs.length,
                     vouts: preservedOutputCount + (selectedCardinalAmount > 0 ? 1 : 0) + (isCardinalAdded ? 1 : 0),
@@ -377,16 +450,10 @@ const Psbt = function (config) {
                 });
                 if (totalCardinalAmount >= calculatedFee)
                     break;
-                const utxo = cardinalUtxos.shift();
+                // eslint-disable-next-line no-await-in-loop
+                const utxo = await ensureVerifiedFundingUtxo();
                 if (!utxo) {
                     throw new Error(`Please add more cardinal funds to your wallet.`);
-                }
-                // Never fund with a utxo the ordinals backend can't positively
-                // verify as inscription- and runes-free: the wallet's own
-                // inscription annotations could be missing if the backend was
-                // degraded when they were fetched
-                if (!(await isVerifiedCardinal(utxo))) {
-                    continue;
                 }
                 inputs.push(utxo);
                 totalCardinalAmount += utxo.value;
@@ -404,6 +471,7 @@ const Psbt = function (config) {
             const utxoType = (utxo) => {
                 if (utxo.inscriptionId) return 'Ordinal';
                 if (utxosWithRunes.includes(utxo)) return 'Runes';
+                if (utxosWithRareSats.includes(utxo)) return 'Rare Sats';
                 return 'Cardinal';
             };
             const metadata = {
@@ -427,12 +495,20 @@ const Psbt = function (config) {
                 metadata.outputs.push({ type: 'Runes' });
             }
             else {
-                utxosWithInscription.forEach(utxo => {
+                // Same order as the inputs (inscriptions then rare sats) so
+                // the FIFO mapping sends each preserved utxo's sats to its
+                // own same-value output
+                utxosWithInscription.forEach(() => {
+                    metadata.outputs.push({ type: 'Ordinal' });
+                });
+                utxosWithRareSats.forEach(() => {
+                    metadata.outputs.push({ type: 'Rare Sats' });
+                });
+                [...utxosWithInscription, ...utxosWithRareSats].forEach(utxo => {
                     psbt.addOutput({
                         address: destinationBtcAddress,
                         value: utxo.value,
                     });
-                    metadata.outputs.push({ type: 'Ordinal' });
                 });
             }
             let changeAmount = 0;
@@ -468,7 +544,7 @@ const Psbt = function (config) {
         // signature and after each completed one
         signPsbtForMultipleSend: async (unsignedPsbtHex, onProgress) => {
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
-            if (provider !== 'alby') {
+            if (provider !== 'alby' && provider !== NOSTR_PROVIDER) {
                 throw new Error('Signing not supported.');
             }
             const psbt = bitcoin.Psbt.fromHex(unsignedPsbtHex, { network: NETWORK });
@@ -510,7 +586,7 @@ const Psbt = function (config) {
             for (let i = 0; i < psbtOutputs.length; i += 1) {
                 const output = psbtOutputs[i];
                 // eslint-disable-next-line no-await-in-loop
-                const signature = await window.nostr.signSchnorr(output.sigHash);
+                const signature = await psbtModule.signSchnorrHex(output.sigHash);
                 psbt.updateInput(output.index, {
                     tapKeySig: serializeTaprootSignature(Buffer.from(signature, 'hex')),
                 });

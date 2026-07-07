@@ -11,6 +11,7 @@ import { ImageType } from "@utils/types";
 import { shortenStr, MEMPOOL_API_URL } from "@services/nosft";
 import { InscriptionPreview } from "@components/inscription-preview";
 import RuneDisplay from "@components/rune-display";
+import RareSatsDisplay from "@components/rare-sats-display";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 const CardOptions = dynamic(() => import("@components/card-options"), {
@@ -28,6 +29,7 @@ const OrdinalCard = ({
   onSale,
   onClick,
   runes,
+  rareSats,
   alwaysNewTabOnView,
 }) => {
   const { nostrOrdinalsAddress } = useWallet();
@@ -65,6 +67,11 @@ const OrdinalCard = ({
             {runes && runes.length > 0 && (
               <div className="rune-display-container mt-2">
                 <RuneDisplay runes={runes} />
+              </div>
+            )}
+            {rareSats && rareSats.length > 0 && (
+              <div className="rare-sats-display-container mt-2">
+                <RareSatsDisplay rareSats={rareSats} />
               </div>
             )}
           </div>
@@ -145,6 +152,7 @@ OrdinalCard.propTypes = {
   onSale: PropTypes.func,
   onClick: PropTypes.func,
   runes: PropTypes.array,
+  rareSats: PropTypes.arrayOf(PropTypes.string),
 };
 
 OrdinalCard.defaultProps = {

@@ -21,29 +21,31 @@ const {
   signSigHash,
 } = nosft.psbt;
 
-// Add rune fetching function
-// The API returns runes as an object keyed by rune name
-// ({ "RUNE•NAME": { amount, divisibility, symbol } }); normalize to an array of
-// [name, data] entries, which is what RuneDisplay and the runes checks consume.
-const getRuneData = async (outpoint) => {
+// Fetch per-output data used to classify wallet utxos. Uses the turbo API
+// because (unlike the ordinals explorer API) its sat_ranges include rarity.
+// - runes come back as an object keyed by rune name
+//   ({ "RUNE•NAME": { amount, divisibility, symbol } }); normalize to an
+//   array of [name, data] entries, which is what RuneDisplay and the runes
+//   checks consume.
+// - rareSats is the unique list of non-common rarities across the output's
+//   sat ranges (e.g. ["uncommon"]), used for the Rare Sats wallet section.
+const getOutputData = async (outpoint) => {
   try {
-    const response = await fetch(`${ORDINALS_EXPLORER_URL}/output/${outpoint}`, {
-      headers: {
-        'accept': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await getOutput(outpoint);
     const runes = Array.isArray(data.runes)
       ? data.runes
       : Object.entries(data.runes || {});
-    return { ...data, runes };
+    const satRanges = Array.isArray(data.sat_ranges) ? data.sat_ranges : [];
+    const rareSats = [
+      ...new Set(
+        satRanges
+          .map((range) => range?.rarity)
+          .filter((rarity) => rarity && rarity !== "common")
+      ),
+    ];
+    return { ...data, runes, rareSats };
   } catch (error) {
-    console.error('Error fetching rune data:', error);
+    console.error('Error fetching output data:', error);
     return null;
   }
 };
@@ -80,7 +82,7 @@ export {
   onAccountChange,
 
   // Runes
-  getRuneData,
+  getOutputData,
 
   // Crypto
   shortenStr,

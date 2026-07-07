@@ -1,21 +1,33 @@
-import { useState, useEffect } from 'react';
-import { getRuneData } from '@services/nosft';
+import { useState, useEffect, useMemo } from 'react';
+import { getOutputData } from '@services/nosft';
 
+// Classifies uninscribed wallet utxos from one output fetch each: which
+// runes they hold and which non-common sat rarities ("rare sats") they carry.
+//
+// `loading` is true from the very first render until the CURRENT utxo set is
+// fully classified (readiness is keyed to the utxo set, not a state flag an
+// effect flips later). Callers must treat loading as "classification
+// unknown" and show nothing rather than defaulting utxos to cardinal.
 const useRunes = (utxos) => {
-  const [runeData, setRuneData] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [resolved, setResolved] = useState({ key: null, data: {} });
+
+  const utxosKey = useMemo(
+    () => (utxos || []).map((u) => `${u.txid}:${u.vout}`).join(','),
+    [utxos]
+  );
+  const loading = utxosKey !== '' && resolved.key !== utxosKey;
 
   useEffect(() => {
     if (!utxos || utxos.length === 0) {
-      setRuneData({});
-      return;
+      return undefined;
     }
+    let cancelled = false;
 
-    const fetchRuneData = async () => {
-      setLoading(true);
-      const newRuneData = {};
+    const fetchOutputData = async () => {
+      const newOutputData = {};
 
-      // Only fetch for uninscribed UTXOs (those without inscriptionId)
+      // Only fetch for uninscribed UTXOs (those without inscriptionId);
+      // inscribed ones are already classified and never shown as cardinal
       const uninscribedUtxos = utxos.filter(utxo => !utxo.inscriptionId);
 
       // Fetch in small parallel batches so large wallets resolve quickly
@@ -25,34 +37,52 @@ const useRunes = (utxos) => {
         await Promise.all(batch.map(async (utxo) => {
           const outpoint = `${utxo.txid}:${utxo.vout}`;
           try {
-            const data = await getRuneData(outpoint);
-            if (data && data.runes && data.runes.length > 0) {
-              newRuneData[outpoint] = data.runes;
+            const data = await getOutputData(outpoint);
+            if (data && (data.runes?.length > 0 || data.rareSats?.length > 0)) {
+              newOutputData[outpoint] = {
+                runes: data.runes || [],
+                rareSats: data.rareSats || [],
+              };
             }
           } catch (error) {
-            console.error(`Error fetching rune data for ${outpoint}:`, error);
+            console.error(`Error fetching output data for ${outpoint}:`, error);
           }
         }));
+        if (cancelled) return;
       }
 
-      setRuneData(newRuneData);
-      setLoading(false);
+      if (!cancelled) {
+        setResolved({ key: utxosKey, data: newOutputData });
+      }
     };
 
-    fetchRuneData();
-  }, [utxos]);
+    fetchOutputData();
+    return () => {
+      cancelled = true;
+    };
+    // utxosKey covers the utxo identities; utxos itself may be a fresh array
+    // with the same content, which must not refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [utxosKey]);
 
   const getRunesForUtxo = (utxo) => {
     if (!utxo) return [];
     const outpoint = `${utxo.txid}:${utxo.vout}`;
-    return runeData[outpoint] || [];
+    return resolved.data[outpoint]?.runes || [];
+  };
+
+  const getRareSatsForUtxo = (utxo) => {
+    if (!utxo) return [];
+    const outpoint = `${utxo.txid}:${utxo.vout}`;
+    return resolved.data[outpoint]?.rareSats || [];
   };
 
   return {
-    runeData,
+    outputData: resolved.data,
     loading,
-    getRunesForUtxo
+    getRunesForUtxo,
+    getRareSatsForUtxo,
   };
 };
 
-export default useRunes; 
+export default useRunes;

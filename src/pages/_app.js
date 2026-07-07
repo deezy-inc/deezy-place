@@ -4,11 +4,19 @@ import { useRouter } from "next/router";
 import sal from "sal.js";
 import { ThemeProvider } from "next-themes";
 import { GoogleAnalytics } from "nextjs-google-analytics";
+import dynamic from "next/dynamic";
 
 import "../assets/css/bootstrap.min.css";
 import "../assets/css/feather.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../assets/scss/style.scss";
+
+// Collects the user's nsec when a raw-nostr-key signing needs it; client-only
+// since it drives a window-event-triggered modal
+const NostrSignModal = dynamic(
+  () => import("@components/modals/nostr-sign-modal"),
+  { ssr: false }
+);
 
 const MyApp = ({ Component, pageProps }) => {
   const router = useRouter();
@@ -25,6 +33,7 @@ const MyApp = ({ Component, pageProps }) => {
   return (
     <ThemeProvider defaultTheme="dark">
       <GoogleAnalytics trackPageViews />
+      <NostrSignModal />
       <Component {...pageProps} />
     </ThemeProvider>
   );

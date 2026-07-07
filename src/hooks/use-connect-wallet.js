@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { connectWallet, onAccountChange } from "@services/nosft";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
 import LocalStorage from "@services/local-storage";
+import NostrKey from "@lib/nosft-core/services/nostr-key";
 import { toast } from "react-toastify";
 
 function useConnectWallet() {
@@ -48,6 +49,7 @@ function useConnectWallet() {
   };
 
   const onDisconnectHandler = async () => {
+    NostrKey.disconnect();
     SessionStorage.clear();
     LocalStorage.clear();
     setOrdinalsPublicKey("");

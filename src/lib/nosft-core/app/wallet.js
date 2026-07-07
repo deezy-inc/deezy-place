@@ -6,6 +6,7 @@ import { ethers } from 'ethers';
 import { BIP32Factory } from 'bip32';
 import { Crypto } from './crypto';
 import SessionStorage, { SessionsStorageKeys } from '../services/session-storage';
+import NostrKey, { NOSTR_PROVIDER } from '../services/nostr-key';
 import { METAMASK_PROVIDERS, NETWORK, NETWORK_NAME } from '../config/constants';
 bitcoin.initEccLib(ecc);
 const bip32 = BIP32Factory(ecc);
@@ -101,6 +102,14 @@ const Wallet = function (config) {
             }
             else if (window.ethereum && isMetamaskProvider(provider)) {
                 ordinalsPublicKey = (await walletModule.getEthPubKey(provider)) || '';
+            }
+            else if (provider === NOSTR_PROVIDER) {
+                // Key was pasted into the connect modal (or restored from
+                // session storage after a refresh) — nothing to request.
+                ordinalsPublicKey = NostrKey.getPublicKey() || '';
+                if (!ordinalsPublicKey) {
+                    throw new Error('No nostr key found. Please paste your private key (nsec) to connect.');
+                }
             }
             else {
                 ordinalsPublicKey = await walletModule.getNostrPubKey();

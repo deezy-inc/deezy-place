@@ -1,8 +1,11 @@
 /* eslint-disable react/forbid-prop-types */
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-bootstrap/Modal";
 import Image from "next/image";
 import { useWallet } from "@context/wallet-context";
+import NostrKey, { NOSTR_PROVIDER } from "@lib/nosft-core/services/nostr-key";
+import NostrKeyModal from "@components/modals/nostr-key-modal";
 
 // Gets the callback function from the parent component to notify when the wallet get's connecteds
 const ConnectWallet = ({ callback }) => {
@@ -12,6 +15,21 @@ const ConnectWallet = ({ callback }) => {
     showConnectModal: show,
     onHideConnectModal,
   } = useWallet();
+  const [showNostrKeyEntry, setShowNostrKeyEntry] = useState(false);
+
+  useEffect(() => {
+    if (!show) {
+      setShowNostrKeyEntry(false);
+    }
+  }, [show]);
+
+  const onNostrKeySubmit = ({ value }) => {
+    // Throws with a user-facing message on invalid input, which the key
+    // modal displays inline
+    NostrKey.connectPrivateKey(value);
+    setShowNostrKeyEntry(false);
+    onConnect(NOSTR_PROVIDER, callback);
+  };
 
   const wallets = [
     {
@@ -65,6 +83,13 @@ const ConnectWallet = ({ callback }) => {
         onConnect("xverse", callback);
       },
     },
+    {
+      name: "Raw Nostr Key",
+      image: "/images/logo/nostr.svg",
+      onClick: () => {
+        setShowNostrKeyEntry(true);
+      },
+    },
   ];
 
   const getWallets = () => {
@@ -82,6 +107,16 @@ const ConnectWallet = ({ callback }) => {
     });
     return activeWallets;
   };
+
+  if (showNostrKeyEntry) {
+    return (
+      <NostrKeyModal
+        show={show}
+        onHide={() => setShowNostrKeyEntry(false)}
+        onSubmit={onNostrKeySubmit}
+      />
+    );
+  }
 
   return (
     <Modal

@@ -20,7 +20,9 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	const [destinationBtcAddress, setDestinationBtcAddress] = useState("");
 	const [sendFeeRate, setSendFeeRate] = useState(DEFAULT_FEE_RATE);
 	const [sentTxId, setSentTxId] = useState(null);
-	const { ordinalsPublicKey, nostrOrdinalsAddress } = useWallet();
+	const { ordinalsPublicKey, nostrOrdinalsAddress, walletName } = useWallet();
+	// Raw-key signing happens locally without per-signature approval prompts
+	const usesWalletExtension = walletName !== "nostr";
 	const [isSending, setIsSending] = useState(false);
 	const [txFee, setTxFee] = useState("");
 	const [txFeeRate, setTxFeeRate] = useState("");
@@ -32,7 +34,12 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	const [signProgress, setSignProgress] = useState(null);
 
 	const sendingInscriptions = selectedUtxos.filter((utxo) => utxo.inscriptionId);
-	const sendingUtxos = selectedUtxos.filter((utxo) => !Boolean(utxo.inscriptionId));
+	const sendingRareSats = selectedUtxos.filter(
+		(utxo) => !utxo.inscriptionId && utxo.rareSats?.length > 0,
+	);
+	const sendingUtxos = selectedUtxos.filter(
+		(utxo) => !Boolean(utxo.inscriptionId) && !(utxo.rareSats?.length > 0),
+	);
 
 	useEffect(() => {
 		const fetchFee = async () => {
@@ -171,6 +178,7 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 				return (
 					<SelectRateStep
 						sendingInscriptions={sendingInscriptions}
+						sendingRareSats={sendingRareSats}
 						sendingUtxos={sendingUtxos}
 						destinationBtcAddress={destinationBtcAddress}
 						isBtcInputAddressValid={isBtcInputAddressValid}
@@ -305,8 +313,9 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 									className="mb-4"
 									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
 								>
-									Your wallet extension will ask you to approve each
-									signature
+									{usesWalletExtension
+										? "Your wallet extension will ask you to approve each signature"
+										: "Signatures will be created with your nostr key"}
 								</p>
 								<Button
 									color="primary"
@@ -346,7 +355,9 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 									className="mt-4 mb-0"
 									style={{ fontSize: "0.9em", color: "#a0a0b8" }}
 								>
-									Approve each signature in your wallet extension
+									{usesWalletExtension
+										? "Approve each signature in your wallet extension"
+										: "Signing with your nostr key..."}
 								</p>
 							</>
 						))}

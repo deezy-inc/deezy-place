@@ -28,6 +28,8 @@ const UserDropdown = () => {
         return "/images/logo/generative.png";
       case "unisat.io":
         return "/images/logo/unisat.png";
+      case "nostr":
+        return "/images/logo/nostr.svg";
       default:
         return "/images/logo/alby.png";
     }

@@ -33,23 +33,37 @@ const Inscriptions = function (config) {
             const inscriptionsByUtxoKey = {};
             const batchPromises = [];
             const populateInscriptionsMap = async (ins) => {
-                const outpointData = await inscriptionsModule.getOutpointFromCache(ins.id);
-                if (outpointData) {
-                    const { inscription: { outpoint }, } = outpointData;
-                    const [txid, vout] = cryptoModule.parseOutpoint(outpoint);
-                    inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+                // Prefer the outpoint already present on the wallet-inscriptions
+                // response: it is fresh, needs no extra request, and avoids the
+                // permanently-cached /inscription/:id/outpoint lookup that returns
+                // a STALE outpoint after an inscription moves (which made the
+                // moved inscription's UTXO show up as a spendable "cardinal").
+                let rawOutpoint = ins?.outpoint?.outpoint;
+                if (!rawOutpoint) {
+                    // Defensive fallback only when the inline outpoint is missing.
+                    const outpointData = await inscriptionsModule.getOutpointFromCache(ins.id);
+                    rawOutpoint = outpointData?.inscription?.outpoint;
                 }
+                if (!rawOutpoint) {
+                    // Fail loud, never silently drop: an unmapped inscription would
+                    // make its UTXO appear as a spendable "cardinal", risking an
+                    // accidental spend of an ordinal. Throwing fails the wallet load
+                    // so it can be retried instead of showing unsafe data.
+                    throw new Error(`Could not resolve outpoint for inscription ${ins?.id}`);
+                }
+                const [txid, vout] = cryptoModule.parseOutpoint(rawOutpoint);
+                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
                 return inscriptionsByUtxoKey;
             };
             for (const ins of inscriptions) {
                 // @ts-ignore
                 batchPromises.push(populateInscriptionsMap(ins));
                 if (batchPromises.length === 15) {
-                    await Promise.allSettled(batchPromises);
+                    await Promise.all(batchPromises);
                     batchPromises.length = 0;
                 }
             }
-            await Promise.allSettled(batchPromises);
+            await Promise.all(batchPromises);
             return inscriptionsByUtxoKey;
         },
         addInscriptionDataToUtxos: (utxos, inscriptionsByUtxoKey) => utxos.map((utxo) => {

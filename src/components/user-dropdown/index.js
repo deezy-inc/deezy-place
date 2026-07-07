@@ -3,6 +3,7 @@ import Anchor from "@ui/anchor";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SessionStorage, { SessionsStorageKeys } from "@services/session-storage";
+import LocalStorage, { LocalStorageKeys } from "@services/local-storage";
 import { useMemo } from "react";
 import { useWallet } from "@context/wallet-context";
 import { useRouter } from "next/router";
@@ -27,6 +28,9 @@ const UserDropdown = () => {
       case "generative.xyz":
         return "/images/logo/generative.png";
       case "unisat.io":
+        if (LocalStorage.get(LocalStorageKeys.ONEKEY_WALLET)) {
+          return "/images/logo/onekey.png";
+        }
         return "/images/logo/unisat.png";
       default:
         return "/images/logo/alby.png";

@@ -33,12 +33,23 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	const [step, setStep] = useState(1);
 	const [signProgress, setSignProgress] = useState(null);
 
+	// Same precedence as the psbt classification: a runes utxo counts as
+	// runes even if it also carries rare sats
 	const sendingInscriptions = selectedUtxos.filter((utxo) => utxo.inscriptionId);
+	const sendingRunes = selectedUtxos.filter(
+		(utxo) => !utxo.inscriptionId && utxo.runes?.length > 0,
+	);
 	const sendingRareSats = selectedUtxos.filter(
-		(utxo) => !utxo.inscriptionId && utxo.rareSats?.length > 0,
+		(utxo) =>
+			!utxo.inscriptionId &&
+			!(utxo.runes?.length > 0) &&
+			utxo.rareSats?.length > 0,
 	);
 	const sendingUtxos = selectedUtxos.filter(
-		(utxo) => !Boolean(utxo.inscriptionId) && !(utxo.rareSats?.length > 0),
+		(utxo) =>
+			!Boolean(utxo.inscriptionId) &&
+			!(utxo.runes?.length > 0) &&
+			!(utxo.rareSats?.length > 0),
 	);
 
 	useEffect(() => {
@@ -178,6 +189,7 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 				return (
 					<SelectRateStep
 						sendingInscriptions={sendingInscriptions}
+						sendingRunes={sendingRunes}
 						sendingRareSats={sendingRareSats}
 						sendingUtxos={sendingUtxos}
 						destinationBtcAddress={destinationBtcAddress}

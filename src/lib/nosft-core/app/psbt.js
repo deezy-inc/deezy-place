@@ -499,42 +499,110 @@ const Psbt = function (config) {
             // Fee taken out of the last preserved output's padding instead of
             // pulling in a cardinal funding input
             let feeFromLastPreserved = 0;
-            while (true) {
-                calculatedFee = cryptoModule.calculateFee({
+            // Runes consolidate onto the FIRST output no matter which inputs
+            // carry them, so the runes output only needs to match the first
+            // input's size; the rest of the selected runes' value can pay the
+            // fee and come back as change. This shortcut is runes-ONLY:
+            // inscriptions and rare sats map FIFO from inputs to outputs, so
+            // their outputs must preserve each input's full value
+            let runesOutputValue = 0;
+            let runesChangeAmount = 0;
+            if (utxosWithRunes.length > 0) {
+                const totalRunesAmount = utxosWithRunes.reduce((acc, utxo) => acc + utxo.value, 0);
+                runesOutputValue = utxosWithRunes[0].value;
+                const runesExcess = totalRunesAmount - runesOutputValue;
+                const feeWithChange = cryptoModule.calculateFee({
                     vins: inputs.length,
-                    vouts: preservedOutputCount + (selectedCardinalAmount > 0 ? 1 : 0) + (isCardinalAdded ? 1 : 0),
+                    vouts: 2,
                     recommendedFeeRate: sendFeeRate,
                     includeChangeOutput: 0,
                 });
-                if (totalCardinalAmount >= calculatedFee)
-                    break;
-                // Selected cardinals can't cover the fee. Before pulling in a
-                // funding input, try paying the whole fee from the last
-                // preserved utxo's padding: allowed when the shaved output
-                // stays at least TARGET_UTXO_SIZE AND still contains every
-                // protected sat (value - fee > highest protected offset)
-                if (!isCardinalAdded && utxosWithRunes.length === 0 && preservedUtxos.length > 0) {
-                    const feeSource = preservedUtxos[preservedUtxos.length - 1];
-                    // eslint-disable-next-line no-await-in-loop
-                    const protectedOffset = await verifiedProtectedOffset(feeSource);
-                    if (protectedOffset !== null &&
-                        calculatedFee <= feeSource.value - TARGET_UTXO_SIZE &&
-                        feeSource.value - calculatedFee > protectedOffset) {
-                        feeFromLastPreserved = calculatedFee;
-                        break;
+                const feeWithoutChange = cryptoModule.calculateFee({
+                    vins: inputs.length,
+                    vouts: 1,
+                    recommendedFeeRate: sendFeeRate,
+                    includeChangeOutput: 0,
+                });
+                if (runesExcess - feeWithChange >= TARGET_UTXO_SIZE) {
+                    // Excess pays the fee and the remainder returns as change
+                    calculatedFee = feeWithChange;
+                    runesChangeAmount = runesExcess - feeWithChange;
+                }
+                else if (runesExcess >= feeWithoutChange) {
+                    // Excess covers the fee but the remainder is too small
+                    // for a change output — give it to the runes output
+                    calculatedFee = feeWithoutChange;
+                    runesOutputValue += runesExcess - feeWithoutChange;
+                }
+                else {
+                    // Not enough excess: pull in cardinal funding; the change
+                    // output holds the funding remainder plus the excess
+                    let fundingAmount = 0;
+                    while (true) {
+                        calculatedFee = cryptoModule.calculateFee({
+                            vins: inputs.length,
+                            vouts: 2,
+                            recommendedFeeRate: sendFeeRate,
+                            includeChangeOutput: 0,
+                        });
+                        if (runesExcess + fundingAmount >= calculatedFee)
+                            break;
+                        // eslint-disable-next-line no-await-in-loop
+                        const utxo = await ensureVerifiedFundingUtxo();
+                        if (!utxo) {
+                            throw new Error(`Please add more cardinal funds to your wallet.`);
+                        }
+                        inputs.push(utxo);
+                        fundingAmount += utxo.value;
+                        isCardinalAdded = true;
+                    }
+                    runesChangeAmount = runesExcess + fundingAmount - calculatedFee;
+                    // Never emit a dust change output; overpay the runes
+                    // output instead
+                    if (runesChangeAmount < TARGET_UTXO_SIZE) {
+                        runesOutputValue += runesChangeAmount;
+                        runesChangeAmount = 0;
                     }
                 }
-                // eslint-disable-next-line no-await-in-loop
-                const utxo = await ensureVerifiedFundingUtxo();
-                if (!utxo) {
+            }
+            else {
+                while (true) {
+                    calculatedFee = cryptoModule.calculateFee({
+                        vins: inputs.length,
+                        vouts: preservedOutputCount + (selectedCardinalAmount > 0 ? 1 : 0) + (isCardinalAdded ? 1 : 0),
+                        recommendedFeeRate: sendFeeRate,
+                        includeChangeOutput: 0,
+                    });
+                    if (totalCardinalAmount >= calculatedFee)
+                        break;
+                    // Selected cardinals can't cover the fee. Before pulling in a
+                    // funding input, try paying the whole fee from the last
+                    // preserved utxo's padding: allowed when the shaved output
+                    // stays at least TARGET_UTXO_SIZE AND still contains every
+                    // protected sat (value - fee > highest protected offset)
+                    if (!isCardinalAdded && preservedUtxos.length > 0) {
+                        const feeSource = preservedUtxos[preservedUtxos.length - 1];
+                        // eslint-disable-next-line no-await-in-loop
+                        const protectedOffset = await verifiedProtectedOffset(feeSource);
+                        if (protectedOffset !== null &&
+                            calculatedFee <= feeSource.value - TARGET_UTXO_SIZE &&
+                            feeSource.value - calculatedFee > protectedOffset) {
+                            feeFromLastPreserved = calculatedFee;
+                            break;
+                        }
+                    }
+                    // eslint-disable-next-line no-await-in-loop
+                    const utxo = await ensureVerifiedFundingUtxo();
+                    if (!utxo) {
+                        throw new Error(`Please add more cardinal funds to your wallet.`);
+                    }
+                    inputs.push(utxo);
+                    totalCardinalAmount += utxo.value;
+                    isCardinalAdded = true;
+                }
+                if (totalCardinalAmount + feeFromLastPreserved < calculatedFee) {
                     throw new Error(`Please add more cardinal funds to your wallet.`);
                 }
-                inputs.push(utxo);
-                totalCardinalAmount += utxo.value;
-                isCardinalAdded = true;
-            }
-            if (totalCardinalAmount + feeFromLastPreserved < calculatedFee) {
-                throw new Error(`Please add more cardinal funds to your wallet.`);
             }
             const inputAddressInfo = await addressModule.getAddressInfo(pubKey);
             const psbt = new bitcoin.Psbt({ network: config.NETWORK });
@@ -559,14 +627,21 @@ const Psbt = function (config) {
             // Add value-preserved outputs
             if (utxosWithRunes.length > 0) {
                 // Runes always land on the first output regardless of which
-                // input carries them, so one consolidated output receives all
-                // (same-rune) runes along with the combined utxo value
-                const runesAmount = utxosWithRunes.reduce((acc, utxo) => acc + utxo.value, 0);
+                // input carries them, so the first-input-sized output (plus
+                // any remainder too small for change) receives all the
+                // (same-rune) runes; leftover value returns as change
                 psbt.addOutput({
                     address: destinationBtcAddress,
-                    value: runesAmount,
+                    value: runesOutputValue,
                 });
                 metadata.outputs.push({ type: 'Runes' });
+                if (runesChangeAmount > 0) {
+                    psbt.addOutput({
+                        address,
+                        value: runesChangeAmount,
+                    });
+                    metadata.outputs.push({ type: 'Change' });
+                }
             }
             else {
                 // Same order as the inputs so the FIFO mapping sends each
@@ -583,31 +658,33 @@ const Psbt = function (config) {
                     metadata.outputs.push({ type: utxoType(utxo) });
                 });
             }
-            let changeAmount = 0;
-            // Add change output if we added cardinal funds
-            if (isCardinalAdded) {
-                changeAmount = totalCardinalAmount - selectedCardinalAmount - calculatedFee;
-                psbt.addOutput({
-                    address,
-                    value: changeAmount,
-                });
-                metadata.outputs.push({ type: 'Change' });
-                if (selectedCardinalAmount > 0) {
+            // Change / consolidated-cardinal outputs (runes handle their own
+            // change above)
+            if (utxosWithRunes.length === 0) {
+                if (isCardinalAdded) {
+                    const changeAmount = totalCardinalAmount - selectedCardinalAmount - calculatedFee;
+                    psbt.addOutput({
+                        address,
+                        value: changeAmount,
+                    });
+                    metadata.outputs.push({ type: 'Change' });
+                    if (selectedCardinalAmount > 0) {
+                        psbt.addOutput({
+                            address: destinationBtcAddress,
+                            value: selectedCardinalAmount,
+                        });
+                        metadata.outputs.push({ type: 'Cardinal' });
+                    }
+                }
+                else if (selectedCardinalAmount > 0) {
+                    // Whatever part of the fee was shaved off the last preserved
+                    // output stays in the consolidated cardinal output
                     psbt.addOutput({
                         address: destinationBtcAddress,
-                        value: selectedCardinalAmount,
+                        value: selectedCardinalAmount - calculatedFee + feeFromLastPreserved,
                     });
                     metadata.outputs.push({ type: 'Cardinal' });
                 }
-            }
-            else if (selectedCardinalAmount > 0) {
-                // Whatever part of the fee was shaved off the last preserved
-                // output stays in the consolidated cardinal output
-                psbt.addOutput({
-                    address: destinationBtcAddress,
-                    value: selectedCardinalAmount - calculatedFee + feeFromLastPreserved,
-                });
-                metadata.outputs.push({ type: 'Cardinal' });
             }
             return {
                 unsignedPsbtHex: psbt.toHex(),

@@ -72,22 +72,25 @@ const SendModal = ({
     fetchOwnedUtxos();
   }, [lowValueSend, nostrOrdinalsAddress, ownedUtxos]);
 
-  // The bulk flow labels rare-sat utxos distinctly, so classify this utxo
-  // before handing it over
-  const [utxoRareSats, setUtxoRareSats] = useState(null);
+  // The bulk flow labels runes and rare-sat utxos distinctly, so classify
+  // this utxo before handing it over
+  const [utxoOutputData, setUtxoOutputData] = useState(null);
   useEffect(() => {
-    if (!lowValueSend || !utxo || utxoRareSats !== null) return;
-    const fetchRareSats = async () => {
+    if (!lowValueSend || !utxo || utxoOutputData !== null) return;
+    const fetchOutputData = async () => {
       try {
         const data = await getOutputData(`${utxo.txid}:${utxo.vout}`);
-        setUtxoRareSats(data?.rareSats || []);
+        setUtxoOutputData({
+          runes: data?.runes || [],
+          rareSats: data?.rareSats || [],
+        });
       } catch (error) {
         console.error(error);
-        setUtxoRareSats([]);
+        setUtxoOutputData({ runes: [], rareSats: [] });
       }
     };
-    fetchRareSats();
-  }, [lowValueSend, utxo, utxoRareSats]);
+    fetchOutputData();
+  }, [lowValueSend, utxo, utxoOutputData]);
 
   const addressOnChange = (evt) => {
     const newaddr = evt.target.value;
@@ -153,7 +156,13 @@ const SendModal = ({
         handleModal={handleModal}
         onSend={onSend}
         ownedUtxos={ownedUtxos || []}
-        selectedUtxos={[{ ...utxo, rareSats: utxoRareSats || [] }]}
+        selectedUtxos={[
+          {
+            ...utxo,
+            runes: utxoOutputData?.runes || [],
+            rareSats: utxoOutputData?.rareSats || [],
+          },
+        ]}
       />
     );
   }

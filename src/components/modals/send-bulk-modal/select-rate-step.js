@@ -7,10 +7,13 @@ import {
     shortenStr,
 } from "@services/nosft";
 
-const getTitle = (sendingInscriptions, sendingRareSats, sendingUtxos) => {
+const getTitle = (sendingInscriptions, sendingRunes, sendingRareSats, sendingUtxos) => {
     const parts = [];
     if (sendingInscriptions.length > 0) {
         parts.push(`${sendingInscriptions.length} inscription${sendingInscriptions.length !== 1 ? 's' : ''}`);
+    }
+    if (sendingRunes.length > 0) {
+        parts.push(`${sendingRunes.length} rune${sendingRunes.length !== 1 ? 's' : ''}`);
     }
     if (sendingRareSats.length > 0) {
         parts.push(`${sendingRareSats.length} rare sat${sendingRareSats.length !== 1 ? 's' : ''}`);
@@ -27,10 +30,10 @@ const getTitle = (sendingInscriptions, sendingRareSats, sendingUtxos) => {
     return `You are about to send ${joined}.`;
 };
 
-export const SelectRateStep = ({ destinationBtcAddress, isBtcInputAddressValid, sendFeeRate, addressOnChange, feeRateOnChange, preparePsbt, isSending, sendingInscriptions, sendingRareSats, sendingUtxos }) => (
+export const SelectRateStep = ({ destinationBtcAddress, isBtcInputAddressValid, sendFeeRate, addressOnChange, feeRateOnChange, preparePsbt, isSending, sendingInscriptions, sendingRunes = [], sendingRareSats, sendingUtxos }) => (
     <div>
         <p>
-            {getTitle(sendingInscriptions, sendingRareSats, sendingUtxos)}
+            {getTitle(sendingInscriptions, sendingRunes, sendingRareSats, sendingUtxos)}
         </p>
         <div className="placebid-form-box">
             <div className="bid-content">

@@ -224,6 +224,7 @@ const WalletArea = ({
 		() =>
 			selectedUtxos.map((u) => ({
 				...u,
+				runes: getRunesForUtxo(u),
 				rareSats: getRareSatsForUtxo(u),
 			})),
 		// eslint-disable-next-line react-hooks/exhaustive-deps

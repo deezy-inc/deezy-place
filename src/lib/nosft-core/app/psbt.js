@@ -11,7 +11,7 @@ import NostrKey, { NOSTR_PROVIDER } from '../services/nostr-key';
 import axios from 'axios';
 import { Crypto } from './crypto';
 import { Address } from './address';
-import { NETWORK, NETWORK_NAME, BOOST_UTXO_VALUE } from '../config/constants';
+import { NETWORK, NETWORK_NAME, BOOST_UTXO_VALUE, TARGET_UTXO_SIZE } from '../config/constants';
 import { isMetamaskProvider } from './wallet';
 import { Utxo } from './utxo';
 bitcoin.initEccLib(ecc);
@@ -70,6 +70,25 @@ const Psbt = function (config) {
         return [...new Set(satRanges
                 .map(range => (range && typeof range === 'object' ? range.rarity : undefined))
                 .filter(rarity => rarity && rarity !== 'common'))];
+    };
+    // Highest offset in the output carrying a non-common sat (from the
+    // range's satpoint — TXID:VOUT:OFFSET — falling back to its offset
+    // field). 0 when the output has no rare sats; null when a rare range's
+    // position is unknown, meaning the padding must not be spent
+    const maxRareSatOffset = (output) => {
+        const satRanges = Array.isArray(output.sat_ranges) ? output.sat_ranges : [];
+        const rareRanges = satRanges.filter(range => range && typeof range === 'object' && range.rarity && range.rarity !== 'common');
+        if (rareRanges.length === 0) {
+            return 0;
+        }
+        const offsets = rareRanges.map(range => {
+            const satpointOffset = Number(String(range.satpoint || '').split(':')[2]);
+            return Number.isFinite(satpointOffset) ? satpointOffset : range.offset;
+        });
+        if (!offsets.every(offset => Number.isFinite(offset))) {
+            return null;
+        }
+        return Math.max(...offsets);
     };
     // A utxo is only safe to spend as fees/consolidation if the backend
     // confirms it carries no inscriptions, no runes, and no rare sats
@@ -368,7 +387,10 @@ const Psbt = function (config) {
                     runeNamesByUtxo.push(runeNames);
                 }
                 else if (rareSatRaritiesFromOutput(output).length > 0) {
-                    utxosWithRareSats.push(utxo);
+                    // Record where the highest rare sat sits so the fee
+                    // logic below knows how much trailing padding is safe
+                    // to shave off
+                    utxosWithRareSats.push({ ...utxo, maxSatOffset: maxRareSatOffset(output) });
                 }
                 else {
                     utxosWithoutInscription.push(utxo);
@@ -413,8 +435,16 @@ const Psbt = function (config) {
             const selectedCardinalAmount = utxosWithoutInscription.reduce((acc, utxo) => acc + utxo.value, 0);
             // Value-preserved utxos: inscriptions and rare-sat utxos each
             // become a distinct same-value output (FIFO input→output mapping
-            // keeps their sats intact); runes all consolidate into one output
-            const preservedUtxos = [...utxosWithInscription, ...utxosWithRareSats, ...utxosWithRunes];
+            // keeps their sats intact); runes all consolidate into one output.
+            // Order them so the utxo with the most available padding (value
+            // minus its highest protected sat offset) is LAST: if fees can't
+            // be covered by selected cardinals, the shortfall can be shaved
+            // off that last output instead of pulling in a funding input.
+            // An unknown offset sorts first so it is never the fee source
+            const availablePadding = (utxo) => (Number.isFinite(utxo.maxSatOffset) ? utxo.value - utxo.maxSatOffset : -Number.MAX_SAFE_INTEGER);
+            const preservedUtxos = utxosWithRunes.length > 0
+                ? [...utxosWithRunes]
+                : [...utxosWithInscription, ...utxosWithRareSats].sort((a, b) => availablePadding(a) - availablePadding(b));
             const preservedOutputCount = utxosWithRunes.length > 0
                 ? 1
                 : utxosWithInscription.length + utxosWithRareSats.length;
@@ -438,9 +468,37 @@ const Psbt = function (config) {
                 }
                 return verifiedFundingUtxos.shift();
             };
+            // Highest offset that must stay in a fee-source utxo's output.
+            // Inscription utxos carry maxSatOffset from the wallet load but
+            // skip the output fetch above, so before shaving their padding a
+            // fresh backend check confirms where any rare sats sit (an
+            // inscription utxo can carry rare sats too). null = unknown, so
+            // the padding must not be spent
+            const verifiedProtectedOffset = async (utxo) => {
+                if (!Number.isFinite(utxo.maxSatOffset)) {
+                    return null;
+                }
+                if (!utxo.inscriptionId) {
+                    // Rare-sat bucket: offset already computed from its
+                    // verified output during classification
+                    return utxo.maxSatOffset;
+                }
+                const output = await getVerifiedOutput(utxo);
+                if (!output) {
+                    return null;
+                }
+                const rareOffset = maxRareSatOffset(output);
+                if (rareOffset === null) {
+                    return null;
+                }
+                return Math.max(utxo.maxSatOffset, rareOffset);
+            };
             let totalCardinalAmount = selectedCardinalAmount;
             let calculatedFee = 0;
             let isCardinalAdded = false;
+            // Fee taken out of the last preserved output's padding instead of
+            // pulling in a cardinal funding input
+            let feeFromLastPreserved = 0;
             while (true) {
                 calculatedFee = cryptoModule.calculateFee({
                     vins: inputs.length,
@@ -450,6 +508,22 @@ const Psbt = function (config) {
                 });
                 if (totalCardinalAmount >= calculatedFee)
                     break;
+                // Selected cardinals can't cover the fee. Before pulling in a
+                // funding input, try paying the whole fee from the last
+                // preserved utxo's padding: allowed when the shaved output
+                // stays at least TARGET_UTXO_SIZE AND still contains every
+                // protected sat (value - fee > highest protected offset)
+                if (!isCardinalAdded && utxosWithRunes.length === 0 && preservedUtxos.length > 0) {
+                    const feeSource = preservedUtxos[preservedUtxos.length - 1];
+                    // eslint-disable-next-line no-await-in-loop
+                    const protectedOffset = await verifiedProtectedOffset(feeSource);
+                    if (protectedOffset !== null &&
+                        calculatedFee <= feeSource.value - TARGET_UTXO_SIZE &&
+                        feeSource.value - calculatedFee > protectedOffset) {
+                        feeFromLastPreserved = calculatedFee;
+                        break;
+                    }
+                }
                 // eslint-disable-next-line no-await-in-loop
                 const utxo = await ensureVerifiedFundingUtxo();
                 if (!utxo) {
@@ -459,7 +533,7 @@ const Psbt = function (config) {
                 totalCardinalAmount += utxo.value;
                 isCardinalAdded = true;
             }
-            if (totalCardinalAmount < calculatedFee) {
+            if (totalCardinalAmount + feeFromLastPreserved < calculatedFee) {
                 throw new Error(`Please add more cardinal funds to your wallet.`);
             }
             const inputAddressInfo = await addressModule.getAddressInfo(pubKey);
@@ -495,20 +569,18 @@ const Psbt = function (config) {
                 metadata.outputs.push({ type: 'Runes' });
             }
             else {
-                // Same order as the inputs (inscriptions then rare sats) so
-                // the FIFO mapping sends each preserved utxo's sats to its
-                // own same-value output
-                utxosWithInscription.forEach(() => {
-                    metadata.outputs.push({ type: 'Ordinal' });
-                });
-                utxosWithRareSats.forEach(() => {
-                    metadata.outputs.push({ type: 'Rare Sats' });
-                });
-                [...utxosWithInscription, ...utxosWithRareSats].forEach(utxo => {
+                // Same order as the inputs so the FIFO mapping sends each
+                // preserved utxo's sats to its own same-value output. When
+                // the fee comes from padding it is shaved off the last
+                // (most-padded) output; its protected sats sit below the
+                // shaved value, so they still land in this output
+                preservedUtxos.forEach((utxo, index) => {
+                    const shavedFee = index === preservedUtxos.length - 1 ? feeFromLastPreserved : 0;
                     psbt.addOutput({
                         address: destinationBtcAddress,
-                        value: utxo.value,
+                        value: utxo.value - shavedFee,
                     });
+                    metadata.outputs.push({ type: utxoType(utxo) });
                 });
             }
             let changeAmount = 0;
@@ -528,10 +600,12 @@ const Psbt = function (config) {
                     metadata.outputs.push({ type: 'Cardinal' });
                 }
             }
-            else {
+            else if (selectedCardinalAmount > 0) {
+                // Whatever part of the fee was shaved off the last preserved
+                // output stays in the consolidated cardinal output
                 psbt.addOutput({
                     address: destinationBtcAddress,
-                    value: selectedCardinalAmount - calculatedFee,
+                    value: selectedCardinalAmount - calculatedFee + feeFromLastPreserved,
                 });
                 metadata.outputs.push({ type: 'Cardinal' });
             }

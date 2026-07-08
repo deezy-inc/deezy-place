@@ -14,6 +14,10 @@ export const NETWORK = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bit
 export const NETWORK_NAME = TESTNET ? 'Testnet' : 'Mainnet';
 export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";
 export const MIN_OUTPUT_VALUE = 600;
+// Smallest value a preserved (inscription/rare-sat) output may be shaved
+// down to when its padding is used to pay fees; 546 is the conservative
+// dust threshold (P2TR dust is 330, legacy is 546)
+export const TARGET_UTXO_SIZE = 546;
 export const BOOST_UTXO_VALUE = 10000;
 export const FEE_LEVEL = 'fastestFee'; // "fastestFee" || "halfHourFee" || "hourFee" || "economyFee" || "minimumFee"
 export const INSCRIBOR_URL = TESTNET ? 'https://testnet.inscribor.com' : 'https://inscribor.com';
@@ -29,6 +33,7 @@ export const CONSTANTS = {
     NETWORK_NAME,
     DEFAULT_DERIV_PATH,
     MIN_OUTPUT_VALUE,
+    TARGET_UTXO_SIZE,
     BOOST_UTXO_VALUE,
     FEE_LEVEL,
     INSCRIBOR_URL,

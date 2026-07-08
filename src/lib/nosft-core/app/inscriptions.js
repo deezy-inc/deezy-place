@@ -28,10 +28,12 @@ const Inscriptions = function (config) {
                 // a STALE outpoint after an inscription moves (which made the
                 // moved inscription's UTXO show up as a spendable "cardinal").
                 let rawOutpoint = ins?.outpoint?.outpoint;
+                let satOffset = ins?.outpoint?.sat_offset;
                 if (!rawOutpoint) {
                     // Defensive fallback only when the inline outpoint is missing.
                     const outpointData = await inscriptionsModule.getOutpoint(ins.id);
                     rawOutpoint = outpointData?.inscription?.outpoint;
+                    satOffset = outpointData?.inscription?.sat_offset;
                 }
                 if (!rawOutpoint) {
                     // Fail loud, never silently drop: an unmapped inscription would
@@ -41,7 +43,18 @@ const Inscriptions = function (config) {
                     throw new Error(`Could not resolve outpoint for inscription ${ins?.id}`);
                 }
                 const [txid, vout] = cryptoModule.parseOutpoint(rawOutpoint);
-                inscriptionsByUtxoKey[`${txid}:${vout}`] = ins;
+                const key = `${txid}:${vout}`;
+                // Persist the inscription's satpoint offset (satpoint format is
+                // TXID:VOUT:OFFSET) so the spend path knows how much trailing
+                // padding the utxo has. maxSatOffset covers every inscription
+                // seen on this utxo; null means an offset was unknown, so the
+                // padding must never be treated as spendable
+                const existing = inscriptionsByUtxoKey[key];
+                const offsetKnown = Number.isFinite(satOffset) && (!existing || Number.isFinite(existing.maxSatOffset));
+                inscriptionsByUtxoKey[key] = {
+                    ...ins,
+                    maxSatOffset: offsetKnown ? Math.max(satOffset, existing ? existing.maxSatOffset : 0) : null,
+                };
                 return inscriptionsByUtxoKey;
             };
             for (const ins of inscriptions) {

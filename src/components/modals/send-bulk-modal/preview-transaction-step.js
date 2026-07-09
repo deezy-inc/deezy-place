@@ -74,17 +74,18 @@ const parsePsbtForDisplay = (hexPsbt, metadata, selectedUtxos, userAddress) => {
     return { inputs, outputs };
 };
 
-export const PreviewTransactionStep = ({ 
-    txFee, 
-    txFeeRate, 
-    hexPsbt, 
-    metadata, 
-    toggleBtcTreeReady, 
-    sign, 
-    send, 
-    isSending, 
+export const PreviewTransactionStep = ({
+    txFee,
+    txFeeRate,
+    hexPsbt,
+    metadata,
+    toggleBtcTreeReady,
+    sign,
+    send,
+    back,
+    isSending,
     btcTreeReady,
-    selectedUtxos 
+    selectedUtxos
 }) => {
     console.log("[selectedUtxos]", selectedUtxos);
     const { nostrOrdinalsAddress } = useWallet();
@@ -192,6 +193,19 @@ export const PreviewTransactionStep = ({
                         "Sign Transaction"
                     )}
                 </Button>
+                {back && (
+                    <div className="text-center mt-3">
+                        <button
+                            type="button"
+                            className="btn-transparent"
+                            style={{ fontSize: "0.9em", color: "#a0a0b8" }}
+                            onClick={back}
+                            disabled={isSending}
+                        >
+                            Back
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

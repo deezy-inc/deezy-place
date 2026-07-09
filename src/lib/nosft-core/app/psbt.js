@@ -344,7 +344,10 @@ const Psbt = function (config) {
         // 1. Any input UTXOs with an inscription will be created as a distinct output UTXO of the same size, and appear before any non-inscription UTXOs in the resultant PSBT
         // 2. Any input UTXOs without an inscription will have their amounts consolidated into a single output UTXO
         // 3. A check is run to ensure that enough cardinal funds are available to perform the transfer. If step 2 does not contain enough cardinal funds, cardinal funds will be appended to the PSBT, and another change output will be created
-        preparePsbtForMultipleSend: async ({ address, pubKey, selectedUtxos, ownedUtxos, destinationBtcAddress, sendFeeRate }) => {
+        // stripPadding (optional, non-runes only): { sendTo: 'change'|'destination', targetSize: 330|546 }
+        // reduces each inscription / rare-sat output to targetSize sats and
+        // splits the remainder into its own padding output
+        preparePsbtForMultipleSend: async ({ address, pubKey, selectedUtxos, ownedUtxos, destinationBtcAddress, sendFeeRate, stripPadding }) => {
             const utxosWithInscription = selectedUtxos.filter(utxo => utxo.inscriptionId);
             // Runes and rare-sat utxos are sent value-preserved (fees come
             // from separate cardinal funding), never consolidated with
@@ -373,6 +376,14 @@ const Psbt = function (config) {
                 // fetched while the ordinals backend was degraded
                 const output = verifiedOutputs[index];
                 if (!output) {
+                    // ord can't report on unconfirmed outputs; the user may
+                    // explicitly vouch for one ("Mark as spendable cardinal"
+                    // in the wallet), and only while it is unconfirmed
+                    if (utxo.trustedUnconfirmed && utxo.status?.confirmed === false) {
+                        utxosWithoutInscription.push(utxo);
+                        // eslint-disable-next-line no-continue
+                        continue;
+                    }
                     throw new Error(`Unable to verify utxo ${outpoint} with the ordinals service. Please try again later.`);
                 }
                 if (Array.isArray(output.inscriptions) && output.inscriptions.length > 0) {
@@ -426,9 +437,12 @@ const Psbt = function (config) {
             // A positive runes/rare-sats tag from the wallet's classification is
             // enough to exclude a candidate outright; the absence of a tag is NOT
             // enough to admit one (the annotation fetch could have been degraded),
-            // so the survivors still get positively verified below
+            // so the survivors still get positively verified below. Unconfirmed
+            // outputs qualify only when the user explicitly marked them
+            // spendable ("Mark as spendable cardinal" in the wallet)
+            const isTrustedUnconfirmed = (utxo) => utxo.trustedUnconfirmed === true && utxo.status?.confirmed === false;
             const cardinalUtxos = ownedUtxos.filter(utxo => !selectedUtxos.some(selected => selected.txid === utxo.txid && selected.vout === utxo.vout))
-                .filter((x) => x.status.confirmed)
+                .filter((x) => x.status.confirmed || isTrustedUnconfirmed(x))
                 .filter(utxo => !utxo.inscriptionId)
                 .filter(utxo => !(utxo.runes?.length > 0) && !(utxo.rareSats?.length > 0))
                 .sort((a, b) => b.value - a.value);
@@ -445,9 +459,6 @@ const Psbt = function (config) {
             const preservedUtxos = utxosWithRunes.length > 0
                 ? [...utxosWithRunes]
                 : [...utxosWithInscription, ...utxosWithRareSats].sort((a, b) => availablePadding(a) - availablePadding(b));
-            const preservedOutputCount = utxosWithRunes.length > 0
-                ? 1
-                : utxosWithInscription.length + utxosWithRareSats.length;
             const inputs = [...preservedUtxos, ...utxosWithoutInscription];
             // Never fund with a utxo the ordinals backend can't positively
             // verify as free of inscriptions, runes, and rare sats: the
@@ -463,7 +474,14 @@ const Psbt = function (config) {
                     const batch = cardinalUtxos.slice(nextCandidateIndex, nextCandidateIndex + 10);
                     nextCandidateIndex += batch.length;
                     // eslint-disable-next-line no-await-in-loop
-                    const results = await Promise.all(batch.map(async (utxo) => ((await isVerifiedCardinal(utxo)) ? utxo : null)));
+                    const results = await Promise.all(batch.map(async (utxo) => {
+                        // ord can't scan unconfirmed outputs; the user's
+                        // explicit vouch stands in for verification
+                        if (isTrustedUnconfirmed(utxo)) {
+                            return utxo;
+                        }
+                        return (await isVerifiedCardinal(utxo)) ? utxo : null;
+                    }));
                     verifiedFundingUtxos.push(...results.filter(Boolean));
                 }
                 return verifiedFundingUtxos.shift();
@@ -493,6 +511,64 @@ const Psbt = function (config) {
                 }
                 return Math.max(utxo.maxSatOffset, rareOffset);
             };
+            const utxoType = (utxo) => {
+                if (utxo.inscriptionId) return 'Ordinal';
+                if (utxosWithRunes.includes(utxo)) return 'Runes';
+                if (utxosWithRareSats.includes(utxo)) return 'Rare Sats';
+                return 'Cardinal';
+            };
+            // "Strip padding" (advanced option, non-runes only): each
+            // preserved utxo is split into a target-sized output carrying its
+            // inscription / rare sats followed immediately by a padding
+            // output with the remainder. Ordering matters: the FIFO sat
+            // mapping sends input i's first targetSize sats to its target
+            // output and the rest to the padding output right after it
+            const stripPaddingActive = !!stripPadding && utxosWithRunes.length === 0 && preservedUtxos.length > 0;
+            const paddingTargetSize = stripPadding?.targetSize === 546 ? 546 : 330;
+            const paddingAddress = stripPadding?.sendTo === 'destination' ? destinationBtcAddress : address;
+            // Smallest padding output worth creating: it must be at least the
+            // target size itself (stripping a 700-sat utxo to 546 would leave
+            // a 154-sat scrap — skip those and keep the full-value output)
+            // and never below the dust threshold for the padding address
+            // (taproot dust is 330, anything else needs 546)
+            const paddingDustFloor = /^(bc1p|tb1p)/.test(paddingAddress) ? 330 : 546;
+            const paddingFloor = Math.max(paddingDustFloor, paddingTargetSize);
+            const shouldStrip = (utxo) => stripPaddingActive && utxo.value - paddingTargetSize >= paddingFloor;
+            if (stripPaddingActive) {
+                // Every stripped utxo's protected sats must fit inside the
+                // target-sized output, verified against the backend — fail
+                // loudly rather than strand an inscription or rare sat in a
+                // padding output
+                const utxosToStrip = preservedUtxos.filter(shouldStrip);
+                for (let i = 0; i < utxosToStrip.length; i += 10) {
+                    const batch = utxosToStrip.slice(i, i + 10);
+                    // eslint-disable-next-line no-await-in-loop
+                    const offsets = await Promise.all(batch.map(u => verifiedProtectedOffset(u)));
+                    batch.forEach((utxo, j) => {
+                        const outpoint = `${utxo.txid}:${utxo.vout}`;
+                        if (offsets[j] === null) {
+                            throw new Error(`Cannot strip padding: unable to verify sat positions for ${outpoint}. Please try again later.`);
+                        }
+                        if (offsets[j] >= paddingTargetSize) {
+                            throw new Error(`Cannot strip padding: ${outpoint} holds an inscription or rare sat at offset ${offsets[j]}, ` +
+                                `outside the first ${paddingTargetSize} sats. Use a larger padding target size or send it without stripping.`);
+                        }
+                    });
+                }
+            }
+            // Planned outputs per preserved utxo, in input order; the fee
+            // logic below may shave the fee off the last plan's final output
+            const preservedOutputPlans = utxosWithRunes.length > 0
+                ? []
+                : preservedUtxos.map(utxo => (shouldStrip(utxo)
+                    ? [
+                        { address: destinationBtcAddress, value: paddingTargetSize, type: utxoType(utxo) },
+                        { address: paddingAddress, value: utxo.value - paddingTargetSize, type: 'Padding' },
+                    ]
+                    : [{ address: destinationBtcAddress, value: utxo.value, type: utxoType(utxo) }]));
+            const preservedOutputCount = utxosWithRunes.length > 0
+                ? 1
+                : preservedOutputPlans.reduce((acc, plan) => acc + plan.length, 0);
             let totalCardinalAmount = selectedCardinalAmount;
             let calculatedFee = 0;
             let isCardinalAdded = false;
@@ -577,18 +653,34 @@ const Psbt = function (config) {
                         break;
                     // Selected cardinals can't cover the fee. Before pulling in a
                     // funding input, try paying the whole fee from the last
-                    // preserved utxo's padding: allowed when the shaved output
-                    // stays at least TARGET_UTXO_SIZE AND still contains every
-                    // protected sat (value - fee > highest protected offset)
+                    // preserved utxo's padding
                     if (!isCardinalAdded && preservedUtxos.length > 0) {
-                        const feeSource = preservedUtxos[preservedUtxos.length - 1];
-                        // eslint-disable-next-line no-await-in-loop
-                        const protectedOffset = await verifiedProtectedOffset(feeSource);
-                        if (protectedOffset !== null &&
-                            calculatedFee <= feeSource.value - TARGET_UTXO_SIZE &&
-                            feeSource.value - calculatedFee > protectedOffset) {
-                            feeFromLastPreserved = calculatedFee;
-                            break;
+                        if (stripPaddingActive) {
+                            // The padding is already split into its own output;
+                            // shave the fee off the last one (sat positions were
+                            // verified to sit inside the target-sized outputs)
+                            const lastPlan = preservedOutputPlans[preservedOutputPlans.length - 1];
+                            const paddingOutput = lastPlan.length > 1 ? lastPlan[lastPlan.length - 1] : null;
+                            if (paddingOutput && paddingOutput.value - calculatedFee >= paddingFloor) {
+                                feeFromLastPreserved = calculatedFee;
+                                paddingOutput.value -= calculatedFee;
+                                break;
+                            }
+                        }
+                        else {
+                            // Allowed when the shaved output stays at least
+                            // TARGET_UTXO_SIZE AND still contains every protected
+                            // sat (value - fee > highest protected offset)
+                            const feeSource = preservedUtxos[preservedUtxos.length - 1];
+                            // eslint-disable-next-line no-await-in-loop
+                            const protectedOffset = await verifiedProtectedOffset(feeSource);
+                            if (protectedOffset !== null &&
+                                calculatedFee <= feeSource.value - TARGET_UTXO_SIZE &&
+                                feeSource.value - calculatedFee > protectedOffset) {
+                                feeFromLastPreserved = calculatedFee;
+                                preservedOutputPlans[preservedOutputPlans.length - 1][0].value -= calculatedFee;
+                                break;
+                            }
                         }
                     }
                     // eslint-disable-next-line no-await-in-loop
@@ -610,12 +702,6 @@ const Psbt = function (config) {
                 const inputParams = psbtModule.getInputParams({ utxo, inputAddressInfo });
                 psbt.addInput(inputParams);
             }
-            const utxoType = (utxo) => {
-                if (utxo.inscriptionId) return 'Ordinal';
-                if (utxosWithRunes.includes(utxo)) return 'Runes';
-                if (utxosWithRareSats.includes(utxo)) return 'Rare Sats';
-                return 'Cardinal';
-            };
             const metadata = {
                 inputs: inputs.map((utxo, index) => ({
                     index,
@@ -645,17 +731,16 @@ const Psbt = function (config) {
             }
             else {
                 // Same order as the inputs so the FIFO mapping sends each
-                // preserved utxo's sats to its own same-value output. When
-                // the fee comes from padding it is shaved off the last
-                // (most-padded) output; its protected sats sit below the
-                // shaved value, so they still land in this output
-                preservedUtxos.forEach((utxo, index) => {
-                    const shavedFee = index === preservedUtxos.length - 1 ? feeFromLastPreserved : 0;
+                // preserved utxo's sats to its planned output(s): its full
+                // value, or a target-sized output followed by its padding
+                // output when stripping. Any fee shave was already applied
+                // to the last plan above
+                preservedOutputPlans.flat().forEach(planned => {
                     psbt.addOutput({
-                        address: destinationBtcAddress,
-                        value: utxo.value - shavedFee,
+                        address: planned.address,
+                        value: planned.value,
                     });
-                    metadata.outputs.push({ type: utxoType(utxo) });
+                    metadata.outputs.push({ type: planned.type });
                 });
             }
             // Change / consolidated-cardinal outputs (runes handle their own

@@ -32,6 +32,11 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	const [btcTreeReady, setBtcTreeReady] = useState(false);
 	const [step, setStep] = useState(1);
 	const [signProgress, setSignProgress] = useState(null);
+	// Advanced: strip inscription / rare-sat outputs down to a target size
+	// and split the extra padding into its own output
+	const [stripPadding, setStripPadding] = useState(false);
+	const [paddingSendTo, setPaddingSendTo] = useState("change");
+	const [paddingTargetSize, setPaddingTargetSize] = useState(330);
 
 	// Same precedence as the psbt classification: a runes utxo counts as
 	// runes even if it also carries rare sats
@@ -51,6 +56,11 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 			!(utxo.runes?.length > 0) &&
 			!(utxo.rareSats?.length > 0),
 	);
+	// Stripping padding only applies to inscriptions and rare sats; runes
+	// sends already consolidate to a first-input-sized output
+	const stripPaddingAvailable =
+		(sendingInscriptions.length > 0 || sendingRareSats.length > 0) &&
+		sendingRunes.length === 0;
 
 	useEffect(() => {
 		const fetchFee = async () => {
@@ -86,7 +96,17 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	};
 
 	const feeRateOnChange = (evt) => {
-		setSendFeeRate(Number.parseInt(evt.target.value));
+		// Sub-1 rates (down to 0.1 sat/vbyte) are allowed, so keep the decimal
+		setSendFeeRate(Number.parseFloat(evt.target.value));
+	};
+
+	// One slider step per click, clamped to the slider's range; rounding
+	// keeps float steps from accumulating (0.30000000000000004 etc.)
+	const adjustFeeRate = (delta) => {
+		setSendFeeRate((prev) => {
+			const next = Math.round((prev + delta) * 10) / 10;
+			return Math.min(100, Math.max(0.2, next));
+		});
 	};
 
 	const closeModal = () => {
@@ -109,6 +129,10 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 				ownedUtxos,
 				destinationBtcAddress,
 				sendFeeRate,
+				stripPadding:
+					stripPaddingAvailable && stripPadding
+						? { sendTo: paddingSendTo, targetSize: paddingTargetSize }
+						: null,
 			});
 			setHexPsbt(unsignedPsbtHex);
 			setMetadata(metadata);
@@ -192,11 +216,19 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 						sendingRunes={sendingRunes}
 						sendingRareSats={sendingRareSats}
 						sendingUtxos={sendingUtxos}
+						stripPaddingAvailable={stripPaddingAvailable}
+						stripPadding={stripPadding}
+						onStripPaddingChange={setStripPadding}
+						paddingSendTo={paddingSendTo}
+						onPaddingSendToChange={setPaddingSendTo}
+						paddingTargetSize={paddingTargetSize}
+						onPaddingTargetSizeChange={setPaddingTargetSize}
 						destinationBtcAddress={destinationBtcAddress}
 						isBtcInputAddressValid={isBtcInputAddressValid}
 						sendFeeRate={sendFeeRate}
 						addressOnChange={addressOnChange}
 						feeRateOnChange={feeRateOnChange}
+						onFeeRateAdjust={adjustFeeRate}
 						preparePsbt={preparePsbt}
 						isSending={isSending}
 					/>
@@ -211,6 +243,7 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 						toggleBtcTreeReady={toggleBtcTreeReady}
 						sign={requestSign}
 						send={send}
+						back={() => setStep(1)}
 						isSending={isSending}
 						btcTreeReady={btcTreeReady}
 						selectedUtxos={selectedUtxos}

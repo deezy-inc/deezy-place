@@ -45,7 +45,10 @@ const getOutputData = async (outpoint) => {
     ];
     return { ...data, runes, rareSats };
   } catch (error) {
-    console.error('Error fetching output data:', error);
+    // Expected for unconfirmed outputs: ord returns a 500 until the tx
+    // confirms. warn (not error) so the Next dev overlay doesn't surface it
+    // as a crash; callers treat null as "unverified"
+    console.warn('Could not fetch output data:', error?.message || error);
     return null;
   }
 };

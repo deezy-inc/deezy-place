@@ -21,6 +21,32 @@ import useBitcoinPrice from "src/hooks/use-bitcoin-price";
 import { useRunes } from "@hooks";
 import { SendBulkModal } from "@components/modals/send-bulk-modal";
 import { TailSpin } from "react-loading-icons";
+import Modal from "react-bootstrap/Modal";
+
+// Outpoints the user has explicitly marked as spendable cardinals while
+// still unconfirmed (ord can't scan them until they confirm). The marker is
+// only honored while the output is unconfirmed; once it confirms, ord's
+// real classification takes over and the entry is ignored.
+const SPENDABLE_UNCONFIRMED_KEY = "deezy:spendable-unconfirmed-outpoints";
+const readSpendableOverrides = () => {
+	try {
+		return new Set(
+			JSON.parse(window.localStorage.getItem(SPENDABLE_UNCONFIRMED_KEY) || "[]"),
+		);
+	} catch (e) {
+		return new Set();
+	}
+};
+const persistSpendableOverrides = (outpoints) => {
+	try {
+		window.localStorage.setItem(
+			SPENDABLE_UNCONFIRMED_KEY,
+			JSON.stringify([...outpoints]),
+		);
+	} catch (e) {
+		// localStorage unavailable; the marker just won't survive a reload
+	}
+};
 
 const SliderOptions = {
 	infinite: true,
@@ -77,11 +103,48 @@ const WalletArea = ({
 	const { bitcoinPrice } = useBitcoinPrice({ nostrOrdinalsAddress });
 	const [showSendBulkModal, setShowSendBulkModal] = useState(false);
 	const [selectedUtxos, setSelectedUtxos] = useState([]);
+	const [spendableOverrides, setSpendableOverrides] = useState(() =>
+		typeof window === "undefined" ? new Set() : readSpendableOverrides(),
+	);
+	// Unconfirmed utxo awaiting the "mark as spendable" confirmation modal
+	const [utxoToMarkSpendable, setUtxoToMarkSpendable] = useState(null);
 	const sendBulkSupported = sendBulkSupportedWallets.includes(walletName);
-	const { getRunesForUtxo, getRareSatsForUtxo, outputData, loading: runesLoading } = useRunes(ownedUtxos);
+	const { getRunesForUtxo, getRareSatsForUtxo, isUtxoUnverified, outputData, loading: runesLoading } = useRunes(ownedUtxos);
 
 	const runeNamesForUtxo = (utxo) =>
 		(getRunesForUtxo(utxo) || []).map(([name]) => name);
+
+	// The marker only applies while the output is unconfirmed; once ord can
+	// actually classify it, the stored note is ignored
+	const isMarkedSpendable = (utxo) =>
+		!utxo.status?.confirmed &&
+		spendableOverrides.has(`${utxo.txid}:${utxo.vout}`);
+	const isPendingVerification = (utxo) =>
+		isUtxoUnverified(utxo) && !isMarkedSpendable(utxo);
+
+	const markUtxoSpendable = () => {
+		if (!utxoToMarkSpendable) return;
+		const outpoint = `${utxoToMarkSpendable.txid}:${utxoToMarkSpendable.vout}`;
+		setSpendableOverrides((prev) => {
+			const next = new Set(prev);
+			next.add(outpoint);
+			persistSpendableOverrides(next);
+			return next;
+		});
+		setUtxoToMarkSpendable(null);
+	};
+
+	const unmarkUtxoSpendable = (utxo) => {
+		const outpoint = `${utxo.txid}:${utxo.vout}`;
+		setSpendableOverrides((prev) => {
+			const next = new Set(prev);
+			next.delete(outpoint);
+			persistSpendableOverrides(next);
+			return next;
+		});
+		// No longer spendable, so it can't stay selected for sending
+		setSelectedUtxos((prev) => prev.filter((s) => s.key !== utxo.key));
+	};
 
 	const selectedRuneUtxos = selectedUtxos.filter(
 		(u) => runeNamesForUtxo(u).length > 0,
@@ -111,6 +174,12 @@ const WalletArea = ({
 		}
 		if (runesLoading) {
 			return { disabled: true, label: "Checking for runes and rare sats..." };
+		}
+		// ord can't vouch for an unconfirmed (or unverifiable) output, so it
+		// must not be spendable until it confirms — unless the user has
+		// explicitly marked it spendable
+		if (isPendingVerification(utxo)) {
+			return { disabled: true, label: "Awaiting confirmation" };
 		}
 		const runeNames = runeNamesForUtxo(utxo);
 		if (runeNames.length === 0) {
@@ -226,23 +295,28 @@ const WalletArea = ({
 				...u,
 				runes: getRunesForUtxo(u),
 				rareSats: getRareSatsForUtxo(u),
+				// Lets the spend path accept this unconfirmed output without
+				// backend verification — the user explicitly vouched for it
+				trustedUnconfirmed: isMarkedSpendable(u),
 			})),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[selectedUtxos, outputData],
+		[selectedUtxos, outputData, spendableOverrides],
 	);
 
 	// Owned utxos get the same tags so the fee-funding search can skip
 	// candidates already known to hold runes or rare sats without having to
-	// re-verify them one by one
+	// re-verify them one by one. Marked-spendable unconfirmed outputs carry
+	// their vouch so the funding search may use them too
 	const ownedUtxosWithTags = useMemo(
 		() =>
 			ownedUtxos.map((u) => ({
 				...u,
 				runes: getRunesForUtxo(u),
 				rareSats: getRareSatsForUtxo(u),
+				trustedUnconfirmed: isMarkedSpendable(u),
 			})),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ownedUtxos, outputData],
+		[ownedUtxos, outputData, spendableOverrides],
 	);
 
 	const onCopyAddress = () => {
@@ -319,11 +393,21 @@ const WalletArea = ({
 					runeNamesForUtxo(u).length === 0 &&
 					getRareSatsForUtxo(u).length > 0,
 			);
+	// Outputs ord can't vouch for (unconfirmed, or the classification fetch
+	// failed) — they might hold runes or rare sats, so they are shown in
+	// their own section and never as spendable cardinals, unless the user
+	// explicitly marked them spendable
+	const unconfirmedUtxos = runesLoading
+		? []
+		: filteredOwnedUtxos.filter(
+				(u) => !u.inscriptionId && isPendingVerification(u),
+			);
 	const cardinalUtxos = runesLoading
 		? []
 		: filteredOwnedUtxos.filter(
 				(u) =>
 					!u.inscriptionId &&
+					!isPendingVerification(u) &&
 					runeNamesForUtxo(u).length === 0 &&
 					getRareSatsForUtxo(u).length === 0,
 			);
@@ -346,9 +430,29 @@ const WalletArea = ({
 				utxo={inscription}
 				runes={getRunesForUtxo(inscription)}
 				rareSats={getRareSatsForUtxo(inscription)}
+				unconfirmedTag={
+					!inscription.inscriptionId && !inscription.status?.confirmed
+				}
+				onRemoveCardinalTag={
+					isMarkedSpendable(inscription)
+						? () => unmarkUtxoSpendable(inscription)
+						: null
+				}
 				onSale={handleRefreshHack}
 			/>
-			{sendBulkSupported && (
+			{sendBulkSupported && !runesLoading && isPendingVerification(inscription) && (
+				<div className="mt-2" style={{ minHeight: "3em" }}>
+					<button
+						type="button"
+						className="btn-transparent"
+						style={{ fontSize: "0.9em", color: "#a0a0b8", textDecoration: "underline" }}
+						onClick={() => setUtxoToMarkSpendable(inscription)}
+					>
+						Mark as spendable cardinal
+					</button>
+				</div>
+			)}
+			{sendBulkSupported && !(!runesLoading && isPendingVerification(inscription)) && (
 				<div className="form-check mt-2" style={{ minHeight: "3em" }}>
 					<input
 						className="form-check-input"
@@ -399,6 +503,14 @@ const WalletArea = ({
 			classified: !runesLoading,
 			emptyLabel: "No cardinal utxos detected",
 			alwaysShow: !displayOnlyInscriptions,
+		},
+		{
+			// Only shown when non-empty (alwaysShow off): outputs awaiting
+			// confirmation before ord can classify them
+			title: "Unconfirmed",
+			utxos: unconfirmedUtxos,
+			classified: !runesLoading,
+			alwaysShow: false,
 		},
 	];
 
@@ -481,12 +593,12 @@ const WalletArea = ({
 											type="checkbox"
 											id={"checkbox-select-all"}
 											checked={
-												selectedUtxos.length === filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length).length &&
+												selectedUtxos.length === filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length && !isPendingVerification(utxo)).length &&
 												selectedUtxos.length > 0
 											}
 											disabled={runesLoading}
 											onChange={(e) =>
-												setSelectedUtxos(e.target.checked ? filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length) : [])
+												setSelectedUtxos(e.target.checked ? filteredOwnedUtxos.filter(utxo => !getRunesForUtxo(utxo)?.length && !isPendingVerification(utxo)) : [])
 											}
 										/>
 										<label
@@ -572,6 +684,43 @@ const WalletArea = ({
 					</div>
 				)}
 			</div>
+			<Modal
+				className="rn-popup-modal placebid-modal-wrapper"
+				show={!!utxoToMarkSpendable}
+				onHide={() => setUtxoToMarkSpendable(null)}
+				centered
+			>
+				<button
+					type="button"
+					className="btn-close"
+					aria-label="Close"
+					onClick={() => setUtxoToMarkSpendable(null)}
+				>
+					<i className="feather-x" />
+				</button>
+				<Modal.Header>
+					<h3 className="modal-title">Warning</h3>
+				</Modal.Header>
+				<Modal.Body>
+					<p>
+						This output has not been scanned for inscriptions, rare sats,
+						or runes, but if you&apos;re sure it doesn&apos;t contain any,
+						we can make it spendable before it confirms on chain.
+					</p>
+					<div className="d-flex gap-3 mt-4">
+						<Button
+							color="primary-alta"
+							size="medium"
+							onClick={() => setUtxoToMarkSpendable(null)}
+						>
+							Cancel
+						</Button>
+						<Button size="medium" onClick={markUtxoSpendable}>
+							Mark as cardinal
+						</Button>
+					</div>
+				</Modal.Body>
+			</Modal>
 			{showSendBulkModal && (
 				<SendBulkModal
 					ownedUtxos={ownedUtxosWithTags}

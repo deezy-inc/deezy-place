@@ -30,22 +30,33 @@ const useRunes = (utxos) => {
       // inscribed ones are already classified and never shown as cardinal
       const uninscribedUtxos = utxos.filter(utxo => !utxo.inscriptionId);
 
-      // Fetch in small parallel batches so large wallets resolve quickly
+      // Fetch in small parallel batches so large wallets resolve quickly.
+      // An output only counts as classified when ord positively vouches for
+      // it: unconfirmed outputs are skipped (ord can't report on them yet —
+      // the fetch would just 500) and failed fetches are recorded, so both
+      // are marked unverified and never treated as plain cardinals
       const batchSize = 10;
       for (let i = 0; i < uninscribedUtxos.length; i += batchSize) {
         const batch = uninscribedUtxos.slice(i, i + batchSize);
         await Promise.all(batch.map(async (utxo) => {
           const outpoint = `${utxo.txid}:${utxo.vout}`;
+          if (!utxo.status?.confirmed) {
+            newOutputData[outpoint] = { unverified: true };
+            return;
+          }
           try {
             const data = await getOutputData(outpoint);
-            if (data && (data.runes?.length > 0 || data.rareSats?.length > 0)) {
-              newOutputData[outpoint] = {
-                runes: data.runes || [],
-                rareSats: data.rareSats || [],
-              };
+            if (!data || data.indexed !== true) {
+              newOutputData[outpoint] = { unverified: true };
+              return;
             }
+            newOutputData[outpoint] = {
+              runes: data.runes || [],
+              rareSats: data.rareSats || [],
+            };
           } catch (error) {
-            console.error(`Error fetching output data for ${outpoint}:`, error);
+            console.warn(`Could not classify output ${outpoint}:`, error);
+            newOutputData[outpoint] = { unverified: true };
           }
         }));
         if (cancelled) return;
@@ -77,11 +88,22 @@ const useRunes = (utxos) => {
     return resolved.data[outpoint]?.rareSats || [];
   };
 
+  // True when ord could not (yet) vouch for this output: it is unconfirmed,
+  // or its classification fetch failed. Unverified utxos must never be
+  // displayed or spent as plain cardinals
+  const isUtxoUnverified = (utxo) => {
+    if (!utxo || utxo.inscriptionId) return false;
+    if (!utxo.status?.confirmed) return true;
+    const outpoint = `${utxo.txid}:${utxo.vout}`;
+    return resolved.data[outpoint]?.unverified === true;
+  };
+
   return {
     outputData: resolved.data,
     loading,
     getRunesForUtxo,
     getRareSatsForUtxo,
+    isUtxoUnverified,
   };
 };
 

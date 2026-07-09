@@ -252,7 +252,6 @@ const ProductDetailsArea = memo(
             show={showSendModal}
             handleModal={handleSendModal}
             utxo={uninscribedSats || inscription}
-            isUninscribed={!!uninscribedSats}
             onSend={onSend}
           />
         )}

@@ -10,7 +10,6 @@ import NostrKeyModal from "@components/modals/nostr-key-modal";
 // Gets the callback function from the parent component to notify when the wallet get's connecteds
 const ConnectWallet = ({ callback }) => {
   const {
-    ethProvider,
     onConnectHandler: onConnect,
     showConnectModal: show,
     onHideConnectModal,
@@ -31,56 +30,16 @@ const ConnectWallet = ({ callback }) => {
     onConnect(NOSTR_PROVIDER, callback);
   };
 
+  // Only providers the unified (bulk) send flow can sign with are offered;
+  // MetaMask/Ordswap/Generative/UniSat/Xverse were removed when the single
+  // send flow was retired
   const wallets = [
-    {
-      name: "MetaMask",
-      image: "/images/logo/metamask.png",
-      ethereum: true,
-
-      onClick: () => {
-        onConnect("nosft.xyz", callback);
-      },
-    },
-    {
-      name: "Ordswap",
-      image: "/images/logo/ordswap.svg",
-      ethereum: true,
-
-      onClick: () => {
-        onConnect("ordswap.io", callback);
-      },
-    },
-    {
-      name: "Generative",
-      image: "/images/logo/generative.png",
-      ethereum: true,
-
-      onClick: () => {
-        onConnect("generative.xyz", callback);
-      },
-    },
-    {
-      name: "UniSat",
-      image: "/images/logo/unisat.png",
-      provider: "unisat",
-      onClick: () => {
-        onConnect("unisat.io", callback);
-      },
-    },
     {
       name: "Alby",
       image: "/images/logo/alby.svg",
 
       onClick: () => {
         onConnect("alby", callback);
-      },
-    },
-    {
-      name: "Xverse",
-      image: "/images/logo/xverse.png",
-      provider: "xverse",
-      onClick: () => {
-        onConnect("xverse", callback);
       },
     },
     {
@@ -92,21 +51,7 @@ const ConnectWallet = ({ callback }) => {
     },
   ];
 
-  const getWallets = () => {
-    const activeWallets = [];
-    wallets.forEach((wallet) => {
-      if (typeof window === "undefined") return;
-      if (
-        (wallet.provider === "xverse" && !window.BitcoinProvider) ||
-        (!ethProvider && wallet.ethereum) ||
-        (wallet.provider === "unisat" && !window.unisat)
-      ) {
-        return;
-      }
-      activeWallets.push(wallet);
-    });
-    return activeWallets;
-  };
+  const getWallets = () => wallets;
 
   if (showNostrKeyEntry) {
     return (

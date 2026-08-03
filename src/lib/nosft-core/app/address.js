@@ -27,7 +27,6 @@ const Address = function (config) {
         getAddressInfo: async (pubkey) => {
             const provider = SessionStorage.get(SessionsStorageKeys.DOMAIN);
             const pubkeyBuffer = Buffer.from(pubkey, 'hex');
-            console.log(`Pubkey: ${pubkey.toString()}`);
             if (provider === 'unisat.io') {
                 const addrInfo = bitcoin.payments.p2tr({
                     internalPubkey: cryptoModule.toXOnly(pubkeyBuffer),

@@ -14,7 +14,6 @@ const { isSpent, getOutput } = nosft.utxo;
 const { getInscriptions, isImageInscription } = nosft.inscriptions;
 
 const {
-  signAndBroadcastUtxo,
   preparePsbtForMultipleSend,
   signPsbtForMultipleSend,
   broadcastPsbt,
@@ -74,6 +73,7 @@ const {
   MEMPOOL_API_URL,
   MIN_OUTPUT_VALUE,
   INSCRIBOR_URL,
+  MAX_FEE_RATE,
 } = config;
 
 export {
@@ -105,7 +105,6 @@ export {
   isImageInscription,
 
   // psbt
-  signAndBroadcastUtxo,
   preparePsbtForMultipleSend,
   signPsbtForMultipleSend,
   broadcastPsbt,
@@ -121,4 +120,5 @@ export {
   MEMPOOL_API_URL,
   MIN_OUTPUT_VALUE,
   INSCRIBOR_URL,
+  MAX_FEE_RATE,
 };

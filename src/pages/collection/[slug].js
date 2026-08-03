@@ -55,6 +55,18 @@ const SliderOptions = {
   ],
 };
 
+// Collection links come from the API and are rendered as hrefs (and cached in
+// localStorage) — only allow http(s) so a malicious collection record can't
+// smuggle in a javascript: URL
+const isSafeExternalUrl = (url) => {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+};
+
 const Inscription = () => {
   const walletState = useWalletState();
   const router = useRouter();
@@ -76,21 +88,21 @@ const Inscription = () => {
 
       const links = [];
 
-      if (collectionData.website_link) {
+      if (isSafeExternalUrl(collectionData.website_link)) {
         links.push({
           name: "Website",
           url: collectionData.website_link,
         });
       }
 
-      if (collectionData.twitter_link) {
+      if (isSafeExternalUrl(collectionData.twitter_link)) {
         links.push({
           name: "Twitter",
           url: collectionData.twitter_link,
         });
       }
 
-      if (collectionData.discord_link) {
+      if (isSafeExternalUrl(collectionData.discord_link)) {
         links.push({
           name: "Discord",
           url: collectionData.discord_link,

@@ -10,17 +10,14 @@
 		"@scure/btc-signer": "^1.0.1",
 		"@stacks/common": "^6.5.5",
 		"axios": "^1.4.0",
-		"bip32": "^4.0.0",
 		"bitcoin-address-validation": "^2.2.1",
-		"bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib",
+		"bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib#73a310e4af361041855ad883edad3168153931bc",
 		"clsx": "^2.0.0",
 		"d3": "^7.9.0",
-		"ecpair": "^2.1.0",
-		"ethers": "^5.7.2",
 		"framer-motion": "^10.13.1",
 		"lottie-react": "^2.4.0",
 		"match-sorter": "^6.3.1",
-		"next": "^15.5.20",
+		"next": "15.5.21",
 		"next-themes": "^0.2.1",
 		"nextjs-google-analytics": "^2.3.3",
 		"nostr-tools": "^2.23.9",
@@ -45,6 +42,10 @@
 		"sats-connect": "0.5.0",
 		"tiny-secp256k1": "^2.2.3",
 		"varuint-bitcoin": "^1.1.2"
+	},
+	"overrides": {
+		"sharp": "^0.35.0",
+		"undici": "^7.29.0"
 	},
 	"scripts": {
 		"prepare": "husky install",

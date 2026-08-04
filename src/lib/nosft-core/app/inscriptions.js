@@ -105,19 +105,6 @@ const Inscriptions = function (config) {
             const props = {};
             const { data: inscriptionData } = await axios.get(`${config.TURBO_API}/inscription/${inscriptionId}`);
             const { txid, vout, owner } = await inscriptionsModule.getTxidVout(inscriptionData);
-            // Our turbo api returns the collection data already, let's get it if it's not there
-            if (inscriptionData?.collection?.name && !inscriptionData?.collection?.icon) {
-                try {
-                    const { data: collection } = await axios.get(`${config.TURBO_API}/collection/${inscriptionData?.collection?.slug}`);
-                    props.collection = collection;
-                }
-                catch (e) {
-                    console.warn('No collection found');
-                }
-            }
-            else {
-                props.collection = inscriptionData?.collection;
-            }
             props.inscription = {
                 ...inscriptionData,
                 inscriptionId,

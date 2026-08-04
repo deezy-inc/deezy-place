@@ -1,6 +1,5 @@
 import * as bitcoin from 'bitcoinjs-lib';
 export const TESTNET = false;
-export const METAMASK_PROVIDERS = ['nosft.xyz', 'ordswap.io', 'generative.xyz'];
 export const DEFAULT_FEE_RATE = 7;
 export const ASSUMED_TX_BYTES = 111;
 export const ORDINALS_EXPLORER_URL = TESTNET
@@ -12,7 +11,6 @@ export const TURBO_API = TESTNET ? 'https://turbo-ordinals-testnet.deezy.io' : '
 export const MEMPOOL_API_URL = TESTNET ? 'https://mempool.space/testnet' : 'https://mempool.deezy.io';
 export const NETWORK = TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 export const NETWORK_NAME = TESTNET ? 'Testnet' : 'Mainnet';
-export const DEFAULT_DERIV_PATH = "m/86'/0'/0'/0/0";
 export const MIN_OUTPUT_VALUE = 600;
 // Smallest value a preserved (inscription/rare-sat) output may be shaved
 // down to when its padding is used to pay fees; 546 is the conservative
@@ -20,6 +18,11 @@ export const MIN_OUTPUT_VALUE = 600;
 export const TARGET_UTXO_SIZE = 546;
 export const BOOST_UTXO_VALUE = 10000;
 export const FEE_LEVEL = 'fastestFee'; // "fastestFee" || "halfHourFee" || "hourFee" || "economyFee" || "minimumFee"
+// Sanity bounds against compromised/malfunctioning fee endpoints: API-supplied
+// rates above MAX_FEE_RATE are rejected/clamped, and no signed transaction may
+// pay more than MAX_TX_FEE_SATS in total miner fees
+export const MAX_FEE_RATE = 1000; // sat/vB
+export const MAX_TX_FEE_SATS = 1000000; // 0.01 BTC
 export const INSCRIBOR_URL = TESTNET ? 'https://testnet.inscribor.com' : 'https://inscribor.com';
 export const CONSTANTS = {
     TESTNET,
@@ -31,11 +34,11 @@ export const CONSTANTS = {
     MEMPOOL_API_URL,
     NETWORK,
     NETWORK_NAME,
-    DEFAULT_DERIV_PATH,
     MIN_OUTPUT_VALUE,
     TARGET_UTXO_SIZE,
     BOOST_UTXO_VALUE,
     FEE_LEVEL,
+    MAX_FEE_RATE,
+    MAX_TX_FEE_SATS,
     INSCRIBOR_URL,
-    METAMASK_PROVIDERS,
 };

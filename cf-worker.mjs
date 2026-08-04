@@ -5,7 +5,29 @@
 // the OpenNext handler.
 import openNextWorker from "./.open-next/worker.js";
 
-const SHELL_ROUTES = ["inscription", "output", "collection"];
+const SHELL_ROUTES = ["inscription", "output"];
+
+// Baseline hardening for HTML responses. Deliberately no CSP yet: Next emits
+// inline scripts/styles that a strict policy would break — a CSP needs its
+// own tested change.
+const SECURITY_HEADERS = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  // The app never needs to be framed; blocks clickjacking of the send flow
+  "x-frame-options": "DENY",
+};
+
+const isHtml = (response) =>
+  (response.headers.get("content-type") || "").includes("text/html");
+
+const withSecurityHeaders = (response) => {
+  if (!isHtml(response)) return response;
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(key, value);
+  }
+  return new Response(response.body, { status: response.status, headers });
+};
 
 export default {
   async fetch(request, env, ctx) {
@@ -20,10 +42,12 @@ export default {
       const shellUrl = new URL(`/_shells/${first}.html`, url.origin);
       const response = await env.ASSETS.fetch(new Request(shellUrl, { method: "GET" }));
       if (response.ok) {
-        return new Response(response.body, {
-          status: 200,
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+        return withSecurityHeaders(
+          new Response(response.body, {
+            status: 200,
+            headers: { "content-type": "text/html; charset=utf-8" },
+          }),
+        );
       }
     }
     // Serve static assets (all page HTML and _next files) directly; needed
@@ -31,7 +55,7 @@ export default {
     if (request.method === "GET" || request.method === "HEAD") {
       const assetResponse = await env.ASSETS.fetch(request);
       if (assetResponse.status !== 404) {
-        return assetResponse;
+        return withSecurityHeaders(assetResponse);
       }
     }
     const response = await openNextWorker.fetch(request, env, ctx);
@@ -43,12 +67,14 @@ export default {
         new Request(new URL("/404.html", url.origin), { method: "GET" }),
       );
       if (notFound.ok) {
-        return new Response(notFound.body, {
-          status: 404,
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+        return withSecurityHeaders(
+          new Response(notFound.body, {
+            status: 404,
+            headers: { "content-type": "text/html; charset=utf-8" },
+          }),
+        );
       }
     }
-    return response;
+    return withSecurityHeaders(response);
   },
 };

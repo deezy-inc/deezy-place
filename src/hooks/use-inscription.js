@@ -9,7 +9,6 @@ function useInscription(inscriptionId) {
   const [currentInscriptionId, setCurrentInscriptionId] =
     useState(inscriptionId);
   const [isLoading, setIsLoading] = useState(true);
-  const [collection, setCollection] = useState();
   const [isPooling, setIsPooling] = useState(true);
 
   const fetchInscription = async (id) => {
@@ -17,7 +16,7 @@ function useInscription(inscriptionId) {
     if (!_currentInscriptionId) return;
     console.log("[useInscription]", _currentInscriptionId);
     const result = await getInscription(_currentInscriptionId);
-    const { inscription: _inscription, collection: _collection } = result;
+    const { inscription: _inscription } = result;
 
     const output = _inscription
       ? _inscription.output || `${_inscription.txid}:${_inscription.vout}`
@@ -30,7 +29,6 @@ function useInscription(inscriptionId) {
 
     setIsLoading(false);
     setInscription(utxo);
-    setCollection(_collection);
   };
 
   useInterval(
@@ -50,7 +48,6 @@ function useInscription(inscriptionId) {
 
   return {
     inscription,
-    collection,
     isPooling,
     setIsPooling,
     isLoading,

@@ -5,7 +5,7 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import Button from "@ui/button";
 import { toast } from "react-toastify";
 import { useWallet } from "@context/wallet-context";
-import { preparePsbtForMultipleSend, signPsbtForMultipleSend, fetchRecommendedFee, DEFAULT_FEE_RATE, broadcastPsbt } from "@services/nosft";
+import { preparePsbtForMultipleSend, signPsbtForMultipleSend, fetchRecommendedFee, DEFAULT_FEE_RATE, MAX_FEE_RATE, broadcastPsbt } from "@services/nosft";
 import * as bitcoin from "bitcoinjs-lib";
 import * as ecc from "tiny-secp256k1";
 import { validate, Network } from "bitcoin-address-validation";
@@ -65,7 +65,11 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 	useEffect(() => {
 		const fetchFee = async () => {
 			const fee = await fetchRecommendedFee();
-			setSendFeeRate(fee);
+			// Clamp the API-supplied rate to sane bounds: a compromised or
+			// malfunctioning fee endpoint must not seed an absurd default
+			// (the slider clamps manual input, this value bypassed it)
+			if (!Number.isFinite(fee) || fee <= 0) return;
+			setSendFeeRate(Math.min(fee, MAX_FEE_RATE));
 		};
 
 		fetchFee();
@@ -158,7 +162,6 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 			const {
 				finalFeeRate,
 				finalFee,
-				finalSignedHexPsbt,
 				finalSignedPsbt,
 			} = await signPsbtForMultipleSend(hexPsbt, (done, total) =>
 				setSignProgress({ done, total }),
@@ -166,8 +169,6 @@ const SendBulkModal = ({ show, handleModal, onSend, onSent, ownedUtxos, selected
 			setTxFee(finalFee);
 			setTxFeeRate(finalFeeRate);
 			setSignedPsbt(finalSignedPsbt);
-			console.log("Fully signed PSBT (hex):", finalSignedHexPsbt);
-			console.log("Fully signed PSBT (base64):", finalSignedPsbt.toBase64());
 			setSignProgress((prev) => ({
 				done: prev?.total ?? 0,
 				total: prev?.total ?? 0,

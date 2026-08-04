@@ -13,6 +13,11 @@ const Anchor = ({ path, children, className, rel, label, target, onClick, ...res
                 </a>
             );
         }
+        // External links must be http(s): API-supplied URLs (e.g. collection
+        // links) could otherwise carry javascript:/data: schemes
+        if (!/^https?:\/\//i.test(path)) {
+            return <div className={className}>{children}</div>;
+        }
         return (
             <a
                 aria-label={label}

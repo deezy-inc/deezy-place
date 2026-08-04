@@ -14,7 +14,6 @@ const { isSpent, getOutput } = nosft.utxo;
 const { getInscriptions, isImageInscription } = nosft.inscriptions;
 
 const {
-  signAndBroadcastUtxo,
   preparePsbtForMultipleSend,
   signPsbtForMultipleSend,
   broadcastPsbt,
@@ -63,8 +62,6 @@ const {
   satToBtc,
 } = nosft.crypto;
 
-const { getCollection } = nosft.collection;
-
 const { config } = nosft;
 
 const {
@@ -74,6 +71,7 @@ const {
   MEMPOOL_API_URL,
   MIN_OUTPUT_VALUE,
   INSCRIBOR_URL,
+  MAX_FEE_RATE,
 } = config;
 
 export {
@@ -105,14 +103,10 @@ export {
   isImageInscription,
 
   // psbt
-  signAndBroadcastUtxo,
   preparePsbtForMultipleSend,
   signPsbtForMultipleSend,
   broadcastPsbt,
   signSigHash,
-
-  // collection
-  getCollection,
 
   // Config variables
   TESTNET,
@@ -121,4 +115,5 @@ export {
   MEMPOOL_API_URL,
   MIN_OUTPUT_VALUE,
   INSCRIBOR_URL,
+  MAX_FEE_RATE,
 };

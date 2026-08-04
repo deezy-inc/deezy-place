@@ -30,7 +30,6 @@ copyHtml("");
 const SHELLS = [
   ["inscription/[slug].html", "_shells/inscription.html"],
   ["output/[output].html", "_shells/output.html"],
-  ["collection/[slug].html", "_shells/collection.html"],
 ];
 for (const [src, dest] of SHELLS) {
   mkdirSync(dirname(join(DEST, dest)), { recursive: true });

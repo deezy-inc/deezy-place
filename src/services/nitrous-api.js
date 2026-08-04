@@ -3,7 +3,6 @@ const axios = require("axios");
 const NITROUS_BASE_API_URL = "ordinals-api-lb.deezy.io";
 
 function mapInscription(obj) {
-  console.log("[obj]", obj);
   const [txid, vout, offset] = obj.satpoint.split(':')
   return {
     content_length: String(obj.content_length),

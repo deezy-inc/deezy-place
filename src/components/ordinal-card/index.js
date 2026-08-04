@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import Anchor from "@ui/anchor";
 import ClientAvatar from "@ui/client-avatar";
-import ProductBid from "@components/product-bid";
+import CardAction from "@components/card-action";
 import { useWallet } from "@context/wallet-context";
 import { ImageType } from "@utils/types";
 import { shortenStr, MEMPOOL_API_URL } from "@services/nosft";
@@ -25,7 +25,6 @@ const OrdinalCard = ({
   type,
   utxo,
   authors,
-  confirmed,
   date,
   onSale,
   onClick,
@@ -151,12 +150,9 @@ const OrdinalCard = ({
           {/* {description && <span className="latest-bid">{description}</span>} */}
           {/* {!description && <Skeleton width={200} />} */}
           {utxo && (
-            <ProductBid
+            <CardAction
               price={price}
               utxo={utxo}
-              confirmed={confirmed}
-              date={date}
-              type={type}
               onClick={onClick}
               alwaysNewTabOnView={alwaysNewTabOnView}
             />
@@ -188,7 +184,6 @@ OrdinalCard.propTypes = {
     }),
   ),
   utxo: PropTypes.object,
-  confirmed: PropTypes.bool,
   date: PropTypes.number,
   type: PropTypes.oneOf(["buy", "sell", "send", "view"]),
   onSale: PropTypes.func,

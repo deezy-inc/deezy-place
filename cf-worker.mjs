@@ -37,15 +37,19 @@ export default {
       url.hostname = url.hostname.slice(4);
       return Response.redirect(url.toString(), 301);
     }
+    // HEAD must behave like GET (same status/headers, empty body) or probes
+    // from link-preview bots and uptime checkers 500 on shell routes
+    const isPageMethod = request.method === "GET" || request.method === "HEAD";
+    const pageBody = (body) => (request.method === "HEAD" ? null : body);
     const [, first, second] = url.pathname.split("/");
-    if (request.method === "GET" && second && SHELL_ROUTES.includes(first)) {
+    if (isPageMethod && second && SHELL_ROUTES.includes(first)) {
       // Fetch the extensionless path: the assets layer serves .html files
       // extensionless and 307-redirects the .html URL, which fails response.ok
       const shellUrl = new URL(`/_shells/${first}`, url.origin);
       const response = await env.ASSETS.fetch(new Request(shellUrl, { method: "GET" }));
       if (response.ok) {
         return withSecurityHeaders(
-          new Response(response.body, {
+          new Response(pageBody(response.body), {
             status: 200,
             headers: { "content-type": "text/html; charset=utf-8" },
           }),
@@ -64,14 +68,14 @@ export default {
     // This app has no server-rendered routes, so a 500 on a GET page request
     // means Next attempted a render it cannot do here (e.g. the 404 page);
     // serve the prerendered 404 instead
-    if (request.method === "GET" && response.status === 500) {
+    if (isPageMethod && response.status === 500) {
       // Extensionless: /404.html 307-redirects to /404 (see shell routes above)
       const notFound = await env.ASSETS.fetch(
         new Request(new URL("/404", url.origin), { method: "GET" }),
       );
       if (notFound.ok) {
         return withSecurityHeaders(
-          new Response(notFound.body, {
+          new Response(pageBody(notFound.body), {
             status: 404,
             headers: { "content-type": "text/html; charset=utf-8" },
           }),

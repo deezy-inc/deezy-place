@@ -39,7 +39,9 @@ export default {
     }
     const [, first, second] = url.pathname.split("/");
     if (request.method === "GET" && second && SHELL_ROUTES.includes(first)) {
-      const shellUrl = new URL(`/_shells/${first}.html`, url.origin);
+      // Fetch the extensionless path: the assets layer serves .html files
+      // extensionless and 307-redirects the .html URL, which fails response.ok
+      const shellUrl = new URL(`/_shells/${first}`, url.origin);
       const response = await env.ASSETS.fetch(new Request(shellUrl, { method: "GET" }));
       if (response.ok) {
         return withSecurityHeaders(
@@ -63,8 +65,9 @@ export default {
     // means Next attempted a render it cannot do here (e.g. the 404 page);
     // serve the prerendered 404 instead
     if (request.method === "GET" && response.status === 500) {
+      // Extensionless: /404.html 307-redirects to /404 (see shell routes above)
       const notFound = await env.ASSETS.fetch(
-        new Request(new URL("/404.html", url.origin), { method: "GET" }),
+        new Request(new URL("/404", url.origin), { method: "GET" }),
       );
       if (notFound.ok) {
         return withSecurityHeaders(

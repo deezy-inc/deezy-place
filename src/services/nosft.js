@@ -62,8 +62,6 @@ const {
   satToBtc,
 } = nosft.crypto;
 
-const { getCollection } = nosft.collection;
-
 const { config } = nosft;
 
 const {
@@ -109,9 +107,6 @@ export {
   signPsbtForMultipleSend,
   broadcastPsbt,
   signSigHash,
-
-  // collection
-  getCollection,
 
   // Config variables
   TESTNET,

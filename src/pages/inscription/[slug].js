@@ -23,7 +23,7 @@ const Inscription = () => {
   const headerHeight = useHeaderHeight(elementRef);
   useSimpleScrollTop();
 
-  const { inscription, collection } = useInscription(slug);
+  const { inscription } = useInscription(slug);
 
   const { isSpent: isInscriptionSpent, setIsPooling: setIsPoolingIsSpent } =
     useIsSpent(inscription?.output);
@@ -47,7 +47,6 @@ const Inscription = () => {
           {inscription && (
             <ProductDetailsArea
               inscription={inscription}
-              collection={collection}
             />
           )}
 

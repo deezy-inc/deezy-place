@@ -5,7 +5,7 @@
 // the OpenNext handler.
 import openNextWorker from "./.open-next/worker.js";
 
-const SHELL_ROUTES = ["inscription", "output", "collection"];
+const SHELL_ROUTES = ["inscription", "output"];
 
 // Baseline hardening for HTML responses. Deliberately no CSP yet: Next emits
 // inline scripts/styles that a strict policy would break — a CSP needs its

@@ -8,7 +8,6 @@ import { InscriptionPreview } from "@components/inscription-preview";
 import ProductTitle from "@components/product-details/title";
 import RuneDisplay from "@components/rune-display";
 import SendModal from "@components/modals/send-modal";
-import InscriptionCollection from "@components/product-details/collection";
 import { useWallet } from "@context/wallet-context";
 import { useRouter } from "next/router";
 import { shortenStr } from "@services/nosft";
@@ -64,7 +63,7 @@ const SatsRangeTable = ({ product }) => {
 };
 
 const ProductDetailsArea = memo(
-  ({ space, className, inscription = {}, uninscribedSats, collection }) => {
+  ({ space, className, inscription = {}, uninscribedSats }) => {
     const product = useMemo(() => {
       if (!inscription && !uninscribedSats) return {};
       return {
@@ -193,14 +192,6 @@ const ProductDetailsArea = memo(
                     <RuneDisplay runes={product.runes} />
                   </div>
                 )}
-
-                {
-                  collection && (
-                    <div className="catagory-collection">
-                      <InscriptionCollection collection={collection} />
-                    </div>
-                  )
-                }
 
                 {shouldShowSend && (
                   <div className="rn-pd-sm-property-wrapper">

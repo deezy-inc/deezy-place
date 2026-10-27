@@ -11,7 +11,7 @@
 		"@stacks/common": "^6.5.5",
 		"axios": "^1.4.0",
 		"bitcoin-address-validation": "^2.2.1",
-		"bitcoinjs-lib": "github:deezy-inc/bitcoinjs-lib#73a310e4af361041855ad883edad3168153931bc",
+		"bitcoinjs-lib": "^6.1.10",
 		"clsx": "^2.0.0",
 		"d3": "^7.9.0",
 		"framer-motion": "^10.13.1",
@@ -40,7 +40,7 @@
 		"react-useinterval": "^1.0.2",
 		"sal.js": "^0.8.5",
 		"sats-connect": "0.5.0",
-		"tiny-secp256k1": "^2.2.3",
+		"tiny-secp256k1": "^2.2.5",
 		"varuint-bitcoin": "^1.1.2"
 	},
 	"overrides": {
